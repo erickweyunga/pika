@@ -362,7 +362,13 @@ fn normalize(path: &Path) -> PathBuf {
     normal
 }
 
-/// The name of a source file in reports: its path, without a leading `./`.
+/// The name of a source file in reports: its path, without a leading `./`, with `/` between
+/// its parts on every platform, so that reports are the same everywhere.
 fn display_name(file: &Path) -> String {
-    file.strip_prefix(".").unwrap_or(file).display().to_string()
+    let name = file.strip_prefix(".").unwrap_or(file).display().to_string();
+    if std::path::MAIN_SEPARATOR == '/' {
+        name
+    } else {
+        name.replace(std::path::MAIN_SEPARATOR, "/")
+    }
 }
