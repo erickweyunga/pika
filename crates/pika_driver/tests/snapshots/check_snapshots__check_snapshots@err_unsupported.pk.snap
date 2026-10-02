@@ -1,7 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 42
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_unsupported.pk
 ---
 fn main() -> nothing
@@ -16,19 +15,10 @@ fn main() -> nothing
    │ 
    │ Help: planned for milestone M6 of the compiler
 ───╯
-[E0208] Error: tests are not supported yet
-   ╭─[ err_unsupported.pk:4:1 ]
-   │
- 4 │ :test "addition" do={
-   │ ──┬──  
-   │   ╰──── tests are not supported yet
-   │ 
-   │ Help: planned for milestone M6 of the compiler
-───╯
 [E0208] Error: `:unsafe` is not supported yet
-   ╭─[ err_unsupported.pk:8:5 ]
+   ╭─[ err_unsupported.pk:5:5 ]
    │
- 8 │     :unsafe {
+ 5 │     :unsafe {
    │     ───┬───  
    │        ╰───── `:unsafe` is not supported yet
    │ 

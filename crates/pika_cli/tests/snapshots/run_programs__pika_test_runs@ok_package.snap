@@ -1,0 +1,14 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/test_runs/ok_package
+---
+exit: 0
+--- stdout ---
+running 3 tests
+test doubles ... ok
+test text/words: counts words ... ok
+test text/words: uses private items ... ok
+
+test result: ok. 3 passed; 0 failed; 0 filtered out
+--- stderr ---

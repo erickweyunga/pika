@@ -1,0 +1,33 @@
+# Tests that pass and tests that fail in each way: a failed assertion, with and without a
+# message, a panic, an error that escapes, and a leak of output.
+
+:fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+:fn half n:i64 -> i64 raises do={
+    :if (($n % 2) = 1) do={ :error "$n is odd" }
+    :return ($n / 2)
+}
+
+:test "adds" do={
+    :assert ([:add 2 2] = 4)
+}
+:test "compares values" do={
+    :put "output of a failing test is shown"
+    :const words {"b"; "a"}
+    :assert ([$words->sorted] = {"a"; "c"})
+}
+:test "explains" do={
+    :assert ([:add 1 1] > 3) "one plus one is small"
+}
+:test "halves" do={
+    :assert ([:half 10] = 5)
+}
+:test "raises" do={
+    :put [:half 7]
+}
+:test "panics" do={
+    :const items {1}
+    :put $items->3
+}
+:test "catches" do={
+    :onerror e in={ :put [:half 3] } do={ :assert ("$e" = "3 is odd") }
+}

@@ -1,0 +1,10 @@
+:fn count text:String -> i64 do={ :return [[$text->words]->len] }
+
+:fn _private_helper -> i64 do={ :return 1 }
+
+:test "counts words" do={
+    :assert ([:count "one two  three"] = 3)
+}
+:test "uses private items" do={
+    :assert ([:_private_helper] = 1)
+}

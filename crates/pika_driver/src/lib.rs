@@ -111,6 +111,41 @@ pub fn check(sources: Sources) -> Analysis {
     }
 }
 
+/// The names of the tests of the package compiled, in the order of
+/// [`pika_mir::Program::tests`]: each test's name, after the path of its module in the
+/// package when it is not the root module, as in `net/http: parses a header`.
+pub fn test_names(analysis: &Analysis) -> Vec<String> {
+    let Some(module) = &analysis.module else {
+        return Vec::new();
+    };
+    module
+        .tests
+        .iter()
+        .filter(|test| module.is_local(test.function))
+        .map(|test| {
+            let path = &module.modules[test.module].path;
+            match path.get(1..) {
+                Some(inner) if !inner.is_empty() => {
+                    format!("{}: {}", inner.join("/"), test.name.value)
+                }
+                _ => test.name.value.clone(),
+            }
+        })
+        .collect()
+}
+
+/// The program that runs the test at `index` of [`pika_mir::Program::tests`] instead of
+/// `main`.
+///
+/// # Panics
+///
+/// Panics if there is no test at `index`.
+pub fn test_program(program: &pika_mir::Program, index: usize) -> pika_mir::Program {
+    let mut test = program.clone();
+    test.entry = Some(program.tests[index]);
+    test
+}
+
 /// Why a program cannot be run.
 #[derive(Debug)]
 pub enum RunError {
@@ -343,16 +378,21 @@ fn describe_function(
         FnKind::ImplicitMain => "script",
         FnKind::Closure(_) => "closure",
         FnKind::Runtime => "runtime fn",
+        FnKind::Test => "test",
     };
-    writeln!(
-        out,
-        "{kind} {}{}({}) -> {}",
-        function.name.value,
-        generics(module, &function.generics),
-        params.join(", "),
-        function.ret.value
-    )
-    .expect("writing to a String");
+    if function.kind == FnKind::Test {
+        writeln!(out, "test {:?}", function.name.value).expect("writing to a String");
+    } else {
+        writeln!(
+            out,
+            "{kind} {}{}({}) -> {}",
+            function.name.value,
+            generics(module, &function.generics),
+            params.join(", "),
+            function.ret.value
+        )
+        .expect("writing to a String");
+    }
     for (local, data) in function.body.locals.iter() {
         if function.params.iter().any(|p| p.local == local) {
             continue;

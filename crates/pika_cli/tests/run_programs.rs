@@ -1,5 +1,6 @@
 //! End-to-end tests of `pika run`: every `run/*.pk` program, and every package in
-//! `run_packages/`, is run compiled to native code and interpreted. Both runs must produce
+//! `run_packages/`, is run compiled to native code and interpreted. The same goes for
+//! `pika test` and the programs in `test_runs/`. Both runs must produce
 //! exactly the same standard output, standard error and exit status, which are compared with
 //! the stored snapshot.
 //!
@@ -12,12 +13,17 @@ use std::process::Command;
 
 /// The observable behavior of `pika run target`, run in `dir`.
 fn run(dir: &Path, target: &str, interpret: bool) -> (Option<i32>, String) {
+    pika(dir, "run", target, interpret)
+}
+
+/// The observable behavior of `pika <subcommand> target`, run in `dir`.
+fn pika(dir: &Path, subcommand: &str, target: &str, interpret: bool) -> (Option<i32>, String) {
     let mut command = Command::new(env!("CARGO_BIN_EXE_pika"));
     // Compiled programs must free all of their heap memory; a leak changes the exit status.
     command
         .current_dir(dir)
         .env("PIKA_LEAK_CHECK", "1")
-        .arg("run")
+        .arg(subcommand)
         .arg(target);
     if interpret {
         command.arg("--interpret");
@@ -75,5 +81,26 @@ fn run_packages() {
         let dir = manifest.parent().expect("a package directory");
         let name = dir.file_name().expect("directory name").to_string_lossy();
         insta::assert_snapshot!(run_both(dir, ".", &name));
+    });
+}
+
+#[test]
+fn pika_test_runs() {
+    insta::glob!("test_runs/*", |path| {
+        let dir = path.parent().expect("in a directory");
+        let target = path.file_name().expect("file name").to_string_lossy();
+        let (status, native) = pika(dir, "test", &target, false);
+        let (_, interpreted) = pika(dir, "test", &target, true);
+        assert_eq!(
+            native, interpreted,
+            "native and interpreted tests differ for {target}"
+        );
+        // Programs whose tests all pass are named `ok_*`.
+        let expected = match target.split('_').next() {
+            Some("ok") => 0,
+            _ => 1,
+        };
+        assert_eq!(status, Some(expected), "{target}:\n{native}");
+        insta::assert_snapshot!(native);
     });
 }

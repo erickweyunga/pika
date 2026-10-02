@@ -1,5 +1,7 @@
 //! The `pika` command-line tool.
 
+mod test;
+
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -35,6 +37,21 @@ enum Command {
         #[arg(last = true)]
         args: Vec<String>,
     },
+    /// Run the tests of a program, each in a process of its own.
+    Test {
+        /// The program: a `.pk` file, or a package directory with a `pika.toml`.
+        #[arg(default_value = ".")]
+        path: PathBuf,
+        /// Only run the tests whose names contain this text.
+        filter: Option<String>,
+        /// Run with the MIR interpreter instead of compiling to native code.
+        #[arg(long)]
+        interpret: bool,
+        /// Run only the test at this position, in this process (what `pika test` runs in each
+        /// of its processes).
+        #[arg(long, hide = true)]
+        run_test: Option<usize>,
+    },
     /// Print the tokens of a source file (a compiler development tool).
     Lex {
         /// The `.pk` file to lex.
@@ -64,6 +81,17 @@ fn main() -> ExitCode {
             interpret,
             args,
         } => run(&path, interpret, args),
+        Command::Test {
+            path,
+            filter,
+            interpret,
+            run_test,
+        } => test::test(&test::TestOptions {
+            path,
+            filter,
+            interpret,
+            run_test,
+        }),
         Command::Lex { file, trivia } => with_source(&file, |source| {
             let lexed = pika_syntax::lex(source);
             print!(
@@ -78,7 +106,7 @@ fn main() -> ExitCode {
             parse.diagnostics().to_vec()
         }),
         Command::Types { path } => {
-            let Some(analysis) = analyze(&path) else {
+            let Some(analysis) = analyze(&path, true) else {
                 return ExitCode::FAILURE;
             };
             print!("{}", pika_driver::describe_types(&analysis));
@@ -88,8 +116,9 @@ fn main() -> ExitCode {
 }
 
 /// Loads the program at `path`, a source file or a package directory, and analyzes it,
-/// reporting its diagnostics on stderr. Returns `None` if it cannot be loaded.
-fn analyze(path: &Path) -> Option<pika_driver::Analysis> {
+/// reporting its diagnostics on stderr if `report_diagnostics`. Returns `None` if it cannot
+/// be loaded.
+fn analyze(path: &Path, report_diagnostics: bool) -> Option<pika_driver::Analysis> {
     let sources = if path.is_dir() {
         pika_driver::load_package(path).map_err(|error| error.to_string())
     } else {
@@ -105,7 +134,9 @@ fn analyze(path: &Path) -> Option<pika_driver::Analysis> {
         }
     };
     let analysis = pika_driver::check(sources);
-    report(&analysis.diagnostics, &analysis.sources);
+    if report_diagnostics {
+        report(&analysis.diagnostics, &analysis.sources);
+    }
     Some(analysis)
 }
 
@@ -132,7 +163,7 @@ fn exit_status(diagnostics: &[Diagnostic]) -> ExitCode {
 fn check(paths: &[PathBuf]) -> ExitCode {
     let mut failed = false;
     for path in paths {
-        match analyze(path) {
+        match analyze(path, true) {
             Some(analysis) if !analysis.has_errors() => {}
             _ => failed = true,
         }
@@ -145,7 +176,7 @@ fn check(paths: &[PathBuf]) -> ExitCode {
 }
 
 fn run(path: &Path, interpret: bool, args: Vec<String>) -> ExitCode {
-    let Some(analysis) = analyze(path) else {
+    let Some(analysis) = analyze(path, true) else {
         return ExitCode::FAILURE;
     };
     if !analysis.sources.root_package().binary {

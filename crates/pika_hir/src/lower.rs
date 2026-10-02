@@ -17,8 +17,8 @@ use crate::{
     Convention, Derives, Element, ElseBranch, Expr, ExprId, FieldDef, FnId, FnKind, FnOwner,
     ForEnd, Function, GenericParam, Generics, GlobalId, GlobalItem, ImplDef, ImplId, Literal,
     Local, LocalId, LocalKind, MatchArm, Module, ModuleDef, ModuleId, Param, Pat, PatId, Place,
-    PreludeTrait, RESERVED_COMMANDS, Spanned, Stmt, StmtId, StringPart, TraitDef, TraitId, Ty,
-    TypeArgs, TypeDef, TypeHead, TypeId, VariantDef,
+    PreludeTrait, RESERVED_COMMANDS, Spanned, Stmt, StmtId, StringPart, TestDef, TraitDef, TraitId,
+    Ty, TypeArgs, TypeDef, TypeHead, TypeId, VariantDef,
 };
 use modules::{Items, ModuleNames, PathValue, Shared, Source};
 pub use modules::{Root, SourceModule, SourcePackage};
@@ -108,13 +108,14 @@ pub fn lower_program(packages: &[SourcePackage], root: Root) -> (Module, Vec<Dia
         .zip(&names)
         .map(|((source, collected), names)| (source, collected, names))
         .collect();
-    let passes: [LowerPass; 6] = [
+    let passes: [LowerPass; 7] = [
         lower_types,
         lower_traits,
         lower_impls,
         lower_value_types,
         lower_fns,
         lower_initializers,
+        lower_tests,
     ];
     for pass in passes {
         for &(source, collected, names) in &modules {
@@ -412,7 +413,18 @@ fn lower_entry(
             );
         } else {
             let id = FnId::from_raw(la_arena::RawIdx::from_u32(next_fn_id(module)));
-            let (function, closures) = lower_script(&collected.script, names, id, diagnostics);
+            let name = Spanned {
+                value: "main".to_owned(),
+                span: first.span(),
+            };
+            let implicit = Implicit {
+                id,
+                kind: FnKind::ImplicitMain,
+                name,
+                raises: false,
+            };
+            let (function, closures) =
+                lower_statements(&collected.script, names, implicit, diagnostics);
             let allocated = module.functions.alloc(function);
             debug_assert_eq!(allocated, id);
             module.entry = Some(id);
@@ -530,6 +542,7 @@ struct Collected {
     types: Vec<(TypeId, TypeDecl)>,
     traits: Vec<(TraitId, ast::TraitDecl)>,
     impls: Vec<(ImplId, ast::ImplDecl)>,
+    tests: Vec<ast::TestDecl>,
     /// Functions, with the type or trait that declares them.
     fns: Vec<(FnId, ast::FnDecl, Option<FnOwner>)>,
     consts: Vec<(ConstId, ast::ConstDecl)>,
@@ -576,6 +589,7 @@ fn collect(
         types: Vec::new(),
         traits: Vec::new(),
         impls: Vec::new(),
+        tests: Vec::new(),
         fns: Vec::new(),
         consts: Vec::new(),
         globals: Vec::new(),
@@ -607,6 +621,7 @@ fn collect(
             }
             ast::Stmt::ExternDecl(decl) => collected.add_extern(&decl, module, diagnostics),
             ast::Stmt::ImplDecl(decl) => collected.add_impl(decl, module, shared, diagnostics),
+            ast::Stmt::TestDecl(decl) => collected.tests.push(decl),
             ast::Stmt::ConstDecl(decl) => {
                 let Some(name) = new_value_name(decl.name(), &mut value_spans, diagnostics) else {
                     continue;
@@ -1172,7 +1187,6 @@ fn new_value_name(
 fn unsupported_form(stmt: &ast::Stmt) -> Option<(&'static str, &'static str, Span)> {
     Some(match stmt {
         ast::Stmt::ExternDecl(d) => ("foreign functions", "M6", d.keyword_span()),
-        ast::Stmt::TestDecl(d) => ("tests", "M6", d.keyword_span()),
         ast::Stmt::UnsafeBlock(s) => ("`:unsafe`", "M6", s.keyword_span()),
         _ => return None,
     })
@@ -1208,6 +1222,10 @@ fn top_level_only(stmt: &ast::Stmt) -> Option<(&'static str, Span)> {
         ),
         ast::Stmt::ImplDecl(decl) => (
             "`:impl` can only be written at the top level of a file",
+            decl.keyword_span(),
+        ),
+        ast::Stmt::TestDecl(decl) => (
+            "`:test` can only be written at the top level of a file",
             decl.keyword_span(),
         ),
         _ => return None,
@@ -2255,15 +2273,18 @@ fn lower_enum(
 
 /// Lowers the top-level statements of a script, as function `id`; its closures get ids from
 /// `id + 1` on, and are returned.
-fn lower_script(
+fn lower_statements(
     stmts: &[ast::Stmt],
     names: &ModuleNames,
-    id: FnId,
+    Implicit {
+        id,
+        kind,
+        name,
+        raises,
+    }: Implicit,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> (Function, Vec<Function>) {
-    let first = stmts
-        .first()
-        .map_or_else(|| Span::empty(0), ast::Stmt::span);
+    let span = name.span;
     let mut ctx = BodyCtx::new(names, diagnostics, true);
     ctx.fn_id = Some(id);
     ctx.first_closure = id.into_raw().into_u32() + 1;
@@ -2273,27 +2294,83 @@ fn lower_script(
     let closures = ctx.take_closures();
     let body = ctx.finish();
     let function = Function {
-        name: Spanned {
-            value: "main".to_owned(),
-            span: first,
-        },
+        name,
         module: names.module,
-        kind: FnKind::ImplicitMain,
+        kind,
         owner: None,
         generics: Generics::default(),
         own_generics: 0,
         params: Vec::new(),
         ret: Spanned {
             value: Ty::Nothing,
-            span: first,
+            span,
         },
-        raises: false,
+        raises,
         captures: Vec::new(),
         has_body: true,
         body,
         root: Block { stmts, span: None },
     };
     (function, closures)
+}
+
+/// A function made of statements that are not written in a `:fn`: the implicit `main` of a
+/// script, or the body of a test.
+struct Implicit {
+    /// The function's id; its closures get the ids that follow.
+    id: FnId,
+    kind: FnKind,
+    name: Spanned<String>,
+    raises: bool,
+}
+
+/// The tests of a module: `:test "name" do={...}`, each a function that raises the errors it
+/// does not catch.
+fn lower_tests(
+    collected: &Collected,
+    names: &ModuleNames,
+    module: &mut Module,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut seen: HashMap<String, Span> = HashMap::new();
+    for decl in &collected.tests {
+        let Some(name) = decl.name() else {
+            // Reported by the parser.
+            continue;
+        };
+        let span = name.span();
+        let Some(text) = plain_string(&ast::Expr::StringLit(name)) else {
+            diagnostics.push(Diagnostic::error(
+                codes::INCOMPLETE_DECLARATION,
+                "the name of a test is a string without interpolation",
+                span,
+            ));
+            continue;
+        };
+        let name = Spanned { value: text, span };
+        if let Some(&previous) = seen.get(&name.value) {
+            diagnostics.push(duplicate_item(&name, previous, "test"));
+            continue;
+        }
+        seen.insert(name.value.clone(), span);
+        let stmts: Vec<ast::Stmt> = decl.body().map(|b| b.stmts().collect()).unwrap_or_default();
+        let id = FnId::from_raw(la_arena::RawIdx::from_u32(next_fn_id(module)));
+        let implicit = Implicit {
+            id,
+            kind: FnKind::Test,
+            name: name.clone(),
+            raises: true,
+        };
+        let (function, closures) = lower_statements(&stmts, names, implicit, diagnostics);
+        let allocated = module.functions.alloc(function);
+        debug_assert_eq!(allocated, id);
+        add_closures(module, id.into_raw().into_u32() + 1, closures);
+        module.tests.push(TestDef {
+            name,
+            module: collected.module,
+            function: id,
+        });
+    }
 }
 
 /// Lowers the initializer of a module-level constant or global.
@@ -2729,8 +2806,9 @@ impl<'a> BodyCtx<'a> {
             | ast::Stmt::EnumDecl(_)
             | ast::Stmt::TraitDecl(_)
             | ast::Stmt::ImplDecl(_)
+            | ast::Stmt::TestDecl(_)
             | ast::Stmt::UseDecl(_) => unreachable!("reported by `top_level_only`"),
-            ast::Stmt::UnsafeBlock(_) | ast::Stmt::ExternDecl(_) | ast::Stmt::TestDecl(_) => {
+            ast::Stmt::UnsafeBlock(_) | ast::Stmt::ExternDecl(_) => {
                 unreachable!("reported by `unsupported_form`")
             }
         };
@@ -3510,7 +3588,10 @@ impl<'a> BodyCtx<'a> {
                 list.span,
             ));
         }
-        let args = self.lower_call_args(call);
+        let mut args = self.lower_call_args(call);
+        if callee == Callee::Builtin(Builtin::Assert) {
+            self.default_assert_message(call, &mut args);
+        }
         self.alloc_expr(
             Expr::Call {
                 callee,
@@ -3521,6 +3602,17 @@ impl<'a> BodyCtx<'a> {
             },
             span,
         )
+    }
+
+    /// The message of an `:assert` written without one: its condition, as written.
+    fn default_assert_message(&mut self, call: &ast::Call, args: &mut Vec<CallArg>) {
+        let written = call.args();
+        let [ast::Arg::Positional(condition)] = written.as_slice() else {
+            return;
+        };
+        let text = condition.syntax().text().to_string();
+        let value = self.alloc_expr(Expr::String(vec![StringPart::Text(text)]), condition.span());
+        args.push(CallArg { name: None, value });
     }
 
     /// Reports a literal as the head of a command, which only a method call can have.

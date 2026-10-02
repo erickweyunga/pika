@@ -42,6 +42,9 @@ pub struct AdtInfo {
     pub drop: Option<FnId>,
     /// The type's `fmt` function, if it displays its values itself.
     pub fmt: Option<FnId>,
+    /// Whether `Display` is derived: values display with `fmt`, or as literals of their
+    /// fields.
+    pub display: bool,
     /// Whether this is the `Error` type, whose values display as their message.
     pub is_error: bool,
 }
@@ -100,11 +103,28 @@ impl Types {
                     fmt: def
                         .function("fmt")
                         .filter(|_| def.derives.display.is_some()),
+                    display: def.derives.display.is_some(),
                     is_error: module.error_type == Some(id),
                 },
             );
         }
         types
+    }
+
+    /// Returns true if values of `ty` can be displayed, as `:put` displays them.
+    pub fn can_display(&self, ty: Ty) -> bool {
+        match ty {
+            Ty::Int(_) | Ty::Float(_) | Ty::Bool | Ty::Char | Ty::String | Ty::Duration => true,
+            Ty::Option(inner) | Ty::List(inner) | Ty::Set(inner) => self.can_display(*inner),
+            Ty::Map(map) => self.can_display(map.key) && self.can_display(map.value),
+            Ty::Adt(adt) => self.adt(ty).is_some_and(|info| {
+                info.display
+                    && (info.fmt.is_some()
+                        || info.is_error
+                        || adt.args.iter().all(|&arg| self.can_display(arg)))
+            }),
+            _ => false,
+        }
     }
 
     /// The `Error` type.

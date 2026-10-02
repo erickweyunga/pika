@@ -1,10 +1,13 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+assertion_line: 74
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_assert.pk
 ---
 exit: 101
 --- stdout ---
 --- stderr ---
-panic: assertion failed
+panic: assertion failed: (1 > 2)
+  left: 1
+ right: 2
   at panic_assert.pk:1:1

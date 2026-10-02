@@ -75,6 +75,8 @@ pub struct Module {
     pub globals: Arena<GlobalItem>,
     /// The program's entry point: an explicit `:fn main`, or the implicit `main` of a script.
     pub entry: Option<FnId>,
+    /// The tests, in declaration order.
+    pub tests: Vec<TestDef>,
 }
 
 /// The name of the standard library's package, which every package can use.
@@ -149,6 +151,19 @@ pub enum FnKind {
     /// An intrinsic of the runtime, declared by the standard library in
     /// `:extern lib="pika" {...}`. It has no body: the runtime implements it.
     Runtime,
+    /// The body of a `:test`, which raises the errors it does not catch.
+    Test,
+}
+
+/// A test: `:test "name" do={...}` (spec section 14).
+#[derive(Clone, Debug)]
+pub struct TestDef {
+    /// The test's name.
+    pub name: Spanned<String>,
+    /// The module that declares it.
+    pub module: ModuleId,
+    /// The function of its body.
+    pub function: FnId,
 }
 
 /// A variable captured by a closure.

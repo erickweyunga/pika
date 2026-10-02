@@ -83,6 +83,13 @@ pub fn build_program<'a>(
     program.entry = module
         .entry
         .map(|id| instances.request(id, Box::new([]), Span::default()));
+    // The tests of the package compiled, which `pika test` runs one at a time as the entry.
+    program.tests = module
+        .tests
+        .iter()
+        .filter(|test| module.is_local(test.function))
+        .map(|test| instances.request(test.function, Box::new([]), test.name.span))
+        .collect();
     // Every value lives in a local or a global, so the `drop` functions of their types, and
     // of the types inside them, are all that destroying values can run.
     let global_tys: Vec<Ty> = program.globals.values().map(|global| global.ty).collect();
@@ -3947,15 +3954,16 @@ impl<'a, 'c> Builder<'a, 'c> {
                 let Some(cond) = first else {
                     return Operand::Const(Value::Nothing);
                 };
-                let cond = self.lower_read(cond);
+                let (cond, values) = self.lower_assert_condition(cond, span);
                 let fail = self.new_block();
                 let ok = self.new_block();
                 self.branch(cond, ok, fail);
                 self.switch_to(fail);
-                let message = args
+                let mut message = args
                     .get(1)
                     .map(|a| self.print_parts(a.value))
                     .unwrap_or_default();
+                message.extend(values);
                 self.terminate(Terminator::Panic {
                     kind: PanicKind::Assertion,
                     message,
@@ -4000,6 +4008,45 @@ impl<'a, 'c> Builder<'a, 'c> {
                 self.assign_temp(ty, Rvalue::Len(collection), span)
             }
         }
+    }
+
+    /// The condition of an `:assert`, and what its failure message adds: for a comparison of
+    /// values that can be displayed, the value of each side, which are evaluated once.
+    fn lower_assert_condition(
+        &mut self,
+        cond: hir::ExprId,
+        span: Span,
+    ) -> (Operand, Vec<PrintPart>) {
+        let comparison = match self.hir.exprs[cond] {
+            hir::Expr::Binary { op, lhs, rhs, .. } if self.types.methods.get(cond).is_none() => {
+                let op = match op {
+                    hir::BinaryOp::Eq => Some(BinaryOp::Eq),
+                    hir::BinaryOp::Ne => Some(BinaryOp::Ne),
+                    hir::BinaryOp::Lt => Some(BinaryOp::Lt),
+                    hir::BinaryOp::Le => Some(BinaryOp::Le),
+                    hir::BinaryOp::Gt => Some(BinaryOp::Gt),
+                    hir::BinaryOp::Ge => Some(BinaryOp::Ge),
+                    _ => None,
+                };
+                op.map(|op| (op, lhs, rhs))
+            }
+            _ => None,
+        };
+        let Some((op, lhs, rhs)) = comparison.filter(|&(_, lhs, rhs)| {
+            self.structs.can_display(self.own_ty(lhs)) && self.structs.can_display(self.own_ty(rhs))
+        }) else {
+            return (self.lower_read(cond), Vec::new());
+        };
+        let left = self.with_eager(self.may_change(rhs), |b| b.lower_read(lhs));
+        let right = self.lower_read(rhs);
+        let result = self.binary_temp(op, left.clone(), right.clone(), Ty::Bool, span);
+        let values = vec![
+            PrintPart::Text("\n  left: ".to_owned()),
+            PrintPart::Value(left),
+            PrintPart::Text("\n right: ".to_owned()),
+            PrintPart::Value(right),
+        ];
+        (result, values)
     }
 
     /// The pieces printed for an expression. Strings built from literals, constants,

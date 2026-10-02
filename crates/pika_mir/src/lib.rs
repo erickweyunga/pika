@@ -68,6 +68,9 @@ pub struct Program {
     pub display_fns: HashMap<Ty, InstanceId>,
     /// The function to run.
     pub entry: Option<InstanceId>,
+    /// The bodies of the tests of the package compiled, in the order of the module's tests
+    /// that belong to it.
+    pub tests: Vec<InstanceId>,
     /// Constructs that the code generator does not support yet, with the milestone that adds
     /// them. Programs using them can be checked but not run.
     pub unsupported: Vec<Unsupported>,

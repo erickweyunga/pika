@@ -52,12 +52,14 @@ M6 is in progress:
   `map`/`filter`/`fold` with closures, a heap and a deque), standard input and output,
   program arguments and environment variables, clocks, and files. Its few primitives are
   implemented once in the runtime, for both compiled and interpreted programs.
+- Tests: `:test "name" do={...}` and `pika test`, which runs each test in a process of its
+  own and reports failed assertions with the values compared.
 - Methods of built-in types, which the standard library declares with `:impl`:
   `[$text->trim]`, `[[$line->split ","]->map $f]`, `[$items->sort]`, `[$x->sqrt]`,
   `[$n->checked_add 1]`, `[$option->expect "msg"]`.
 
-Features of later milestones (foreign functions, tests, `pika fmt`) are reported as "not
-supported yet". See the milestones in section 17 of the spec.
+Features of later milestones (foreign functions, `pika fmt`) are reported as "not supported
+yet". See the milestones in section 17 of the spec.
 
 ## Building
 
@@ -70,6 +72,7 @@ cargo test
 cargo run -p pika_cli -- run path/to/file.pk     # compile and run a program
 cargo run -p pika_cli -- run path/to/package     # run the package with a pika.toml there
 cargo run -p pika_cli -- run app.pk -- a b       # pass arguments to the program
+cargo run -p pika_cli -- test path/to/package    # run the tests of a package or file
 cargo run -p pika_cli -- run --interpret file.pk # run with the MIR interpreter instead
 cargo run -p pika_cli -- check path/to/file.pk   # report errors and warnings
 cargo run -p pika_cli -- types path/to/file.pk   # print inferred types
@@ -108,7 +111,8 @@ is also checked: plain blocks must parse cleanly, `pika syntax-error` blocks mus
 
 Programs in `crates/pika_cli/tests/run/`, and packages in `crates/pika_cli/tests/run_packages/`,
 are run both compiled and interpreted; the two runs must agree exactly, and the result is
-snapshotted (`ok_*` must exit with 0, `panic_*` with 101, `error_*` with 1).
+snapshotted (`ok_*` must exit with 0, `panic_*` with 101, `error_*` with 1). The programs in
+`crates/pika_cli/tests/test_runs/` are run with `pika test` the same way.
 Compiled runs in tests set `PIKA_LEAK_CHECK=1`, which makes a program that does not free all of
 its heap memory exit with status 102.
 The differential property test (`crates/pika_cli/tests/differential.rs`) does the same for

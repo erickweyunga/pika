@@ -1,0 +1,50 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/test_runs/failing.pk
+---
+exit: 1
+--- stdout ---
+running 7 tests
+test adds ... ok
+test compares values ... FAILED
+test explains ... FAILED
+test halves ... ok
+test raises ... FAILED
+test panics ... FAILED
+test catches ... ok
+
+failures:
+
+---- compares values ----
+--- stdout ---
+output of a failing test is shown
+--- stderr ---
+panic: assertion failed: ([$words->sorted] = {"a"; "c"})
+  left: {"a"; "b"}
+ right: {"a"; "c"}
+  at failing.pk:16:5
+the test panicked
+
+---- explains ----
+--- stderr ---
+panic: assertion failed: one plus one is small
+  left: 2
+ right: 3
+  at failing.pk:19:5
+the test panicked
+
+---- raises ----
+--- stderr ---
+error: 7 is odd
+  at failing.pk:6:29
+the test raised an error
+
+---- panics ----
+--- stderr ---
+panic: index out of bounds: the index is 3 but the length is 1
+  at failing.pk:29:18
+the test panicked
+
+test result: FAILED. 3 passed; 4 failed; 0 filtered out
+--- stderr ---

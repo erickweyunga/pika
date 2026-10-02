@@ -1,0 +1,54 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_tests.pk
+---
+const label: String
+fn parse(text: String) -> i64
+fn main() -> nothing
+test "parses"
+test "types are checked"
+    n: i64
+
+--- diagnostics ---
+[E0204] Error: the test `parses` is declared more than once
+   ╭─[ err_tests.pk:9:7 ]
+   │
+ 9 │ :test "parses" do={
+   │       ────┬───  
+   │           ╰───── the test `parses` is declared more than once
+   │
+   ├─[ err_tests.pk:9:7 ]
+   │
+ 6 │ :test "parses" do={
+   │       ────┬───  
+   │           ╰───── first declared here
+───╯
+[E0215] Error: the name of a test is a string without interpolation
+    ╭─[ err_tests.pk:12:7 ]
+    │
+ 12 │ :test "named $label" do={
+    │       ───────┬──────  
+    │              ╰──────── the name of a test is a string without interpolation
+────╯
+[E0301] Error: mismatched types: expected `i64`, found `String`
+    ╭─[ err_tests.pk:16:18 ]
+    │
+ 16 │     :local n:i64 "not a number"
+    │                  ───────┬──────  
+    │                         ╰──────── expected `i64`
+────╯
+[E0301] Error: mismatched types: expected `bool`, found `i64`
+    ╭─[ err_tests.pk:17:13 ]
+    │
+ 17 │     :assert $n
+    │             ─┬  
+    │              ╰── expected `bool`
+────╯
+[E0212] Error: `:test` can only be written at the top level of a file
+    ╭─[ err_tests.pk:20:5 ]
+    │
+ 20 │     :test "nested" do={
+    │     ──┬──  
+    │       ╰──── `:test` can only be written at the top level of a file
+────╯

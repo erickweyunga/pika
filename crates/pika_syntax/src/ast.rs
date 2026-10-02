@@ -1053,6 +1053,17 @@ ast_node!(
     /// `:test "name" do={...}`
     TestDecl
 );
+
+impl TestDecl {
+    /// The test's name.
+    pub fn name(&self) -> Option<StringLit> {
+        child(&self.0)
+    }
+    /// The test's statements.
+    pub fn body(&self) -> Option<Block> {
+        named_arg(&self.0, "do").and_then(|arg| arg.block())
+    }
+}
 ast_node!(
     /// `<T, U: Bound>`
     GenericParamList

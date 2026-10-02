@@ -1,0 +1,23 @@
+# Tests are top-level declarations with unique names written as plain strings; their
+# bodies are checked like functions that raise.
+:fn parse text:String -> i64 raises do={ :return [$text->parse_int] }
+:const label "x"
+
+:test "parses" do={
+    :assert ([:parse "1"] = 1)
+}
+:test "parses" do={
+    :assert true
+}
+:test "named $label" do={
+    :assert true
+}
+:test "types are checked" do={
+    :local n:i64 "not a number"
+    :assert $n
+}
+:fn main do={
+    :test "nested" do={
+        :assert true
+    }
+}
