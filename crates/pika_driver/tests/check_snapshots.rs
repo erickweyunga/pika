@@ -23,8 +23,9 @@ fn package_snapshots() {
         let name = dir.file_name().expect("directory name").to_string_lossy();
         let sources = pika_driver::load_package(dir).expect("a loadable package");
         let analysis = pika_driver::check(sources);
-        // File names are shown relative to the package.
-        let prefix = format!("{}/", dir.display());
+        // File names are shown relative to the package. Reports write them with `/` on every
+        // platform.
+        let prefix = format!("{}/", dir.display()).replace(std::path::MAIN_SEPARATOR, "/");
         insta::assert_snapshot!(snapshot(&name, &analysis).replace(&prefix, ""));
     });
 }
