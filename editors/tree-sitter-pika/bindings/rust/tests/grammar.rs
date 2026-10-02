@@ -252,6 +252,15 @@ fn zed_manifests_refer_to_this_grammar() {
     };
     let extension = read(&zed_dir().join("extension.toml"));
     let grammar = &extension["grammars"]["pika"];
+    let rev = grammar["rev"].as_str().expect("grammar revision");
+    assert!(
+        rev.len() == 40 && rev.bytes().all(|b| b.is_ascii_hexdigit()),
+        "`grammars.pika.rev` must be a full commit hash, found `{rev}`",
+    );
+    assert_eq!(
+        grammar["repository"].as_str(),
+        extension["repository"].as_str()
+    );
     let grammar_dir = repo_root().join(grammar["path"].as_str().expect("grammar path"));
     assert!(
         grammar_dir.join("src/parser.c").is_file() && grammar_dir.join("src/scanner.c").is_file(),

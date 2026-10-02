@@ -10,5 +10,5 @@ repository = "https://github.com/erickweyunga/pika"
 # compiles the generated `src/parser.c` and `src/scanner.c` it contains.
 [grammars.pika]
 repository = "https://github.com/erickweyunga/pika"
-rev = "COMMIT_SHA"
+rev = "4be83089e00f03683ac5b928d12846695e0578a1"
 path = "editors/tree-sitter-pika"
