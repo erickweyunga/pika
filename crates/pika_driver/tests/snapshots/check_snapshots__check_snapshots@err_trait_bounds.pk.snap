@@ -1,0 +1,39 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_trait_bounds.pk
+---
+fn pretty<Self: Pretty>(self: Self) -> String
+fn show<T: Pretty>(x: T) -> String
+fn main() -> nothing
+    good: Wrap<i64>
+    bad: Wrap<Plain>
+
+--- diagnostics ---
+[E0319] Error: `Wrap<Plain>` does not implement `Pretty`, which `Pretty->pretty` requires of `Self`
+    ╭─[ err_trait_bounds.pk:12:11 ]
+    │
+ 12 │     :put [$bad->pretty]
+    │           ──────┬─────  
+    │                 ╰─────── `Wrap<Plain>` does not implement `Pretty`, which `Pretty->pretty` requires of `Self`
+    │ 
+    │ Help: add `Pretty` to the `impl=` of `Wrap`
+────╯
+[E0319] Error: `Wrap<Plain>` does not implement `Pretty`, which `:show` requires of `T`
+    ╭─[ err_trait_bounds.pk:13:11 ]
+    │
+ 13 │     :put [:show $bad]
+    │           ─────┬────  
+    │                ╰────── `Wrap<Plain>` does not implement `Pretty`, which `:show` requires of `T`
+    │ 
+    │ Help: add `Pretty` to the `impl=` of `Wrap`
+────╯
+[E0208] Error: traits with type parameters are not supported in v0
+    ╭─[ err_trait_bounds.pk:15:15 ]
+    │
+ 15 │ :trait Convert<T> {
+    │               ─┬─  
+    │                ╰─── traits with type parameters are not supported in v0
+    │ 
+    │ Help: planned for v1 of the language (spec section 15)
+────╯

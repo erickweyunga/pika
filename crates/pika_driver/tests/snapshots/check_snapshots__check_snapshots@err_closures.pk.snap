@@ -1,0 +1,125 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_closures.pk
+---
+const C: {error}
+fn generic<T>(x: T) -> T
+fn changes(x: i64) -> nothing
+fn borrowed(s: String) -> fn() -> String
+fn main() -> nothing
+    s: String
+    f: fn() -> i64
+    n: i64
+    inc: fn() -> i64
+    list: List<i64>
+    push: fn()
+    g: {error}
+    h: {error}
+    five: i64
+    bad: fn(i64, i64)
+    named: fn(i64)
+    r: fn() -> i64 raises
+    m: fn(i64) -> String
+closure closure() -> String
+    s: String
+closure closure() -> i64
+    s: String
+closure closure() -> i64
+    n: i64
+closure closure() -> nothing
+    list: List<i64>
+closure closure(x: i64, y: i64) -> nothing
+closure closure(x: i64) -> nothing
+closure closure() -> i64
+closure closure(x: i64) -> String
+    s: String
+
+--- diagnostics ---
+[E0207] Error: cannot modify `n`: it is captured by this function value
+    ╭─[ err_closures.pk:13:14 ]
+    │
+ 13 │         :set n ($n + 1)
+    │              ┬  ─┬  
+    │              ╰────── cannot modify `n`: it is captured by this function value
+    │                  │  
+    │                  ╰── declared here
+    │ 
+    │ Help: a closure captures a copy of `n`, which it can only read; compute a new value instead
+────╯
+[E0322] Error: the generic function `:generic` cannot be used as a value; wrap a call in a function value: `[:fn x:i64 -> i64 do={ :return [:generic $x] }]`
+    ╭─[ err_closures.pk:18:14 ]
+    │
+ 18 │     :const g $generic
+    │              ────┬───  
+    │                  ╰───── the generic function `:generic` cannot be used as a value; wrap a call in a function value: `[:fn x:i64 -> i64 do={ :return [:generic $x] }]`
+────╯
+[E0322] Error: `:changes` cannot be used as a value: a function value borrows its arguments for reading, and `:changes` has `mut` or `owned` parameters
+    ╭─[ err_closures.pk:19:14 ]
+    │
+ 19 │     :const h $changes
+    │              ────┬───  
+    │                  ╰───── `:changes` cannot be used as a value: a function value borrows its arguments for reading, and `:changes` has `mut` or `owned` parameters
+────╯
+[E0305] Error: this function value takes 0 arguments, but 2 were given
+    ╭─[ err_closures.pk:21:11 ]
+    │
+ 21 │     :put [$f 1 2]
+    │           ───┬──  
+    │              ╰──── this function value takes 0 arguments, but 2 were given
+────╯
+[E0322] Error: a value of type `{integer}` cannot be called
+    ╭─[ err_closures.pk:23:11 ]
+    │
+ 23 │     :put [$five 1]
+    │           ──┬──  
+    │             ╰──── a value of type `{integer}` cannot be called
+────╯
+[E0303] Error: `:put` cannot be used with a value of type `fn() -> i64`
+    ╭─[ err_closures.pk:24:10 ]
+    │
+ 24 │     :put $f
+    │          ─┬  
+    │           ╰── `:put` cannot be used with a value of type `fn() -> i64`
+────╯
+[E0217] Error: the parameters of a function value are borrowed for reading
+    ╭─[ err_closures.pk:25:25 ]
+    │
+ 25 │     :const bad [:fn mut x:i64 y:i64=2 do={}]
+    │                         ┬  
+    │                         ╰── the parameters of a function value are borrowed for reading
+    │ 
+    │ Help: remove `mut` or `owned`; return a new value instead
+────╯
+[E0217] Error: the parameters of a function value have no default values
+    ╭─[ err_closures.pk:25:37 ]
+    │
+ 25 │     :const bad [:fn mut x:i64 y:i64=2 do={}]
+    │                                     ┬  
+    │                                     ╰── the parameters of a function value have no default values
+────╯
+[E0215] Error: a function value has no name
+    ╭─[ err_closures.pk:26:23 ]
+    │
+ 26 │     :const named [:fn name x:i64 do={}]
+    │                       ──┬─  
+    │                         ╰─── a function value has no name
+    │ 
+    │ Help: write `[:fn x:i64 -> i64 do={ ... }]`, and store it in a variable
+────╯
+[E0321] Error: an error raised by this function value is not caught
+    ╭─[ err_closures.pk:28:11 ]
+    │
+ 28 │     :put [$r]
+    │           ─┬  
+    │            ╰── an error raised by this function value is not caught
+    │ 
+    │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
+────╯
+[E0214] Error: module-level initializers must be constant, and cannot create functions
+    ╭─[ err_closures.pk:31:11 ]
+    │
+ 31 │ :const C [:fn do={}]
+    │           ─┬─  
+    │            ╰─── module-level initializers must be constant, and cannot create functions
+────╯

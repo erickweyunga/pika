@@ -1,0 +1,8 @@
+# Only the standard library declares functions of the runtime.
+:extern lib="pika" {
+    :fn sqrt x:f64 -> f64
+}
+:extern lib="c" {
+    :fn strlen s:Ptr<u8> -> u64
+}
+:put 1

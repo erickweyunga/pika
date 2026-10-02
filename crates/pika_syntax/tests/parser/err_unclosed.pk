@@ -1,0 +1,4 @@
+:fn f do={
+    :if ($x) do={
+        :put [:len "abc"
+    }

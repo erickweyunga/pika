@@ -1,0 +1,31 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_drop_ownership.pk
+---
+const N: String
+fn drop(self: G) -> nothing
+fn drop(self: E) -> nothing
+fn mk() -> E
+fn main() -> nothing
+    s: String
+
+--- diagnostics ---
+[E0412] Error: evaluating the constant `N` would destroy a value of type `G`, which runs `drop`
+    ╭─[ err_drop_ownership.pk:10:8 ]
+    │
+ 10 │ :const N G{name="x"}->name
+    │        ┬  
+    │        ╰── evaluating the constant `N` would destroy a value of type `G`, which runs `drop`
+    │ 
+    │ Help: compute the value at run time instead, in a function
+────╯
+[E0411] Error: cannot move `s` out of a value of type `E`, which implements `Drop`
+    ╭─[ err_drop_ownership.pk:14:16 ]
+    │
+ 14 │         E->one s do={ :put $s }
+    │                ┬  
+    │                ╰── cannot move `s` out of a value of type `E`, which implements `Drop`
+    │ 
+    │ Help: `drop` needs the whole value; store it in a variable and match the variable, which borrows its parts
+────╯

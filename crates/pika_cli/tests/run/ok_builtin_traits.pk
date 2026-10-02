@@ -1,0 +1,164 @@
+# Built-in traits a type implements with its own functions: operators, `Drop`, `Default`
+# and `Display` with `fmt`.
+
+:struct V impl=Add,Sub,Mul,Neg,Copy,Eq,Display {
+    x:i64
+    y:i64
+    :fn add self other:Self -> Self do={ :return V{x=($self->x + $other->x); y=($self->y + $other->y)} }
+    :fn sub self other:Self -> Self do={ :return ($self + -$other) }
+    :fn mul self other:Self -> Self do={ :return V{x=($self->x * $other->x); y=($self->y * $other->y)} }
+    :fn neg self -> Self do={ :return V{x=(-$self->x); y=(-$self->y)} }
+}
+:struct Text impl=Concat,Display {
+    parts:List<String>
+    :fn concat self other:Self -> Self do={ :return Text{parts=($self->parts . $other->parts)} }
+}
+:fn sum<T: Add + Copy> items:List<T> start:T -> T do={
+    :local total $start
+    :foreach item in=$items do={ :set total ($total + $item) }
+    :return $total
+}
+:fn operators do={
+    :const a V{x=1; y=2}
+    :const b V{x=10; y=20}
+    :put ($a + $b)
+    :put ($b - $a)
+    :put ($a * $b)
+    :put (-$a)
+    :put [:sum {$a; $b; $a} V{x=0; y=0}]
+    :put [:sum {1; 2; 3} 0]
+    :const t (Text{parts={"a"}} . Text{parts={"b"; "c"}})
+    :put $t
+    :put ("x" . "y")
+}
+
+:struct Noisy impl=Drop,Eq,Hash,Display {
+    name:String
+    :fn drop mut self do={ :put "drop $($self->name)" }
+}
+:struct Pair impl=Display {
+    a:Noisy
+    b:Noisy
+}
+:enum Slot impl=Drop {
+    empty
+    full item:Noisy
+    :fn drop mut self do={ :put "drop slot" }
+}
+:fn make_noisy owned n:String -> Noisy do={ :return Noisy{name=$n} }
+:fn keep owned n:Noisy -> Noisy do={ :return $n }
+:global g:Noisy Noisy{name="global"}
+:fn destruction do={
+    :local x [:make_noisy "x"]
+    :put "made x"
+    :set x [:make_noisy "x2"]
+    :put "replaced x"
+    {
+        :const p Pair{a=[:make_noisy "a"]; b=[:make_noisy "b"]}
+        :put "pair made"
+    }
+    :put [:len {[:make_noisy "t1"]; [:make_noisy "t2"]}]
+    :const s [Slot->full [:make_noisy "in slot"]]
+    :local l {[:make_noisy "l1"]; [:make_noisy "l2"]}
+    $l->clear
+    :put "cleared"
+    :local m:Map<Noisy, i64> {}
+    :put [$m->insert [:make_noisy "k"] 1]
+    :put [$m->insert [:make_noisy "k"] 2]
+    :const y [:keep [:make_noisy "kept"]]
+    :const o:Noisy? [some [:make_noisy "opt"]]
+    :put "end of main"
+}
+
+:struct Config impl=Default,Display {
+    name:String="app"
+    retries:i64
+    verbose:bool
+    tags:List<String>
+    limit:i64?
+    wait:Duration
+}
+:struct Duo<A, B> impl=Default,Display { first:A; second:B }
+:enum Level impl=Default,Display {
+    low
+    high
+    :fn default -> Self do={ :return Level->high }
+}
+:struct Counter impl=Default,Display {
+    n:i64
+    :fn default -> Self do={ :return Counter{n=100} }
+}
+:fn fresh<T: Default> -> T do={ :return [:default] }
+:fn defaults do={
+    :const c:Config [:default]
+    :put $c
+    :put [:default<Duo<i64, String>>]
+    :const l:Level [:default]
+    :put $l
+    :put [:fresh<Counter>]
+    :put [:fresh<Duo<Level, f64>>]
+    :put [:fresh<List<i64>>]
+    :const ch:char [:default]
+    :const b:Box<i64> [:default]
+    :put "[$[:default<String>]] $($ch as u32) $($b->value)"
+}
+
+:struct Point impl=Display,Copy {
+    x:i64
+    y:i64
+    :fn fmt self mut out:Formatter do={
+        $out->write "("
+        $out->write $self->x
+        $out->write ", "
+        $out->write $self->y
+        $out->write ")"
+    }
+}
+:struct Line impl=Display {
+    from:Point
+    to:Point
+    label:String
+}
+:enum Shape impl=Display {
+    dot at:Point
+    path points:List<Point>
+    :fn fmt self mut out:Formatter do={
+        :match $self {
+            Shape->dot p do={ $out->write "dot at $p" }
+            Shape->path ps do={
+                $out->write "path"
+                :foreach p in=$ps do={ :write_point $out $p }
+            }
+        }
+    }
+}
+:struct Empty impl=Display {
+    :fn fmt self mut out:Formatter do={ $out->write "<empty>" }
+}
+:struct Wrap<T: Display> impl=Display {
+    value:T
+    :fn fmt self mut out:Formatter do={ $out->write "wrap[$($self->value)]" }
+}
+:fn write_point mut out:Formatter p:Point do={ $out->write " -> $p" }
+:fn formatting do={
+    :const p Point{x=1; y=2}
+    :put $p
+    :put "p is $p"
+    :put Line{from=$p; to=Point{x=3; y=4}; label="l"}
+    :put [Shape->dot $p]
+    :put [Shape->path {$p; Point{x=5; y=6}}]
+    :put {$p; $p}
+    :put [some $p]
+    :put Empty{}
+    :put [:tostr Wrap{value=$p}]
+    :put Wrap{value="s"}
+    :const m {"a"=$p}
+    :put $m
+}
+
+:fn main do={
+    :operators
+    :destruction
+    :defaults
+    :formatting
+}

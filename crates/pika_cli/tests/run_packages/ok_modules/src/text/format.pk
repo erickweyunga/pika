@@ -1,0 +1,1 @@
+:fn banner text:String -> String do={ :return "== $text ==" }

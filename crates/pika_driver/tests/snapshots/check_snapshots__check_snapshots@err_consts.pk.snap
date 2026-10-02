@@ -1,0 +1,68 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_consts.pk
+---
+const A: {error}
+const B: {error}
+const C: i64
+const D: {error}
+global G: {error}
+global H: i64
+fn f() -> nothing
+fn defaults(x: i64) -> nothing
+script main() -> nothing
+
+--- diagnostics ---
+[E0310] Error: the value of constant `A` depends on itself
+   ╭─[ err_consts.pk:1:8 ]
+   │
+ 1 │ :const A ($B + 1)
+   │        ┬  
+   │        ╰── the value of constant `A` depends on itself
+───╯
+[E0214] Error: module-level initializers must be constant, and cannot use calls
+   ╭─[ err_consts.pk:3:11 ]
+   │
+ 3 │ :const C [:len "x"]
+   │           ────┬───  
+   │               ╰───── module-level initializers must be constant, and cannot use calls
+   │ 
+   │ Help: use literals, operators, casts and other constants; for a value computed when the program runs, use `:local`
+───╯
+[E0201] Error: cannot find variable `E` in this scope
+   ╭─[ err_consts.pk:5:10 ]
+   │
+ 5 │ :const D $E
+   │          ─┬  
+   │           ╰── cannot find variable `E` in this scope
+   │ 
+   │ Help: module-level initializers are evaluated at compile time and can only use constants; for a value computed when the program runs, use `:local`
+───╯
+[E0215] Error: global `G` needs a type and an initial value
+   ╭─[ err_consts.pk:6:9 ]
+   │
+ 6 │ :global G 0
+   │         ┬  
+   │         ╰── global `G` needs a type and an initial value
+   │ 
+   │ Help: declare it as `:global G:i64 0`
+───╯
+[E0215] Error: global `H` needs a type and an initial value
+   ╭─[ err_consts.pk:7:9 ]
+   │
+ 7 │ :global H:i64
+   │         ┬  
+   │         ╰── global `H` needs a type and an initial value
+   │ 
+   │ Help: declare it as `:global H:i64 0`
+───╯
+[E0214] Error: default values must be constant, and cannot use calls
+   ╭─[ err_consts.pk:8:21 ]
+   │
+ 8 │ :fn defaults x:i64=[:len "x"] do={}
+   │                     ────┬───  
+   │                         ╰───── default values must be constant, and cannot use calls
+   │ 
+   │ Help: use literals, operators, casts and other constants; for a value computed when the program runs, use `:local`
+───╯

@@ -1,0 +1,2 @@
+:local amount 64
+:put (1 << $amount)

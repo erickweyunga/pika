@@ -1,0 +1,246 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_enums.pk
+---
+fn main() -> nothing
+    a: Shape
+    b: Shape
+    c: {error}
+    d: {error}
+    o: i64?
+    p: {error}?
+    q: Box<String>
+    r: {error}
+    u: {error}
+    w: {error}
+    x: {error}
+    r: f64
+    x: i64
+
+--- diagnostics ---
+[E0314] Error: `Shape` cannot implement `Copy`: field `label` of type `String` does not
+   ╭─[ err_enums.pk:3:18 ]
+   │
+ 3 │ :enum Shape impl=Copy,Eq {
+   │                  ──┬─  
+   │                    ╰─── `Shape` cannot implement `Copy`: field `label` of type `String` does not
+   │ 
+ 7 │     named label:String
+   │                 ───┬──  
+   │                    ╰──── not `Copy`
+───╯
+[E0204] Error: the variant `circle` is declared more than once
+   ╭─[ err_enums.pk:6:5 ]
+   │
+ 6 │     circle
+   │     ───┬──  
+   │        ╰──── the variant `circle` is declared more than once
+   │
+   ├─[ err_enums.pk:6:5 ]
+   │
+ 4 │     circle radius:f64
+   │     ───┬──  
+   │        ╰──── first declared here
+───╯
+[E0204] Error: `rect` is both a variant and a function of `Shape`
+   ╭─[ err_enums.pk:9:9 ]
+   │
+ 9 │     :fn rect do={}
+   │         ──┬─  
+   │           ╰─── `rect` is both a variant and a function of `Shape`
+───╯
+[E0215] Error: enum `Empty` has no variants
+    ╭─[ err_enums.pk:12:7 ]
+    │
+ 12 │ :enum Empty {}
+    │       ──┬──  
+    │         ╰──── enum `Empty` has no variants
+    │ 
+    │ Help: an enum lists its variants: `:enum Color { red; green }`
+────╯
+[E0315] Error: type `Chain` contains itself
+    ╭─[ err_enums.pk:14:7 ]
+    │
+ 14 │ :enum Chain {
+    │       ──┬──  
+    │         ╰──── type `Chain` contains itself
+    │ 
+    │ Help: through the field `tail`; a value cannot contain itself, so store it in a `Box`, as in `Box<Chain>`
+────╯
+[E0315] Error: type `Tree` contains itself
+    ╭─[ err_enums.pk:19:7 ]
+    │
+ 19 │ :enum Tree {
+    │       ──┬─  
+    │         ╰─── type `Tree` contains itself
+    │ 
+    │ Help: through the field `right`; a value cannot contain itself, so store it in a `Box`, as in `Box<Tree>`
+────╯
+[E0305] Error: `Shape->circle` takes 1 argument, but 2 were given
+    ╭─[ err_enums.pk:25:33 ]
+    │
+ 25 │     :local a [Shape->circle 1.0 2.0]
+    │                                 ─┬─  
+    │                                  ╰─── `Shape->circle` takes 1 argument, but 2 were given
+────╯
+[E0219] Error: the variant `Shape->rect` has fields
+    ╭─[ err_enums.pk:26:14 ]
+    │
+ 26 │     :local b Shape->rect
+    │              ─────┬─────  
+    │                   ╰─────── the variant `Shape->rect` has fields
+    │ 
+    │ Help: construct it with its fields: `[Shape->rect $width $height]`
+────╯
+[E0219] Error: `Shape` has no variant named `triangle`
+    ╭─[ err_enums.pk:27:21 ]
+    │
+ 27 │     :local c Shape->triangle
+    │                     ────┬───  
+    │                         ╰───── `Shape` has no variant named `triangle`
+────╯
+[E0219] Error: `Shape` is an enum, not a struct
+    ╭─[ err_enums.pk:28:14 ]
+    │
+ 28 │     :local d Shape{radius=1.0}
+    │              ────────┬────────  
+    │                      ╰────────── `Shape` is an enum, not a struct
+    │ 
+    │ Help: build a value of a variant: `Shape->name` or `[Shape->name ...]`
+────╯
+[E0313] Error: `Shape` has no fields
+    ╭─[ err_enums.pk:29:14 ]
+    │
+ 29 │     :put $a->radius
+    │              ───┬──  
+    │                 ╰──── `Shape` has no fields
+    │ 
+    │ Help: read the fields of a variant with `:match`
+────╯
+[E0301] Error: mismatched types: expected `i64`, found `String`
+    ╭─[ err_enums.pk:30:25 ]
+    │
+ 30 │     :local o:i64? [some "text"]
+    │                         ───┬──  
+    │                            ╰──── expected `i64`
+────╯
+[E0217] Error: `some` takes exactly one value
+    ╭─[ err_enums.pk:31:15 ]
+    │
+ 31 │     :local p [some]
+    │               ──┬─  
+    │                 ╰─── `some` takes exactly one value
+    │ 
+    │ Help: write `[some $value]`
+────╯
+[E0301] Error: mismatched types: expected `String`, found `{integer}`
+    ╭─[ err_enums.pk:32:36 ]
+    │
+ 32 │     :local q:Box<String> [Box->new 1]
+    │                                    ┬  
+    │                                    ╰── expected `String`
+────╯
+[E0313] Error: `Box` has no field named `inner`
+    ╭─[ err_enums.pk:33:14 ]
+    │
+ 33 │     :put $q->inner
+    │              ──┬──  
+    │                ╰──── `Box` has no field named `inner`
+    │ 
+    │ Help: the boxed value is `$b->value`
+────╯
+[E0219] Error: `Box` has no function named `open`
+    ╭─[ err_enums.pk:34:20 ]
+    │
+ 34 │     :local r [Box->open 1]
+    │                    ──┬─  
+    │                      ╰─── `Box` has no function named `open`
+    │ 
+    │ Help: create a box with `[Box->new $value]`
+────╯
+[E0302] Error: cannot infer the type of `u`
+    ╭─[ err_enums.pk:35:12 ]
+    │
+ 35 │     :local u none
+    │            ┬  
+    │            ╰── cannot infer the type of `u`
+    │ 
+    │ Help: add a type annotation, as in `:local u:i64`
+────╯
+[E0219] Error: `Shape->circle` has 1 field, but the pattern has 0
+    ╭─[ err_enums.pk:37:9 ]
+    │
+ 37 │         Shape->circle do={}
+    │         ──────┬──────  
+    │               ╰──────── `Shape->circle` has 1 field, but the pattern has 0
+    │ 
+    │ Help: give one pattern per field, in order; `_` matches any value
+────╯
+[E0219] Error: `Shape->rect` has 2 fields, but the pattern has 1
+    ╭─[ err_enums.pk:38:9 ]
+    │
+ 38 │         Shape->rect w do={}
+    │         ──────┬──────  
+    │               ╰──────── `Shape->rect` has 2 fields, but the pattern has 1
+    │ 
+    │ Help: give one pattern per field, in order; `_` matches any value
+────╯
+[E0219] Error: `Shape` has no variant named `square`
+    ╭─[ err_enums.pk:39:16 ]
+    │
+ 39 │         Shape->square do={}
+    │                ───┬──  
+    │                   ╰──── `Shape` has no variant named `square`
+────╯
+[E0220] Error: floats and durations cannot be used as patterns
+    ╭─[ err_enums.pk:40:9 ]
+    │
+ 40 │         1.5 do={}
+    │         ─┬─  
+    │          ╰─── floats and durations cannot be used as patterns
+    │ 
+    │ Help: bind the value and compare it in a guard: `x if=($x < 1.5)`
+────╯
+[E0301] Error: this pattern matches an option, but the value is `Shape`
+    ╭─[ err_enums.pk:41:9 ]
+    │
+ 41 │         some x do={}
+    │         ───┬──  
+    │            ╰──── this pattern matches an option, but the value is `Shape`
+────╯
+[E0316] Error: no arm of this `:match` matches `Shape->circle _`
+    ╭─[ err_enums.pk:43:12 ]
+    │
+ 43 │     :match $a {
+    │            ─┬  
+    │             ╰── a value of type `Shape`, which can be `Shape->circle _`
+    │ 
+    │ Help: add an arm for `Shape->circle _`, or `_ do={...}` for every other value
+────╯
+[E0301] Error: mismatched types: expected `bool`, found `f64`
+    ╭─[ err_enums.pk:44:29 ]
+    │
+ 44 │         Shape->circle r if=($r) do={}
+    │                             ─┬  
+    │                              ╰── expected `bool`
+────╯
+[E0316] Error: no arm of this `:match` matches `none`
+    ╭─[ err_enums.pk:46:12 ]
+    │
+ 46 │     :match $o {
+    │            ─┬  
+    │             ╰── a value of type `i64?`, which can be `none`
+    │ 
+    │ Help: add an arm for `none`, or `_ do={...}` for every other value
+────╯
+[W0102] Warning: unreachable pattern
+    ╭─[ err_enums.pk:48:9 ]
+    │
+ 48 │         some 1 do={}
+    │         ───┬──  
+    │            ╰──── unreachable pattern
+    │ 
+    │ Help: the arms before this one match every value it matches
+────╯

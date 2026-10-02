@@ -1,0 +1,22 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/unterminated_string.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ StringStart 5..6 "\""
++StringText 6..26 "never closed\n:put 1\n"
+ Eof 26..26 ""
+
+--- diagnostics ---
+[E0002] Error: unterminated string
+   ╭─[ unterminated_string.pk:1:6 ]
+   │
+ 1 │ :put "never closed
+   │      ┬  
+   │      ╰── string starts here
+   │ 
+   │ Help: add a closing `"`
+───╯

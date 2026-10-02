@@ -1,0 +1,4 @@
+:put "bad \q escape" "\x80" "\u{110000}" "\u41"
+:put "cost: $5" "trailing $"
+:put '' 'ab' '\q'
+:put "$(a]" "after"

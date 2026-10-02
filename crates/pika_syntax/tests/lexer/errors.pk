@@ -1,0 +1,6 @@
+:put ($a == $b)
+:put 1 \ 2
+:put $ x
+:put café naïve
+:put @ ` 😀
+:put "a"

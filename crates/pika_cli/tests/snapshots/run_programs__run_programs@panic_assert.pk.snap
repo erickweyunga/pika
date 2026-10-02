@@ -1,0 +1,10 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_assert.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+panic: assertion failed
+  at panic_assert.pk:1:1

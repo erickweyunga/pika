@@ -1,0 +1,36 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/error_uncaught.pk
+---
+exit: 1
+--- stdout ---
+drop inner
+drop step 0
+drop inner
+drop step 1
+drop middle
+{0; 10}
+drop inner
+drop step 0
+drop inner
+drop step 1
+drop inner
+drop step 2
+drop inner
+drop step 3
+drop middle
+caught: too big: 3
+drop inner
+drop step 0
+drop inner
+drop step 1
+drop inner
+drop step 2
+drop inner
+drop step 3
+drop middle
+drop main
+--- stderr ---
+error: too big: 3
+  at error_uncaught.pk:9:23

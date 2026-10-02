@@ -1,0 +1,19 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis).replace(&prefix, \"\")"
+input_file: crates/pika_driver/tests/check_packages/ok_modules/pika.toml
+---
+module /app
+fn area(self: Square) -> f64
+fn total<T: Area>(shapes: List<T>) -> f64
+    sum: f64
+    shape: T
+fn main() -> nothing
+    p: Point
+    q: Point
+    c: Color
+
+module /app/util
+const limit: i64
+fn double(x: i64) -> i64
+fn _times(x: i64, n: i64) -> i64

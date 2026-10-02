@@ -1,0 +1,11 @@
+:put "plain"
+:put "escapes \" \\ \$ \n \r \t \0 \' \x41 \u{1F600}"
+:put "Hello $name, 5x6 = $($a * $b), len = $[:len $items]"
+:put "nested $( "inner $x" ) and $[:f "a$[:g "b"]c"] done"
+:put "parens $( ($a + (1)) ) brackets $[:f [:g]]"
+:put "multi
+line" "continued \
+    here"
+:put r"raw \n $x" r#"say "hi""# r##"a "# b"##
+:put 'a' '\n' '\'' '\u{e9}' 'é'
+:put "unicode é 😀 in text"

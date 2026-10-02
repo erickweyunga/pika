@@ -1,0 +1,57 @@
+:fn main do={
+    # Literals default to i64 and f64 unless the context says otherwise.
+    :const a 1
+    :const b 2.5
+    :const c:u8 200
+    :const d:f32 1.5
+    :const e (-128 as i8)
+    :const small:i8 -128
+
+    # A variable without a value takes its type from the first assignment.
+    :local later
+    :set later 42
+    :local text:String
+    :set text "set later"
+
+    # Operators.
+    :const sum ($c + 55)
+    :const bits ((0xF0 & 0x3C) | (1 << 4) ^ ~0)
+    :const shifted ($c >> 2)
+    :const ratio ($b * 2.0 / 4.0)
+    :const remainder (10 % 3)
+    :const negative (-$b)
+    :const words ("a" . "b" . $text)
+    :const found ("ell" in "hello")
+    :const ordered ("a" < "b" and 'x' != 'y' or 1.5 >= 2.5)
+    :const span (1m30s + 500ms - 10s)
+    :const later_than (2h > 90m)
+    :const code ('A' as u32)
+    :const widened ($c as i64)
+    :const real ($a as f64)
+
+    # Built-in commands.
+    :const length [:len "hello"]
+    :const string [:tostr 3.5]
+    :const kind [:typeof $sum]
+    :assert ($length = 5) "length should be 5"
+    :assert (true)
+    :put "$a $b $c $d $e $small $later $sum $bits $shifted $ratio $remainder $negative"
+    :put "$words $found $ordered $span $later_than $code $widened $real $string $kind"
+
+    # Control flow.
+    :local n 10
+    :while ($n > 0) do={
+        :if ($n = 5) do={ :break }
+        :set n ($n - 1)
+        :continue
+    }
+    :do {
+        :set n ($n + 1)
+    } while=($n < 10)
+    :for i from=10 until=0 step=-2 do={ :put $i }
+    :for j from=(0 as u8) to=255 do={ :put $j }
+    {
+        :const n "shadowed in a nested scope"
+        :put $n
+    }
+}

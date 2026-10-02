@@ -1,0 +1,113 @@
+# Structs: literals, defaults, fields, methods, derives and ownership of fields.
+
+:struct Point impl=Copy,Eq,Ord,Display {
+    x:f64
+    y:f64
+
+    :fn new x:f64 y:f64 -> Self do={
+        :return Self{x=$x; y=$y}
+    }
+
+    :fn dist self other:Point -> f64 do={
+        :const dx ($self->x - $other->x)
+        :const dy ($self->y - $other->y)
+        :return (($dx * $dx) + ($dy * $dy))
+    }
+
+    :fn shift mut self by:f64 do={
+        :set ($self->x) ($self->x + $by)
+    }
+}
+
+:struct Person impl=Clone,Eq,Ord,Display {
+    name:String
+    age:u8=30
+    tag:char='p'
+    home:Point=Point{x=1.0; y=2.0}
+
+    :fn greet self -> String do={
+        :return "hi $($self->name)"
+    }
+
+    :fn rename mut self owned name:String do={
+        :set ($self->name) $name
+    }
+
+    :fn into_name owned self -> String do={
+        :return [$self->name->clone]
+    }
+}
+
+:struct Pair impl=Clone,Display {
+    left:Person
+    right:Person
+}
+
+:struct Empty impl=Copy,Eq,Display {}
+
+:const ORIGIN Point{x=0.0; y=0.0}
+:global counter:Person Person{name="global"; age=1}
+
+:fn older p:Person -> u8 do={
+    :return $p->age
+}
+
+:fn birthday mut p:Person do={
+    :set ($p->age) ($p->age + 1)
+}
+
+:fn main do={
+    :local p [Point->new 3.0 4.0]
+    :put $p
+    :put [$p->dist $ORIGIN]
+    $p->shift 1.5
+    :put $p->x
+    :local q $p
+    :set ($q->y) 10.0
+    :put "p=$p q=$q"
+    :put ($p = $q)
+    :put ($p < $q)
+    :put ($ORIGIN <= $p)
+
+    :local alice Person{name="Alice"}
+    :put $alice
+    :put [$alice->greet]
+    :put [:older $alice]
+    :birthday $alice
+    :put $alice->age
+    $alice->rename "Alicia"
+    :put $alice->name
+    :put [:len $alice->name]
+
+    :local bob [$alice->clone]
+    :set ($bob->name) "Bob"
+    :set ($bob->home->x) 9.5
+    :put "$alice / $bob"
+    :put ($alice = $bob)
+    :put ($alice < $bob)
+
+    :const pair Pair{left=$alice; right=$bob}
+    :put $pair
+    :put $pair->right->home
+    :local copy [$pair->clone]
+    :set ($copy->left->name) "Carol"
+    :put "$($pair->left->name) $($copy->left->name)"
+
+    :const left [$pair->left->clone]
+    :const name [$left->into_name]
+    :put $name
+
+    :put Empty{}
+    :put (Empty{} = Empty{})
+
+    :put $counter
+    :set ($counter->name) "changed"
+    :set ($counter->age) ($counter->age + 1)
+    :put $counter
+
+    :const nan Point{x=(0.0 / 0.0); y=1.0}
+    :put ($nan = $nan)
+    :put ($nan != $nan)
+    :put ($nan < $p)
+    :put Person{name="quote\"d"; tag='\''}
+}

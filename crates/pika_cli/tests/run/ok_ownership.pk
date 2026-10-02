@@ -1,0 +1,66 @@
+# Moves, conditional moves (drop flags) and early exits with owned strings in scope.
+:fn consume owned text:String -> i64 do={ :return [:len $text] }
+
+:fn pick flag:bool -> String do={
+    :const a "first"
+    :const b "second"
+    :if ($flag) do={ :return $a }
+    :return $b
+}
+
+:fn maybe_consume flag:bool do={
+    :const text "maybe"
+    :if ($flag) do={ :put "consumed $[:consume $text]" }
+    :put "end of maybe_consume"
+}
+
+:fn early n:i64 -> String do={
+    :const outer "outer"
+    {
+        :const inner "inner"
+        :if ($n > 0) do={ :return "$outer/$inner/$n" }
+    }
+    :return $outer
+}
+
+:fn loops do={
+    :const kept "kept"
+    :for i from=1 to=10 do={
+        :const temp "temp $i"
+        :if ($i = 2) do={ :continue }
+        :if ($i = 4) do={ :break }
+        :put $temp
+    }
+    :local n 0
+    :while (true) do={
+        :const again "again"
+        :set n ($n + 1)
+        :if ($n = 3) do={ :break }
+    }
+    :put "$kept after $n"
+}
+
+:fn main do={
+    :put [:pick true]
+    :put [:pick false]
+    :maybe_consume true
+    :maybe_consume false
+    :put [:early 1]
+    :put [:early 0]
+    :loops
+    :local moved "value"
+    :const other $moved
+    :set moved "reassigned after the move"
+    :put "$moved / $other"
+    :local swap_a "A"
+    :local swap_b "B"
+    :const tmp $swap_a
+    :set swap_a $swap_b
+    :set swap_b $tmp
+    :put "$swap_a$swap_b"
+    :local self_assign "self"
+    :set self_assign $self_assign
+    :put $self_assign
+    :put [:consume "a temporary"]
+    :put "length of a temporary: $[:len ("abc" . "def")]"
+}

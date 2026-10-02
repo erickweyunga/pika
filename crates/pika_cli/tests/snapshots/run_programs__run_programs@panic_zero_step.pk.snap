@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_zero_step.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `step` is never modified
+   ╭─[ panic_zero_step.pk:1:8 ]
+   │
+ 1 │ :local step 0
+   │        ──┬─  
+   │          ╰─── variable `step` is never modified
+   │ 
+   │ Help: declare it with `:const step`
+───╯
+panic: the step of a `:for` loop is zero
+  at panic_zero_step.pk:2:1

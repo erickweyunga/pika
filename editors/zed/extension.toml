@@ -1,0 +1,14 @@
+id = "pika"
+name = "Pika"
+version = "0.1.0"
+schema_version = 1
+authors = ["EricKweyunga <176437930+erickweyunga@users.noreply.github.com>"]
+description = "Pika language support: syntax highlighting, outline, brackets, indentation and run tasks"
+repository = "https://github.com/erickweyunga/pika"
+
+# The grammar lives in this repository, in `editors/tree-sitter-pika`. Zed checks out `rev` and
+# compiles the generated `src/parser.c` and `src/scanner.c` it contains.
+[grammars.pika]
+repository = "https://github.com/erickweyunga/pika"
+rev = "COMMIT_SHA"
+path = "editors/tree-sitter-pika"

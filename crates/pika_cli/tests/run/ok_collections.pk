@@ -1,0 +1,113 @@
+# Lists, maps and sets: literals, indexing, methods, `:foreach`, comparison and display.
+
+:struct Person impl=Clone,Eq,Display {
+    name:String
+    age:u8
+    tags:List<String>
+}
+
+:enum Color impl=Copy,Eq,Hash,Display {
+    red
+    green
+    custom code:u32
+}
+
+:global log:List<String> {}
+
+:fn total xs:List<i64> -> i64 do={
+    :local sum 0
+    :foreach x in=$xs do={ :set sum ($sum + $x) }
+    :return $sum
+}
+
+:fn record owned message:String do={
+    $log->push $message
+}
+
+:fn first_even xs:List<i64> -> i64? do={
+    :foreach x in=$xs do={
+        :if (($x % 2) = 0) do={ :return $x }
+    }
+    :return none
+}
+
+:fn bump mut n:i64 -> i64 do={
+    :set n ($n + 1)
+    :return $n
+}
+
+:fn grow mut n:i64 do={ :set n ($n * 10) }
+
+:fn main do={
+    # Lists.
+    :local xs {3; 1; 2}
+    $xs->push 10
+    :put "$xs len=$[:len $xs] first=$($xs->0) last=$($xs->3) total=$[:total $xs]"
+    :set ($xs->1) 7
+    :const popped [$xs->pop]
+    :put "$xs popped=$popped"
+    $xs->insert 0 99
+    :const removed [$xs->remove 1]
+    :put "$xs removed=$removed get=$[$xs->get 1] missing=$[$xs->get 9] has=$(7 in $xs)"
+    :foreach i,x in=$xs do={ :put "  $i: $x" }
+    :foreach mut x in=$xs do={ :set x ($x * 2) }
+    :put "doubled $xs, first even $[:first_even $xs]"
+    :put ({1; 2} < {1; 2; 0})
+    :put ({1; 3} > {1; 2; 9})
+    :put ($xs . {1; 2})
+    :const inferred {"x"; "y"}
+    :put [$inferred->clone]
+
+    # Lists of structs and nested collections.
+    :local people:List<Person> {}
+    $people->push Person{name="Ada"; age=36; tags={"math"}}
+    $people->push Person{name="Alan"; age=41; tags={}}
+    :set ($people->1->age) 42
+    $people->0->tags->push "poetry"
+    :foreach p in=$people do={ :put "  $($p->name) $($p->age) $($p->tags)" }
+    :local copy [$people->clone]
+    :set ($copy->0->name) "Augusta"
+    :put "$($people->0->name) $($copy->0->name) $($people = $copy)"
+    :local grid:List<List<i64>> {{1; 2}; {3}}
+    $grid->1->push 4
+    :put $grid
+    :grow $grid->0->1
+    :put $grid
+
+    # Maps.
+    :local ages {"ada"=36; "alan"=41}
+    :set ($ages->"grace") 85
+    :set ($ages->"ada") 37
+    :put "$ages $($ages->"alan") $[$ages->get "bob"] $("ada" in $ages)"
+    :put "$[$ages->insert "bob" 1] $[$ages->insert "bob" 2] $[$ages->remove "alan"] $[$ages->remove "zed"]"
+    :put "$[$ages->keys] $[$ages->values] $[$ages->len] $[$ages->is_empty]"
+    :foreach k,v in=$ages do={ :put "  $k=$v" }
+    :foreach mut k,v in=$ages do={ :set v ($v + 1) }
+    :put $ages
+    :local groups:Map<String, List<String>> {}
+    :set ($groups->"a") {"ada"}
+    $groups->"a"->push "alan"
+    :put $groups
+    :put (Map<String, i64>{"a"=1; "b"=2} = Map<String, i64>{"b"=2; "a"=1})
+    :put ({"a"=1} = {"a"=2})
+
+    # Sets, with enum keys.
+    :local colors:Set<Color> {}
+    :put "$[$colors->insert Color->red] $[$colors->insert Color->red] $[$colors->insert [Color->custom 7]]"
+    :put "$colors $(Color->red in $colors) $(Color->green in $colors) $[$colors->remove Color->red] $colors"
+    :const words Set<String>{"b"; "a"; "b"}
+    :foreach w in=$words do={ :put "  $w" }
+
+    # Left-to-right evaluation.
+    :local n 1
+    :put "$n $[:bump $n] $n"
+    :put "$xs $[$xs->pop] $xs"
+
+    # Globals and clearing.
+    :record "one"
+    :record "two"
+    :put $log
+    $xs->clear
+    $ages->clear
+    :put "$xs $ages $[$xs->is_empty]"
+}

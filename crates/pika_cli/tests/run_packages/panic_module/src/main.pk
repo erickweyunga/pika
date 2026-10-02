@@ -1,0 +1,5 @@
+# A panic in a library: its report names the library's file.
+:fn main do={
+    :put [/checks/at {1; 2; 3} 1]
+    :put [/checks/at {1; 2; 3} 5]
+}

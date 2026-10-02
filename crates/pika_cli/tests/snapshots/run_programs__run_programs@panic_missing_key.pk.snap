@@ -1,0 +1,12 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+assertion_line: 61
+expression: native
+input_file: crates/pika_cli/tests/run/panic_missing_key.pk
+---
+exit: 101
+--- stdout ---
+1
+--- stderr ---
+panic: key not found in the map
+  at panic_missing_key.pk:4:14

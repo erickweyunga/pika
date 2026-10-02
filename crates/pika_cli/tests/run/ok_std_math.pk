@@ -1,0 +1,81 @@
+# /std/math, /std/math/bits and /std/random.
+
+:use /std/math
+:use /std/math/bits
+:use /std/random/Random
+
+:fn floats do={
+    :put "$(/math/phi) $(/math/sqrt2) $(/math/ln2) $(/math/ln10) $(/math/epsilon)"
+    :put "$(/math/inf) $(/math/neg_inf) $([/math/is_nan /math/nan]) $(/math/max_float) $(/math/min_positive)"
+    :put "$([/math/is_infinite /math/inf]) $([/math/is_finite 1.0]) $([/math/is_finite /math/nan])"
+    :put "$([/math/signum -2.5]) $([/math/signum 0.0]) $([/math/fract -2.5]) $([/math/copysign 3.0 -1.0])"
+    :put "$([/math/round_even 2.5]) $([/math/round_even 3.5]) $([/math/round 2.5])"
+    :put "$([/math/exp2 10.0]) $([/math/log 8.0 2.0]) $([/math/ln_1p 0.0]) $([/math/exp_m1 0.0])"
+    :put "$([/math/sinh 0.0]) $([/math/cosh 0.0]) $([/math/tanh 0.0]) $([/math/atanh 0.0])"
+    :put "$([/math/to_degrees /math/pi]) $([/math/to_radians 180.0])"
+    :put "$([/math/gamma 5.0]) $([/math/approx_eq [/math/ln_gamma 10.0] 12.801827480081469 1e-12])"
+    :put "$([/math/erf 0.0]) $([/math/erfc 0.0]) $([/math/mul_add 2.0 3.0 4.0])"
+    :put "$([/math/next_up 1.0]) $(([/math/next_down 1.0]) < 1.0)"
+    :put "$([/math/to_bits 1.0]) $([/math/from_bits 4611686018427387904])"
+}
+
+:fn integers do={
+    :put "$(/math/max_int) $(/math/min_int)"
+    :put "$([/math/gcd 48 -18]) $([/math/gcd 0 0]) $([/math/lcm 4 6]) $([/math/lcm 0 5])"
+    :put "$([/math/isqrt 0]) $([/math/isqrt 15]) $([/math/isqrt 16]) $([/math/isqrt 9223372036854775807])"
+    :put "$([/math/ilog 1000 10]) $([/math/ilog 1023 2]) $([/math/ilog 1 7])"
+    :put "$([/math/is_even -4]) $([/math/is_odd 7]) $([/math/sign -9]) $([/math/sign 0.0])"
+    :put "$([/math/div_euclid -7 2]) $([/math/rem_euclid -7 2]) $([/math/div_euclid 7 -2]) $([/math/rem_euclid 7 -2])"
+    :put "$([/math/checked_add /math/max_int 1]) $([/math/checked_sub 5 3]) $([/math/checked_mul /math/min_int -1])"
+    :put "$([/math/checked_div 7 0]) $([/math/checked_div /math/min_int -1]) $([/math/checked_rem 7 3])"
+    :put "$([/math/wrapping_add /math/max_int 1]) $([/math/wrapping_sub /math/min_int 1]) $([/math/wrapping_mul 4611686018427387904 4])"
+    :put "$([/math/saturating_add /math/max_int 5]) $([/math/saturating_sub /math/min_int 5]) $([/math/saturating_mul /math/min_int 2]) $([/math/saturating_mul -3 /math/min_int])"
+    :put "$([/math/abs -7]) $([/math/clamp -3 0 10]) $([/math/pow_int 2 62])"
+}
+
+:fn bit_ops do={
+    :put "$([/bits/count_ones 255]) $([/bits/count_ones -1]) $([/bits/count_zeros 0])"
+    :put "$([/bits/leading_zeros 1]) $([/bits/trailing_zeros 8]) $([/bits/leading_zeros 0])"
+    :put "$([/bits/rotate_left 1 63]) $([/bits/rotate_right 1 1]) $([/bits/rotate_left 3 64])"
+    :put "$([/bits/reverse_bits 1]) $([/bits/swap_bytes 1])"
+    :put "$([/bits/is_power_of_two 64]) $([/bits/is_power_of_two 0]) $([/bits/is_power_of_two 6])"
+    :put "$([/bits/next_power_of_two 0]) $([/bits/next_power_of_two 17]) $([/bits/next_power_of_two /math/max_int])"
+}
+
+:fn randomness do={
+    :local a [Random->seeded 42]
+    :local b [Random->seeded 42]
+    :put ([$a->next] = [$b->next])
+    :put [$a->next]
+    :local counts {0; 0; 0}
+    :for i from=1 to=3000 do={
+        :const k [$a->below 3]
+        :set ($counts->$k) ($counts->$k + 1)
+    }
+    :put [/std/collections/all $counts [:fn n:i64 -> bool do={ :return (($n > 900) and ($n < 1100)) }]]
+    :local in_range true
+    :for i from=1 to=1000 do={
+        :const n [$a->between -5 5]
+        :const f [$a->float]
+        :if (($n < -5) or ($n > 5) or ($f < 0.0) or ($f >= 1.0)) do={ :set in_range false }
+    }
+    :put $in_range
+    :local deck {1; 2; 3; 4; 5; 6; 7; 8}
+    $a->shuffle $deck
+    :put ([/std/collections/sorted $deck] = {1; 2; 3; 4; 5; 6; 7; 8})
+    :const picked [$a->choice $deck]
+    :put [$picked->is_some]
+    :const empty:List<i64> {}
+    :put [$a->choice $empty]
+    :local fresh [Random->new]
+    :const n [$fresh->between 1 6]
+    :put (($n >= 1) and ($n <= 6))
+    :put "$([$a->bool]) $([$a->chance 0.0]) $([$a->chance 1.0])"
+}
+
+:fn main do={
+    :floats
+    :integers
+    :bit_ops
+    :randomness
+}

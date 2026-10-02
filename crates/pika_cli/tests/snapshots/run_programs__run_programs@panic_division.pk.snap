@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_division.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `zero` is never modified
+   ╭─[ panic_division.pk:1:8 ]
+   │
+ 1 │ :local zero 0
+   │        ──┬─  
+   │          ╰─── variable `zero` is never modified
+   │ 
+   │ Help: declare it with `:const zero`
+───╯
+panic: division by zero
+  at panic_division.pk:2:7

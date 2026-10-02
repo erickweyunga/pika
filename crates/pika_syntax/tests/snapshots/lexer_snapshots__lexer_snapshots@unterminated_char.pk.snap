@@ -1,0 +1,35 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/unterminated_char.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ Char 5..7 "'a"
++Newline 7..8 "\n"
+ Colon 8..9 ":"
++Ident 9..12 "put"
+ Whitespace 12..13 " "
+ Char 13..15 "'b"
+ Eof 15..15 ""
+
+--- diagnostics ---
+[E0003] Error: unterminated character literal
+   ╭─[ unterminated_char.pk:1:6 ]
+   │
+ 1 │ :put 'a
+   │      ─┬  
+   │       ╰── unterminated character literal
+   │ 
+   │ Help: add a closing `'`
+───╯
+[E0003] Error: unterminated character literal
+   ╭─[ unterminated_char.pk:2:6 ]
+   │
+ 2 │ :put 'b
+   │      ─┬  
+   │       ╰── unterminated character literal
+   │ 
+   │ Help: add a closing `'`
+───╯

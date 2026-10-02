@@ -1,0 +1,13 @@
+[package]
+name = "pika_runtime"
+description = "Runtime support for compiled Pika programs: output, formatting and panics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+libm.workspace = true
+
+[lints]
+workspace = true

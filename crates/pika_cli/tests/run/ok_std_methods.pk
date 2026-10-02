@@ -1,0 +1,83 @@
+# Methods of built-in types, which the standard library declares with `:impl`: on strings,
+# characters, numbers, lists, maps and options, chained, generic, and associated functions.
+
+:struct Point impl=Clone,Eq,Ord,Display {
+    x:i64
+    y:i64
+}
+
+:fn strings raises do={
+    :const line "  name = Pika, kind = language  "
+    :put [[$line->trim]->split ", "]
+    :foreach part in=[[$line->trim]->split ", "] do={
+        :match [$part->split_once " = "] {
+            some pair do={ :put "$([$pair->before->to_upper]) -> $($pair->after)" }
+            none do={ :put "?" }
+        }
+    }
+    :const word "Straße"
+    :put "$([$word->len]) $([$word->char_count]) $([$word->to_lower]) $([$word->reverse]) $([$word->is_empty])"
+    :put "$([$word->starts_with "Str"]) $([$word->find "ß"]) $([$word->contains "aß"]) $([$word->count "S"])"
+    :put "[$([$word->pad_start 8 '.'])] $([[$word->chars]->len]) $([$word->replace "ß" "ss"])"
+    :put ([["42"->trim]->parse_int] + 1)
+    :put [String->from_chars {'o'; 'k'}]
+    :put [[{"b"; "a"; "c"}->sorted]->join "/"]
+}
+
+:fn numbers do={
+    :const x 2.0
+    :put "$([$x->sqrt]) $([$x->pow 10.0]) $([[$x->ln]->exp]) $([(-$x)->abs]) $([$x->to_fixed 3])"
+    :put "$([(1.0 / 3.0)->to_fixed 4]) $([12345.678->to_exp 2])"
+    :put [f64->from_bits 4613937818241073152]
+    :const n -17
+    :put "$([$n->abs]) $([$n->rem_euclid 5]) $([$n->pow 2]) $([$n->checked_mul 9223372036854775807]) $([$n->to_string_base 16])"
+    :put "$([255->count_ones]) $([1->leading_zeros]) $([64->is_power_of_two]) $([$n->clamp 0 10])"
+    :put "$([48->gcd 18]) $([48->isqrt]) $([7->is_odd])"
+    :const c 'q'
+    :put "$([$c->to_upper]) $([$c->is_alphabetic]) $(['7'->to_digit]) $([char->from_code 65])"
+}
+
+:fn lists do={
+    :local items {5; 3; 8; 1}
+    $items->sort
+    :put "$items $([$items->binary_search 8]) $([$items->sum]) $([$items->max]) $([$items->first])"
+    :put [$items->map [:fn n:i64 -> String do={ :return "<$n>" }]]
+    :put [$items->filter [:fn n:i64 -> bool do={ :return ($n > 2) }]]
+    :put [$items->fold 1 [:fn product:i64 n:i64 -> i64 do={ :return ($product * $n) }]]
+    $items->reverse
+    :put "$items $([$items->index_of 3]) $([$items->any [:fn n:i64 -> bool do={ :return ($n = 8) }]])"
+    :local points {Point{x=2; y=1}; Point{x=1; y=5}; Point{x=1; y=2}}
+    $points->sort
+    :put $points
+    $points->sort_by_key [:fn p:Point -> i64 do={ :return $p->y }]
+    :put [$points->map [:fn p:Point -> i64 do={ :return $p->y }]]
+    :put [[{1; 2; 2; 3; 3; 3}->frequencies]->entries]
+    :put [{{1; 2}; {3}}->flatten]
+    :put [List->range 1 4]
+    :put [List->repeat "x" 3]
+    :put [[{1; 2; 3}->zip {"a"; "b"}]->len]
+    :const ages {"ada"=36}
+    :put "$([$ages->get_or "ada" 0]) $([$ages->get_or "bob" 0])"
+}
+
+:fn options raises do={
+    :const some_n:i64? 5
+    :const no_n:i64? none
+    :put "$([$some_n->map [:fn n:i64 -> i64 do={ :return ($n * 2) }]]) $([$no_n->map [:fn n:i64 -> i64 do={ :return ($n * 2) }]])"
+    :put "$([$some_n->is_some_and [:fn n:i64 -> bool do={ :return ($n > 3) }]]) $([$no_n->is_none_or [:fn n:i64 -> bool do={ :return false }]])"
+    :put [$some_n->and_then [:fn n:i64 -> String? do={ :return "n=$n" }]]
+    :const missing:String? none
+    :put [$missing->otherwise "fallback"]
+    :const absent:String? none
+    :put [$absent->unwrap_or_else [:fn -> String do={ :return "computed" }]]
+    :put [[{"k"="v"}->get "k"]->expect "a key"]
+    :const nothing_here:String? none
+    :onerror e in={ :put [$nothing_here->or_error "no value"] } do={ :put "error: $e" }
+}
+
+:fn main raises do={
+    :strings
+    :numbers
+    :lists
+    :options
+}

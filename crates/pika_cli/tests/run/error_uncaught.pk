@@ -1,0 +1,27 @@
+# An error that `main` raises: values are destroyed on the way out, then the error is
+# reported with its location, and the program exits with status 1.
+:struct Guard impl=Drop {
+    name:String
+    :fn drop mut self do={ :put "drop $($self->name)" }
+}
+:fn inner n:i64 -> i64 raises do={
+    :const g Guard{name="inner"}
+    :if ($n > 2) do={ :error "too big: $n" }
+    :return ($n * 10)
+}
+:fn middle n:i64 -> List<i64> raises do={
+    :local out:List<i64> {}
+    :const g Guard{name="middle"}
+    :for i from=0 to=$n do={
+        :const step Guard{name="step $i"}
+        $out->push [:inner $i]
+    }
+    :return $out
+}
+:fn main raises do={
+    :const g Guard{name="main"}
+    :put [:middle 1]
+    :onerror e in={ :put [:middle 5] } do={ :put "caught: $e" }
+    :put [:middle 3]
+    :put "unreachable"
+}

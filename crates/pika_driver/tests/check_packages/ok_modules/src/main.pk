@@ -1,0 +1,31 @@
+:use /shapes/geometry
+:use /shapes/geometry/Point
+:use /shapes/Area
+:use /app/util/double as=twice
+
+:struct Square impl=Area {
+    side:f64
+    :fn area self -> f64 do={ :return ($self->side * $self->side) }
+}
+
+:fn total<T: /shapes/Area> shapes:List<T> -> f64 do={
+    :local sum 0.0
+    :foreach shape in=$shapes do={ :set sum ($sum + [$shape->area]) }
+    :return $sum
+}
+
+:fn main do={
+    :const p Point{x=1.0; y=2.0}
+    :const q /shapes/geometry/Point{x=3.0; y=4.0}
+    :put [/geometry/distance2 $p $q]
+    :put [$p->norm2]
+    :put [/shapes/geometry/Point->origin]
+    :put [:twice 21]
+    :put [/app/util/double /app/util/limit]
+    :const c /shapes/Color->red
+    :match $c {
+        /shapes/Color->red do={ :put "red" }
+        /shapes/Color->green do={ :put "green" }
+    }
+    :put [:total {Square{side=2.0}; Square{side=3.0}}]
+}

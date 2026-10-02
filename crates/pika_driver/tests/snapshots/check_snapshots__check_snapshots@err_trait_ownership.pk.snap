@@ -1,0 +1,33 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_trait_ownership.pk
+---
+fn both<Self: Dup>(self: Self) -> List<Self>
+fn steal<Self: Dup>(self: Self) -> Self
+fn both2<Self: CopyDup>(self: Self) -> List<Self>
+fn main() -> nothing
+    a: A
+    b: B
+
+--- diagnostics ---
+[E0404] Error: `self` is used after its value was moved
+   ╭─[ err_trait_ownership.pk:3:60 ]
+   │
+ 3 │     :fn both owned self -> List<Self> do={ :return {$self; $self} }
+   │                                                     ──┬──  ──┬──  
+   │                                                       │      ╰──── `self` is used after its value was moved
+   │                                                       │           
+   │                                                       ╰─────────── the value is moved here
+   │ 
+   │ Help: copy the value before moving it: `[$self->clone]`
+───╯
+[E0408] Error: cannot move `self` out: it is a borrowed parameter
+   ╭─[ err_trait_ownership.pk:4:41 ]
+   │
+ 4 │     :fn steal self -> Self do={ :return $self }
+   │                                         ──┬──  
+   │                                           ╰──── cannot move `self` out: it is a borrowed parameter
+   │ 
+   │ Help: pass a copy with `[$self->clone]`, or declare the parameter `owned`
+───╯

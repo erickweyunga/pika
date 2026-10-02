@@ -1,0 +1,420 @@
+# Mathematics: constants, float functions, integer arithmetic that does not trap, and
+# functions on any ordered numbers. Bit operations are in /std/math/bits.
+
+# The ratio of a circle's circumference to its diameter.
+:const pi 3.141592653589793
+# The ratio of a circle's circumference to its radius, 2 * pi.
+:const tau 6.283185307179586
+# The base of the natural logarithm.
+:const e 2.718281828459045
+# The golden ratio, (1 + sqrt(5)) / 2.
+:const phi 1.618033988749895
+# The square root of 2.
+:const sqrt2 1.4142135623730951
+# The natural logarithm of 2.
+:const ln2 0.6931471805599453
+# The natural logarithm of 10.
+:const ln10 2.302585092994046
+
+# Positive infinity.
+:const inf (1.0 / 0.0)
+# Negative infinity.
+:const neg_inf (-1.0 / 0.0)
+# A value that is not a number. It is not equal to anything, itself included: test for it
+# with `is_nan`.
+:const nan (0.0 / 0.0)
+# The difference between 1.0 and the next larger float.
+:const epsilon 2.220446049250313e-16
+# The largest finite float.
+:const max_float 1.7976931348623157e308
+# The smallest positive normal float.
+:const min_positive 2.2250738585072014e-308
+# The largest `i64`.
+:const max_int 9223372036854775807
+# The smallest `i64`.
+:const min_int -9223372036854775808
+
+:extern lib="pika" {
+    # The square root; NaN for a negative number.
+    :fn sqrt x:f64 -> f64
+    # The cube root.
+    :fn cbrt x:f64 -> f64
+    # `e` raised to the power `x`.
+    :fn exp x:f64 -> f64
+    # 2 raised to the power `x`.
+    :fn exp2 x:f64 -> f64
+    # `e` raised to the power `x`, minus 1: accurate for `x` near 0.
+    :fn exp_m1 x:f64 -> f64
+    # The natural logarithm; NaN for a negative number, -inf for 0.
+    :fn ln x:f64 -> f64
+    # The natural logarithm of 1 + `x`: accurate for `x` near 0.
+    :fn ln_1p x:f64 -> f64
+    # The base-2 logarithm.
+    :fn log2 x:f64 -> f64
+    # The base-10 logarithm.
+    :fn log10 x:f64 -> f64
+    # `x` raised to the power `y`.
+    :fn pow x:f64 y:f64 -> f64
+    # Trigonometric functions, of an angle in radians.
+    :fn sin x:f64 -> f64
+    :fn cos x:f64 -> f64
+    :fn tan x:f64 -> f64
+    # Inverse trigonometric functions, giving an angle in radians.
+    :fn asin x:f64 -> f64
+    :fn acos x:f64 -> f64
+    :fn atan x:f64 -> f64
+    # The angle of the point (x, y) from the x axis, in radians, from -pi to pi.
+    :fn atan2 y:f64 x:f64 -> f64
+    # Hyperbolic functions and their inverses.
+    :fn sinh x:f64 -> f64
+    :fn cosh x:f64 -> f64
+    :fn tanh x:f64 -> f64
+    :fn asinh x:f64 -> f64
+    :fn acosh x:f64 -> f64
+    :fn atanh x:f64 -> f64
+    # The length of the hypotenuse of a right triangle with sides `x` and `y`, without
+    # overflow or underflow in between.
+    :fn hypot x:f64 y:f64 -> f64
+    # The largest integer not greater than `x`.
+    :fn floor x:f64 -> f64
+    # The smallest integer not less than `x`.
+    :fn ceil x:f64 -> f64
+    # The nearest integer, rounding half-way cases away from zero.
+    :fn round x:f64 -> f64
+    # The nearest integer, rounding half-way cases to the even one.
+    :fn round_even x:f64 -> f64
+    # The integer part of `x`, rounding toward zero.
+    :fn trunc x:f64 -> f64
+    # `x` with the sign of `sign`.
+    :fn copysign x:f64 sign:f64 -> f64
+    # `x * y + z` with a single rounding.
+    :fn mul_add x:f64 y:f64 z:f64 -> f64
+    # The next float after `x` toward +inf, and toward -inf.
+    :fn next_up x:f64 -> f64
+    :fn next_down x:f64 -> f64
+    # The gamma function, which extends the factorial: gamma(n) = (n - 1)!.
+    :fn gamma x:f64 -> f64
+    # The natural logarithm of the absolute value of the gamma function.
+    :fn ln_gamma x:f64 -> f64
+    # The error function, and the complementary error function 1 - erf(x).
+    :fn erf x:f64 -> f64
+    :fn erfc x:f64 -> f64
+    :fn _float_to_bits x:f64 -> i64
+    :fn _float_from_bits bits:i64 -> f64
+    :fn _int_wrapping_add a:i64 b:i64 -> i64
+    :fn _int_wrapping_sub a:i64 b:i64 -> i64
+    :fn _int_wrapping_mul a:i64 b:i64 -> i64
+    :fn _int_add_overflows a:i64 b:i64 -> bool
+    :fn _int_sub_overflows a:i64 b:i64 -> bool
+    :fn _int_mul_overflows a:i64 b:i64 -> bool
+}
+
+# ----- Floats ------------------------------------------------------------------------------
+
+# Returns true for a float that is not a number (NaN).
+:fn is_nan x:f64 -> bool do={ :return ($x != $x) }
+
+# Returns true for +inf and -inf.
+:fn is_infinite x:f64 -> bool do={ :return (($x = $inf) or ($x = $neg_inf)) }
+
+# Returns true for a float that is neither infinite nor NaN.
+:fn is_finite x:f64 -> bool do={ :return (!([:is_nan $x] or [:is_infinite $x])) }
+
+# 1.0 for a positive number or +0.0, -1.0 for a negative number or -0.0, NaN for NaN.
+:fn signum x:f64 -> f64 do={
+    :if ([:is_nan $x]) do={ :return $nan }
+    :return [:copysign 1.0 $x]
+}
+
+# The part of `x` after the point, with the sign of `x`: fract(-2.5) is -0.5.
+:fn fract x:f64 -> f64 do={ :return ($x - [:trunc $x]) }
+
+# The logarithm of `x` in base `base`.
+:fn log x:f64 base:f64 -> f64 do={ :return ([:ln $x] / [:ln $base]) }
+
+# An angle in radians, in degrees.
+:fn to_degrees radians:f64 -> f64 do={ :return ($radians * (180.0 / $pi)) }
+
+# An angle in degrees, in radians.
+:fn to_radians degrees:f64 -> f64 do={ :return ($degrees * ($pi / 180.0)) }
+
+# The bits of a float, as an `i64` with the same bits (IEEE 754).
+:fn to_bits x:f64 -> i64 do={ :return [:_float_to_bits $x] }
+
+# The float with the given bits (IEEE 754).
+:fn from_bits bits:i64 -> f64 do={ :return [:_float_from_bits $bits] }
+
+# Returns true if `a` and `b` differ by at most `tolerance`.
+:fn approx_eq a:f64 b:f64 tolerance:f64 -> bool do={
+    :return ([:abs ($a - $b)] <= $tolerance)
+}
+
+# ----- Any ordered numbers -----------------------------------------------------------------
+
+# The absolute value of a number. The absolute value of the smallest value of a signed
+# integer type does not fit the type: it panics with an overflow.
+:fn abs<T: Neg + Ord + Default + Copy> x:T -> T do={
+    :if ($x < [:default<T>]) do={ :return (-$x) }
+    :return $x
+}
+
+# -1, 0 or 1, as a number is negative, zero or positive (0 for NaN).
+:fn sign<T: Ord + Default + Copy> x:T -> i64 do={
+    :if ($x < [:default<T>]) do={ :return -1 }
+    :if ($x > [:default<T>]) do={ :return 1 }
+    :return 0
+}
+
+# The smaller of two values; the first if they are equal.
+:fn min<T: Ord + Copy> a:T b:T -> T do={
+    :if ($b < $a) do={ :return $b }
+    :return $a
+}
+
+# The larger of two values; the first if they are equal.
+:fn max<T: Ord + Copy> a:T b:T -> T do={
+    :if ($b > $a) do={ :return $b }
+    :return $a
+}
+
+# `x`, limited to the range from `low` to `high`. Panics if `low` is greater than `high`.
+:fn clamp<T: Ord + Copy> x:T low:T high:T -> T do={
+    :assert ($low <= $high) "clamp: the low bound is greater than the high bound"
+    :if ($x < $low) do={ :return $low }
+    :if ($x > $high) do={ :return $high }
+    :return $x
+}
+
+# ----- Integers ----------------------------------------------------------------------------
+
+# An integer raised to a power that is not negative; panics on overflow.
+:fn pow_int base:i64 exponent:i64 -> i64 do={
+    :assert ($exponent >= 0) "pow_int: the exponent is negative"
+    :local result 1
+    :local factor $base
+    :local remaining $exponent
+    :while ($remaining > 0) do={
+        :if (($remaining % 2) = 1) do={ :set result ($result * $factor) }
+        :set remaining ($remaining / 2)
+        :if ($remaining > 0) do={ :set factor ($factor * $factor) }
+    }
+    :return $result
+}
+
+# The greatest common divisor of two integers, which is not negative; gcd(0, 0) is 0. Panics
+# with an overflow when the result is 2^63, as for gcd(min_int, 0).
+:fn gcd a:i64 b:i64 -> i64 do={
+    :local x $a
+    :local y $b
+    :while ($y != 0) do={
+        :const r ($x % $y)
+        :set x $y
+        :set y $r
+    }
+    :return [:abs $x]
+}
+
+# The least common multiple of two integers, which is not negative; 0 if either is 0. Panics
+# on overflow.
+:fn lcm a:i64 b:i64 -> i64 do={
+    :if (($a = 0) or ($b = 0)) do={ :return 0 }
+    :return [:abs (($a / [:gcd $a $b]) * $b)]
+}
+
+# The integer square root: the largest integer whose square is at most `n`. Panics if `n` is
+# negative.
+:fn isqrt n:i64 -> i64 do={
+    :assert ($n >= 0) "isqrt: the number is negative"
+    :if ($n < 2) do={ :return $n }
+    # Newton's method from above, which decreases to the root.
+    :local x ([:sqrt ($n as f64)] as i64)
+    :while (($x > 0) and ($x > ($n / $x))) do={ :set x ($x - 1) }
+    :while (($x + 1) <= ($n / ($x + 1))) do={ :set x ($x + 1) }
+    :return $x
+}
+
+# The integer logarithm: the largest power of `base` that is at most `n`. Panics unless `n` is
+# positive and `base` is at least 2.
+:fn ilog n:i64 base:i64 -> i64 do={
+    :assert ($n > 0) "ilog: the number is not positive"
+    :assert ($base >= 2) "ilog: the base is less than 2"
+    :local result 0
+    :local rest $n
+    :while ($rest >= $base) do={
+        :set rest ($rest / $base)
+        :set result ($result + 1)
+    }
+    :return $result
+}
+
+# Returns true if `n` is even.
+:fn is_even n:i64 -> bool do={ :return (($n % 2) = 0) }
+
+# Returns true if `n` is odd.
+:fn is_odd n:i64 -> bool do={ :return (($n % 2) != 0) }
+
+# The quotient of Euclidean division: `a` = `b` * q + r with 0 <= r < |b|. Panics if `b` is 0.
+:fn div_euclid a:i64 b:i64 -> i64 do={
+    :const q ($a / $b)
+    :if (($a % $b) < 0) do={
+        :if ($b > 0) do={ :return ($q - 1) }
+        :return ($q + 1)
+    }
+    :return $q
+}
+
+# The remainder of Euclidean division, which is never negative. Panics if `b` is 0.
+:fn rem_euclid a:i64 b:i64 -> i64 do={
+    :const r ($a % $b)
+    :if ($r < 0) do={ :return ($r + [:abs $b]) }
+    :return $r
+}
+
+# `a + b`, or none if it overflows.
+:fn checked_add a:i64 b:i64 -> i64? do={
+    :if ([:_int_add_overflows $a $b]) do={ :return none }
+    :return ($a + $b)
+}
+
+# `a - b`, or none if it overflows.
+:fn checked_sub a:i64 b:i64 -> i64? do={
+    :if ([:_int_sub_overflows $a $b]) do={ :return none }
+    :return ($a - $b)
+}
+
+# `a * b`, or none if it overflows.
+:fn checked_mul a:i64 b:i64 -> i64? do={
+    :if ([:_int_mul_overflows $a $b]) do={ :return none }
+    :return ($a * $b)
+}
+
+# `a / b`, or none if `b` is 0 or the result overflows (min_int / -1).
+:fn checked_div a:i64 b:i64 -> i64? do={
+    :if (($b = 0) or (($a = $min_int) and ($b = -1))) do={ :return none }
+    :return ($a / $b)
+}
+
+# `a % b`, or none if `b` is 0.
+:fn checked_rem a:i64 b:i64 -> i64? do={
+    :if ($b = 0) do={ :return none }
+    :if (($a = $min_int) and ($b = -1)) do={ :return 0 }
+    :return ($a % $b)
+}
+
+# `a + b`, wrapping around at the bounds of `i64`.
+:fn wrapping_add a:i64 b:i64 -> i64 do={ :return [:_int_wrapping_add $a $b] }
+
+# `a - b`, wrapping around at the bounds of `i64`.
+:fn wrapping_sub a:i64 b:i64 -> i64 do={ :return [:_int_wrapping_sub $a $b] }
+
+# `a * b`, wrapping around at the bounds of `i64`.
+:fn wrapping_mul a:i64 b:i64 -> i64 do={ :return [:_int_wrapping_mul $a $b] }
+
+# `a + b`, or the bound of `i64` it passes.
+:fn saturating_add a:i64 b:i64 -> i64 do={
+    :if (![:_int_add_overflows $a $b]) do={ :return ($a + $b) }
+    :if ($b > 0) do={ :return $max_int }
+    :return $min_int
+}
+
+# `a - b`, or the bound of `i64` it passes.
+:fn saturating_sub a:i64 b:i64 -> i64 do={
+    :if (![:_int_sub_overflows $a $b]) do={ :return ($a - $b) }
+    :if ($b < 0) do={ :return $max_int }
+    :return $min_int
+}
+
+# `a * b`, or the bound of `i64` it passes.
+:fn saturating_mul a:i64 b:i64 -> i64 do={
+    :if (![:_int_mul_overflows $a $b]) do={ :return ($a * $b) }
+    :if (($a < 0) = ($b < 0)) do={ :return $max_int }
+    :return $min_int
+}
+
+# ----- Methods -----------------------------------------------------------------------------
+
+# The functions of this module as methods of floats, as in `[$x->sqrt]`.
+:impl f64 {
+    :fn sqrt self -> f64 do={ :return [/std/math/sqrt $self] }
+    :fn cbrt self -> f64 do={ :return [/std/math/cbrt $self] }
+    :fn exp self -> f64 do={ :return [/std/math/exp $self] }
+    :fn exp2 self -> f64 do={ :return [/std/math/exp2 $self] }
+    :fn exp_m1 self -> f64 do={ :return [/std/math/exp_m1 $self] }
+    :fn ln self -> f64 do={ :return [/std/math/ln $self] }
+    :fn ln_1p self -> f64 do={ :return [/std/math/ln_1p $self] }
+    :fn log2 self -> f64 do={ :return [/std/math/log2 $self] }
+    :fn log10 self -> f64 do={ :return [/std/math/log10 $self] }
+    :fn log self base:f64 -> f64 do={ :return [/std/math/log $self $base] }
+    :fn pow self exponent:f64 -> f64 do={ :return [/std/math/pow $self $exponent] }
+    :fn sin self -> f64 do={ :return [/std/math/sin $self] }
+    :fn cos self -> f64 do={ :return [/std/math/cos $self] }
+    :fn tan self -> f64 do={ :return [/std/math/tan $self] }
+    :fn asin self -> f64 do={ :return [/std/math/asin $self] }
+    :fn acos self -> f64 do={ :return [/std/math/acos $self] }
+    :fn atan self -> f64 do={ :return [/std/math/atan $self] }
+    # The angle of the point (x, `self`) from the x axis, as `atan2`.
+    :fn atan2 self x:f64 -> f64 do={ :return [/std/math/atan2 $self $x] }
+    :fn sinh self -> f64 do={ :return [/std/math/sinh $self] }
+    :fn cosh self -> f64 do={ :return [/std/math/cosh $self] }
+    :fn tanh self -> f64 do={ :return [/std/math/tanh $self] }
+    :fn hypot self other:f64 -> f64 do={ :return [/std/math/hypot $self $other] }
+    :fn floor self -> f64 do={ :return [/std/math/floor $self] }
+    :fn ceil self -> f64 do={ :return [/std/math/ceil $self] }
+    :fn round self -> f64 do={ :return [/std/math/round $self] }
+    :fn round_even self -> f64 do={ :return [/std/math/round_even $self] }
+    :fn trunc self -> f64 do={ :return [/std/math/trunc $self] }
+    :fn fract self -> f64 do={ :return [/std/math/fract $self] }
+    :fn abs self -> f64 do={ :return [/std/math/abs $self] }
+    :fn signum self -> f64 do={ :return [/std/math/signum $self] }
+    :fn copysign self sign:f64 -> f64 do={ :return [/std/math/copysign $self $sign] }
+    :fn mul_add self factor:f64 addend:f64 -> f64 do={ :return [/std/math/mul_add $self $factor $addend] }
+    :fn is_nan self -> bool do={ :return [/std/math/is_nan $self] }
+    :fn is_infinite self -> bool do={ :return [/std/math/is_infinite $self] }
+    :fn is_finite self -> bool do={ :return [/std/math/is_finite $self] }
+    :fn to_degrees self -> f64 do={ :return [/std/math/to_degrees $self] }
+    :fn to_radians self -> f64 do={ :return [/std/math/to_radians $self] }
+    :fn to_bits self -> i64 do={ :return [/std/math/to_bits $self] }
+    :fn next_up self -> f64 do={ :return [/std/math/next_up $self] }
+    :fn next_down self -> f64 do={ :return [/std/math/next_down $self] }
+    :fn min self other:f64 -> f64 do={ :return [/std/math/min $self $other] }
+    :fn max self other:f64 -> f64 do={ :return [/std/math/max $self $other] }
+    :fn clamp self low:f64 high:f64 -> f64 do={ :return [/std/math/clamp $self $low $high] }
+    :fn approx_eq self other:f64 tolerance:f64 -> bool do={ :return [/std/math/approx_eq $self $other $tolerance] }
+    # Written with `decimals` digits after the point.
+    :fn to_fixed self decimals:i64 -> String do={ :return [/std/strings/format_float $self $decimals] }
+    # Written in scientific notation with `decimals` digits after the point.
+    :fn to_exp self decimals:i64 -> String do={ :return [/std/strings/format_exp $self $decimals] }
+    # The float with the given bits (IEEE 754).
+    :fn from_bits bits:i64 -> f64 do={ :return [/std/math/from_bits $bits] }
+}
+
+# The functions of this module as methods of integers, as in `[$n->checked_add 1]`.
+:impl i64 {
+    :fn abs self -> i64 do={ :return [/std/math/abs $self] }
+    :fn sign self -> i64 do={ :return [/std/math/sign $self] }
+    :fn pow self exponent:i64 -> i64 do={ :return [/std/math/pow_int $self $exponent] }
+    :fn gcd self other:i64 -> i64 do={ :return [/std/math/gcd $self $other] }
+    :fn lcm self other:i64 -> i64 do={ :return [/std/math/lcm $self $other] }
+    :fn isqrt self -> i64 do={ :return [/std/math/isqrt $self] }
+    :fn ilog self base:i64 -> i64 do={ :return [/std/math/ilog $self $base] }
+    :fn is_even self -> bool do={ :return [/std/math/is_even $self] }
+    :fn is_odd self -> bool do={ :return [/std/math/is_odd $self] }
+    :fn div_euclid self divisor:i64 -> i64 do={ :return [/std/math/div_euclid $self $divisor] }
+    :fn rem_euclid self divisor:i64 -> i64 do={ :return [/std/math/rem_euclid $self $divisor] }
+    :fn checked_add self other:i64 -> i64? do={ :return [/std/math/checked_add $self $other] }
+    :fn checked_sub self other:i64 -> i64? do={ :return [/std/math/checked_sub $self $other] }
+    :fn checked_mul self other:i64 -> i64? do={ :return [/std/math/checked_mul $self $other] }
+    :fn checked_div self other:i64 -> i64? do={ :return [/std/math/checked_div $self $other] }
+    :fn checked_rem self other:i64 -> i64? do={ :return [/std/math/checked_rem $self $other] }
+    :fn wrapping_add self other:i64 -> i64 do={ :return [/std/math/wrapping_add $self $other] }
+    :fn wrapping_sub self other:i64 -> i64 do={ :return [/std/math/wrapping_sub $self $other] }
+    :fn wrapping_mul self other:i64 -> i64 do={ :return [/std/math/wrapping_mul $self $other] }
+    :fn saturating_add self other:i64 -> i64 do={ :return [/std/math/saturating_add $self $other] }
+    :fn saturating_sub self other:i64 -> i64 do={ :return [/std/math/saturating_sub $self $other] }
+    :fn saturating_mul self other:i64 -> i64 do={ :return [/std/math/saturating_mul $self $other] }
+    :fn min self other:i64 -> i64 do={ :return [/std/math/min $self $other] }
+    :fn max self other:i64 -> i64 do={ :return [/std/math/max $self $other] }
+    :fn clamp self low:i64 high:i64 -> i64 do={ :return [/std/math/clamp $self $low $high] }
+    # Written in base `base`, from 2 to 36.
+    :fn to_string_base self base:i64 -> String do={ :return [/std/strings/format_int $self $base] }
+}

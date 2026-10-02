@@ -1,0 +1,28 @@
+# Input and output: reading standard input, and writing without line breaks or to standard
+# error. `:put` writes a value and a line break to standard output.
+
+:extern lib="pika" {
+    :fn _print text:String
+    :fn _eprint text:String
+    :fn _read_line -> String
+}
+
+# Writes text to standard output, without a line break.
+:fn print text:String do={ :_print $text }
+
+# Writes text to standard error, without a line break.
+:fn eprint text:String do={ :_eprint $text }
+
+# Writes text and a line break to standard error.
+:fn eput text:String do={ :_eprint "$text\n" }
+
+# The next line of standard input, without its line break (`\n` or `\r\n`), or none at the
+# end of the input. Standard output is written out first, so that a prompt appears.
+:fn read_line -> String? do={
+    :const line [:_read_line]
+    :if ([:len $line] = 0) do={ :return none }
+    :local end [:len $line]
+    :if ([/std/strings/ends_with $line "\n"]) do={ :set end ($end - 1) }
+    :if ([/std/strings/ends_with [/std/strings/slice $line 0 $end] "\r"]) do={ :set end ($end - 1) }
+    :return [/std/strings/slice $line 0 $end]
+}

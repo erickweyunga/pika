@@ -1,0 +1,140 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/string_errors.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ StringStart 5..6 "\""
++StringText 6..19 "bad \\q escape"
++StringEnd 19..20 "\""
+ Whitespace 20..21 " "
+ StringStart 21..22 "\""
++StringText 22..26 "\\x80"
++StringEnd 26..27 "\""
+ Whitespace 27..28 " "
+ StringStart 28..29 "\""
++StringText 29..39 "\\u{110000}"
++StringEnd 39..40 "\""
+ Whitespace 40..41 " "
+ StringStart 41..42 "\""
++StringText 42..46 "\\u41"
++StringEnd 46..47 "\""
++Newline 47..48 "\n"
+ Colon 48..49 ":"
++Ident 49..52 "put"
+ Whitespace 52..53 " "
+ StringStart 53..54 "\""
++StringText 54..60 "cost: "
++Error 60..61 "$"
++StringText 61..62 "5"
++StringEnd 62..63 "\""
+ Whitespace 63..64 " "
+ StringStart 64..65 "\""
++StringText 65..74 "trailing "
++Error 74..75 "$"
++StringEnd 75..76 "\""
++Newline 76..77 "\n"
+ Colon 77..78 ":"
++Ident 78..81 "put"
+ Whitespace 81..82 " "
+ Char 82..84 "''"
+ Whitespace 84..85 " "
+ Char 85..89 "'ab'"
+ Whitespace 89..90 " "
+ Char 90..94 "'\\q'"
++Newline 94..95 "\n"
+ Colon 95..96 ":"
++Ident 96..99 "put"
+ Whitespace 99..100 " "
+ StringStart 100..101 "\""
++InterpParen 101..103 "$("
++Ident 103..104 "a"
++RBracket 104..105 "]"
++StringEnd 105..106 "\""
+ Whitespace 106..107 " "
+ StringStart 107..108 "\""
++StringText 108..113 "after"
++StringEnd 113..114 "\""
++Newline 114..115 "\n"
+ Eof 115..115 ""
+
+--- diagnostics ---
+[E0004] Error: unknown escape sequence `\q`
+   ╭─[ string_errors.pk:1:11 ]
+   │
+ 1 │ :put "bad \q escape" "\x80" "\u{110000}" "\u41"
+   │           ─┬  
+   │            ╰── unknown escape sequence `\q`
+   │ 
+   │ Help: valid escapes are \" \' \\ \$ \n \r \t \0 \xHH \u{...}
+───╯
+[E0004] Error: `\x80` is not an ASCII character
+   ╭─[ string_errors.pk:1:23 ]
+   │
+ 1 │ :put "bad \q escape" "\x80" "\u{110000}" "\u41"
+   │                       ──┬─  
+   │                         ╰─── `\x80` is not an ASCII character
+   │ 
+   │ Help: use `\u{80}` for the Unicode character U+0080
+───╯
+[E0004] Error: U+110000 is not a valid Unicode scalar value
+   ╭─[ string_errors.pk:1:30 ]
+   │
+ 1 │ :put "bad \q escape" "\x80" "\u{110000}" "\u41"
+   │                              ─────┬────  
+   │                                   ╰────── U+110000 is not a valid Unicode scalar value
+───╯
+[E0004] Error: malformed Unicode escape
+   ╭─[ string_errors.pk:1:43 ]
+   │
+ 1 │ :put "bad \q escape" "\x80" "\u{110000}" "\u41"
+   │                                           ─┬  
+   │                                            ╰── malformed Unicode escape
+   │ 
+   │ Help: write Unicode escapes as `\u{1F600}` with 1 to 6 hexadecimal digits
+───╯
+[E0013] Error: expected a variable name, `(` or `[` after `$`
+   ╭─[ string_errors.pk:2:13 ]
+   │
+ 2 │ :put "cost: $5" "trailing $"
+   │             ┬  
+   │             ╰── expected a variable name, `(` or `[` after `$`
+   │ 
+   │ Help: write `\$` for a literal dollar sign
+───╯
+[E0013] Error: expected a variable name, `(` or `[` after `$`
+   ╭─[ string_errors.pk:2:27 ]
+   │
+ 2 │ :put "cost: $5" "trailing $"
+   │                           ┬  
+   │                           ╰── expected a variable name, `(` or `[` after `$`
+   │ 
+   │ Help: write `\$` for a literal dollar sign
+───╯
+[E0016] Error: empty character literal
+   ╭─[ string_errors.pk:3:6 ]
+   │
+ 3 │ :put '' 'ab' '\q'
+   │      ─┬  
+   │       ╰── empty character literal
+───╯
+[E0016] Error: character literal must contain exactly one character
+   ╭─[ string_errors.pk:3:9 ]
+   │
+ 3 │ :put '' 'ab' '\q'
+   │         ──┬─  
+   │           ╰─── character literal must contain exactly one character
+   │ 
+   │ Help: use double quotes for strings
+───╯
+[E0004] Error: unknown escape sequence `\q`
+   ╭─[ string_errors.pk:3:15 ]
+   │
+ 3 │ :put '' 'ab' '\q'
+   │               ─┬  
+   │                ╰── unknown escape sequence `\q`
+   │ 
+   │ Help: valid escapes are \" \' \\ \$ \n \r \t \0 \xHH \u{...}
+───╯

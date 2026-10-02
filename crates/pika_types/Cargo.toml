@@ -1,0 +1,16 @@
+[package]
+name = "pika_types"
+description = "Type inference and checking for Pika programs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+pika_ty.workspace = true
+la-arena.workspace = true
+pika_diagnostics.workspace = true
+pika_hir.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,504 @@
+================================================================================
+Variables
+================================================================================
+
+:local x 5
+:local y:f64 1.0
+:local z:String
+:const limit 100
+:global log:List<String> {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (integer))
+  (variable_declaration
+    (identifier)
+    (type_identifier)
+    (float))
+  (variable_declaration
+    (identifier)
+    (type_identifier))
+  (variable_declaration
+    (identifier)
+    (integer))
+  (variable_declaration
+    (identifier)
+    (generic_type
+      (type_identifier)
+      (type_arguments
+        (type_identifier)))
+    (collection_literal)))
+
+================================================================================
+Assignment
+================================================================================
+
+:set x ($x + 1)
+:set ($p->x) 2.0
+:set ($map->"k") 1
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (set_statement
+    (identifier)
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (integer))))
+  (set_statement
+    (parenthesized_expression
+      (member_expression
+        (variable)
+        (identifier)))
+    (float))
+  (set_statement
+    (parenthesized_expression
+      (member_expression
+        (variable)
+        (string
+          (string_content))))
+    (integer)))
+
+================================================================================
+Functions
+================================================================================
+
+:fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+:fn greet name:String greeting:String="Hello" do={
+    :put "$greeting, $name"
+}
+:fn max<T: Ord + Copy> a:T b:T -> T do={ :return $a }
+:fn f x:i64=0 -> i64
+:fn g xs:List<List<i64>>={} -> i64?
+:fn main raises do={}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (type_identifier))
+    (parameter
+      (identifier)
+      (type_identifier))
+    (type_identifier)
+    (block
+      (call
+        (command_name)
+        (parenthesized_expression
+          (binary_expression
+            (variable)
+            (variable))))))
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (type_identifier))
+    (parameter
+      (identifier)
+      (type_identifier)
+      (string
+        (string_content)))
+    (block
+      (call
+        (command_name)
+        (string
+          (interpolation
+            (variable))
+          (string_content)
+          (interpolation
+            (variable))))))
+  (function_declaration
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (identifier)
+        (type_identifier)
+        (type_identifier)))
+    (parameter
+      (identifier)
+      (type_identifier))
+    (parameter
+      (identifier)
+      (type_identifier))
+    (type_identifier)
+    (block
+      (call
+        (command_name)
+        (variable))))
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (type_identifier)
+      (integer))
+    (type_identifier))
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (generic_type
+        (type_identifier)
+        (type_arguments
+          (generic_type
+            (type_identifier)
+            (type_arguments
+              (type_identifier)))))
+      (collection_literal))
+    (option_type
+      (type_identifier)))
+  (function_declaration
+    (identifier)
+    (block)))
+
+================================================================================
+Function types
+================================================================================
+
+:fn twice f:fn(i64) -> i64 -> fn(i64) -> i64 do={ :return $f }
+:fn checked limit:i64 -> fn(i64) -> i64 raises do={}
+:fn run -> fn(i64) -> i64 raises raises do={}
+:local table:Map<String, fn(i64) -> i64> {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (function_type
+        (type_identifier)
+        (type_identifier)))
+    (function_type
+      (type_identifier)
+      (type_identifier))
+    (block
+      (call
+        (command_name)
+        (variable))))
+  (function_declaration
+    (identifier)
+    (parameter
+      (identifier)
+      (type_identifier))
+    (function_type
+      (type_identifier)
+      (type_identifier))
+    (block))
+  (function_declaration
+    (identifier)
+    (function_type
+      (type_identifier)
+      (type_identifier))
+    (block))
+  (variable_declaration
+    (identifier)
+    (generic_type
+      (type_identifier)
+      (type_arguments
+        (type_identifier)
+        (function_type
+          (type_identifier)
+          (type_identifier))))
+    (collection_literal)))
+
+================================================================================
+Structs
+================================================================================
+
+:struct Pair<A, B> impl=Eq,Display {
+    first:A
+    second:B
+    count:i64=0
+    _private:bool=false
+
+    :fn swap owned self -> Pair<B, A> do={
+        :return Pair<B, A>{first=$self->second; second=$self->first}
+    }
+    :fn fmt self mut out:Formatter do={ $out->write "pair" }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (struct_declaration
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (identifier))
+      (type_parameter
+        (identifier)))
+    (trait_list
+      (type_identifier)
+      (type_identifier))
+    (struct_body
+      (field_declaration
+        (identifier)
+        (type_identifier))
+      (field_declaration
+        (identifier)
+        (type_identifier))
+      (field_declaration
+        (identifier)
+        (type_identifier)
+        (integer))
+      (field_declaration
+        (identifier)
+        (type_identifier)
+        (boolean))
+      (function_declaration
+        (identifier)
+        (parameter
+          (convention)
+          (self))
+        (generic_type
+          (type_identifier)
+          (type_arguments
+            (type_identifier)
+            (type_identifier)))
+        (block
+          (call
+            (command_name)
+            (typed_literal
+              (generic_type
+                (type_identifier)
+                (type_arguments
+                  (type_identifier)
+                  (type_identifier)))
+              (field_initializer
+                (identifier)
+                (member_expression
+                  (variable)
+                  (identifier)))
+              (field_initializer
+                (identifier)
+                (member_expression
+                  (variable)
+                  (identifier)))))))
+      (function_declaration
+        (identifier)
+        (parameter
+          (self))
+        (parameter
+          (convention)
+          (identifier)
+          (type_identifier))
+        (block
+          (call
+            (member_expression
+              (variable)
+              (identifier))
+            (string
+              (string_content))))))))
+
+================================================================================
+Enums
+================================================================================
+
+:enum Shape {
+    circle center:Point radius:f64
+    rect min:Point max:Point
+    empty
+    :fn area self -> f64 do={ :return 0.0 }
+}
+:enum Tree<T> impl=Clone {
+    leaf
+    node left:Box<Tree<T>> value:T right:Box<Tree<T>>
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (enum_declaration
+    (identifier)
+    (enum_body
+      (variant_declaration
+        (identifier)
+        (field_declaration
+          (identifier)
+          (type_identifier))
+        (field_declaration
+          (identifier)
+          (type_identifier)))
+      (variant_declaration
+        (identifier)
+        (field_declaration
+          (identifier)
+          (type_identifier))
+        (field_declaration
+          (identifier)
+          (type_identifier)))
+      (variant_declaration
+        (identifier))
+      (function_declaration
+        (identifier)
+        (parameter
+          (self))
+        (type_identifier)
+        (block
+          (call
+            (command_name)
+            (float))))))
+  (enum_declaration
+    (identifier)
+    (type_parameters
+      (type_parameter
+        (identifier)))
+    (trait_list
+      (type_identifier))
+    (enum_body
+      (variant_declaration
+        (identifier))
+      (variant_declaration
+        (identifier)
+        (field_declaration
+          (identifier)
+          (generic_type
+            (type_identifier)
+            (type_arguments
+              (generic_type
+                (type_identifier)
+                (type_arguments
+                  (type_identifier))))))
+        (field_declaration
+          (identifier)
+          (type_identifier))
+        (field_declaration
+          (identifier)
+          (generic_type
+            (type_identifier)
+            (type_arguments
+              (generic_type
+                (type_identifier)
+                (type_arguments
+                  (type_identifier))))))))))
+
+================================================================================
+Traits and extensions
+================================================================================
+
+:trait Shape impl=Display {
+    :fn area self -> f64
+    :fn make -> Self
+    :fn describe self -> String do={
+        :return "shape with area $([$self->area])"
+    }
+}
+:impl<T> List<T> impl=Shape {
+    :fn area self -> f64 do={ :return 0.0 }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (trait_declaration
+    (identifier)
+    (trait_list
+      (type_identifier))
+    (function_list
+      (function_declaration
+        (identifier)
+        (parameter
+          (self))
+        (type_identifier))
+      (function_declaration
+        (identifier)
+        (self_type))
+      (function_declaration
+        (identifier)
+        (parameter
+          (self))
+        (type_identifier)
+        (block
+          (call
+            (command_name)
+            (string
+              (string_content)
+              (interpolation
+                (command_substitution
+                  (call
+                    (member_expression
+                      (variable)
+                      (identifier)))))))))))
+  (impl_declaration
+    (type_parameters
+      (type_parameter
+        (identifier)))
+    (generic_type
+      (type_identifier)
+      (type_arguments
+        (type_identifier)))
+    (trait_list
+      (type_identifier))
+    (function_list
+      (function_declaration
+        (identifier)
+        (parameter
+          (self))
+        (type_identifier)
+        (block
+          (call
+            (command_name)
+            (float)))))))
+
+================================================================================
+Imports, foreign functions and tests
+================================================================================
+
+:use /std/math
+:use /std/collections as=col
+:extern lib="c" {
+    :fn strlen s:Ptr<u8> -> u64
+}
+:test "addition works" do={
+    :assert ([:add 2 2] = 4) "2 + 2 should be 4"
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (use_declaration
+    (path
+      (identifier)
+      (identifier)))
+  (use_declaration
+    (path
+      (identifier)
+      (identifier))
+    (identifier))
+  (extern_declaration
+    (string
+      (string_content))
+    (function_list
+      (function_declaration
+        (identifier)
+        (parameter
+          (identifier)
+          (generic_type
+            (type_identifier)
+            (type_arguments
+              (type_identifier))))
+        (type_identifier))))
+  (test_declaration
+    (string
+      (string_content))
+    (block
+      (call
+        (command_name)
+        (parenthesized_expression
+          (binary_expression
+            (command_substitution
+              (call
+                (command_name)
+                (integer)
+                (integer)))
+            (integer)))
+        (string
+          (string_content))))))

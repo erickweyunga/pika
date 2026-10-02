@@ -1,0 +1,54 @@
+:global G:String "global"
+:fn take owned text:String do={ :put $text }
+:fn read text:String do={ :put $text }
+:fn change mut text:String do={ :set text "changed" }
+:fn both mut a:String b:String do={ :put "$a $b" }
+
+:fn use_after_move do={
+    :local a "a"
+    :take $a
+    :put $a
+}
+
+:fn maybe_moved flag:bool do={
+    :local b "b"
+    :if ($flag) do={ :take $b }
+    :read $b
+}
+
+:fn moved_in_loop do={
+    :local c "c"
+    :for i from=1 to=2 do={ :take $c }
+}
+
+:fn move_out_of_borrow text:String -> String do={
+    :return $text
+}
+
+:fn move_out_of_global do={
+    :local g $G
+    :put $g
+}
+
+:fn bad_mut_arguments limit:i64 do={
+    :const fixed "fixed"
+    :change $fixed
+    :change "literal"
+    :local s "s"
+    :both $s $s
+    :for i from=1 to=2 do={ :put $i }
+}
+
+
+:fn fine do={
+    :local d "d"
+    :take [$d->clone]
+    :read $d
+    :take $d
+    :set d "new value"
+    :read $d
+    :change $G
+    :local e "e"
+    :change $e
+    :read $e
+}

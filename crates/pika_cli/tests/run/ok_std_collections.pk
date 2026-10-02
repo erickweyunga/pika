@@ -1,0 +1,118 @@
+# The additions to /std/collections: functions taking closures, sorting with keys and
+# comparisons, binary search, transformations, maps, `Heap` and `Deque`.
+
+:use /std/collections as=col
+:use /std/collections/Pair
+:use /std/collections/Heap
+:use /std/collections/Deque
+
+:struct Person impl=Clone,Display {
+    name:String
+    age:i64
+}
+
+:fn closures do={
+    :const numbers {3; 8; 1; 9; 4}
+    :put [/col/map $numbers [:fn n:i64 -> i64 do={ :return ($n * $n) }]]
+    :put [/col/map $numbers [:fn n:i64 -> String do={ :return "#$n" }]]
+    :put [/col/filter $numbers [:fn n:i64 -> bool do={ :return (($n % 2) = 0) }]]
+    :put [/col/fold $numbers 0 [:fn total:i64 n:i64 -> i64 do={ :return ($total + $n) }]]
+    :put [/col/fold {"a"; "b"; "c"} "" [:fn text:String part:String -> String do={ :return "$part$text" }]]
+    :const big [:fn n:i64 -> bool do={ :return ($n > 5) }]
+    :put "$([/col/any $numbers $big]) $([/col/all $numbers $big]) $([/col/count_if $numbers $big])"
+    :put "$([/col/position $numbers $big]) $([/col/find_first $numbers $big]) $([/col/find_first $numbers [:fn n:i64 -> bool do={ :return ($n > 100) }]])"
+}
+
+:fn sorting do={
+    :local people {
+        Person{name="cy"; age=30}
+        Person{name="ada"; age=25}
+        Person{name="bo"; age=30}
+        Person{name="al"; age=25}
+    }
+    /col/sort_by_key $people [:fn p:Person -> i64 do={ :return $p->age }]
+    :put [/col/map $people [:fn p:Person -> String do={ :return [$p->name->clone] }]]
+    /col/sort_by $people [:fn a:Person b:Person -> bool do={ :return ($a->name > $b->name) }]
+    :put [/col/map $people [:fn p:Person -> String do={ :return [$p->name->clone] }]]
+    :local words {"pear"; "fig"; "apple"; "fig"}
+    /col/sort $words
+    :put "$words $([/col/is_sorted $words]) $([/col/is_sorted {2; 1}])"
+    :local runs {1; 1; 2; 2; 2; 3; 1; 1}
+    /col/dedup $runs
+    :put $runs
+    :local tail {1; 2; 3; 4}
+    /col/truncate $tail 2
+    /col/append $tail {7; 8}
+    :put $tail
+    /col/reverse $tail
+    :put $tail
+}
+
+:fn searching do={
+    :const sorted {1; 3; 3; 3; 7; 9}
+    :put "$([/col/binary_search $sorted 7]) $([/col/binary_search $sorted 4]) $([/col/lower_bound $sorted 3]) $([/col/upper_bound $sorted 3]) $([/col/lower_bound $sorted 10])"
+    :const empty:List<i64> {}
+    :put "$([/col/binary_search $empty 1]) $([/col/first $empty]) $([/col/last $sorted])"
+}
+
+:fn transforming do={
+    :put [/col/unique {3; 1; 3; 2; 1}]
+    :put [/col/flatten {{1; 2}; {}; {3}}]
+    :put [/col/slice {"a"; "b"; "c"; "d"} 1 3]
+    :put [/col/chunks {1; 2; 3; 4; 5} 2]
+    :put [/col/windows {1; 2; 3; 4} 3]
+    :put [/col/windows {1; 2} 3]
+    :put [/col/zip {1; 2; 3} {"one"; "two"}]
+    :put [/col/repeat "ab" 3]
+}
+
+:fn maps do={
+    :const ages {"ada"=36; "alan"=41}
+    :put "$([/col/get_or $ages "ada" 0]) $([/col/get_or $ages "bob" 0])"
+    :put [/col/frequencies {"a"; "b"; "a"; "c"; "a"}]
+    :put [/col/group_by {"apple"; "avocado"; "banana"; "blueberry"; "cherry"} [:fn word:String -> char do={ :return [/std/strings/char_at $word 0] }]]
+    :const pairs [/col/entries $ages]
+    :put $pairs
+    :put ($pairs->0 = Pair{first="ada"; second=36})
+}
+
+:fn heap do={
+    :local queue [Heap->new]
+    :foreach n in={5; 1; 8; 3; 9; 2; 8} do={ $queue->push $n }
+    :put "$([$queue->len]) $([/col/peek $queue])"
+    :put "$([$queue->pop]) $([$queue->pop])"
+    :put [$queue->drain_sorted]
+    :put "$([$queue->is_empty]) $([$queue->pop])"
+    :local words:Heap<String> [Heap->new]
+    $words->push "pear"
+    $words->push "apple"
+    $words->push "fig"
+    :put [$words->drain_sorted]
+}
+
+:fn deque do={
+    :local d:Deque<String> [Deque->new]
+    $d->push_back "b"
+    $d->push_front "a"
+    $d->push_back "c"
+    :for i from=1 to=6 do={ $d->push_back "x$i" }
+    :put "$([$d->len]) $([/col/front $d]) $([/col/back $d]) $([/col/deque_get $d 2]) $([/col/deque_get $d 99])"
+    :put "$([$d->pop_front]) $([$d->pop_back]) $([$d->pop_front])"
+    $d->push_front "z"
+    :put [/col/deque_to_list $d]
+    :while (![$d->is_empty]) do={ $d->pop_back }
+    :put "$([$d->pop_front]) $([$d->pop_back]) $([/col/front $d])"
+    $d->push_front "again"
+    $d->clear
+    :put [$d->len]
+}
+
+:fn main do={
+    :closures
+    :sorting
+    :searching
+    :transforming
+    :maps
+    :heap
+    :deque
+}

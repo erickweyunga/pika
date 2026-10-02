@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_cast.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `big` is never modified
+   ╭─[ panic_cast.pk:1:8 ]
+   │
+ 1 │ :local big 300
+   │        ─┬─  
+   │         ╰─── variable `big` is never modified
+   │ 
+   │ Help: declare it with `:const big`
+───╯
+panic: conversion with `as` loses information
+  at panic_cast.pk:2:7

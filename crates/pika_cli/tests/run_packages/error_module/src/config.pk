@@ -1,0 +1,4 @@
+:fn load key:String -> i64 raises do={
+    :if ($key = "port") do={ :return 8080 }
+    :error "unknown setting `$key`"
+}

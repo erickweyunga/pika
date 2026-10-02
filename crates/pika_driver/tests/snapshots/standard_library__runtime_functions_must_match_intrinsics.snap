@@ -1,0 +1,38 @@
+---
+source: crates/pika_driver/tests/standard_library.rs
+expression: "diagnostics_of(\":extern lib=\\\"pika\\\" {\\n    :fn sqrt x:f32 -> f64\\n    :fn _no_such_thing\\n    :fn _print mut text:String\\n    :fn _arg_count -> i64 raises\\n}\\n\",)"
+---
+[E0413] Error: the runtime function `sqrt` does not match its intrinsic
+   ╭─[ std/lib.pk:2:9 ]
+   │
+ 2 │     :fn sqrt x:f32 -> f64
+   │         ──┬─  
+   │           ╰─── the runtime function `sqrt` does not match its intrinsic
+   │ 
+   │ Help: declare it as `:fn sqrt p0:f64 -> f64`, with `read` parameters and without `raises`
+───╯
+[E0413] Error: the runtime has no function named `no_such_thing`
+   ╭─[ std/lib.pk:3:9 ]
+   │
+ 3 │     :fn _no_such_thing
+   │         ───────┬──────  
+   │                ╰──────── the runtime has no function named `no_such_thing`
+───╯
+[E0413] Error: the runtime function `_print` does not match its intrinsic
+   ╭─[ std/lib.pk:4:9 ]
+   │
+ 4 │     :fn _print mut text:String
+   │         ───┬──  
+   │            ╰──── the runtime function `_print` does not match its intrinsic
+   │ 
+   │ Help: declare it as `:fn _print p0:String`, with `read` parameters and without `raises`
+───╯
+[E0413] Error: the runtime function `_arg_count` does not match its intrinsic
+   ╭─[ std/lib.pk:5:9 ]
+   │
+ 5 │     :fn _arg_count -> i64 raises
+   │         ─────┬────  
+   │              ╰────── the runtime function `_arg_count` does not match its intrinsic
+   │ 
+   │ Help: declare it as `:fn _arg_count -> i64`, with `read` parameters and without `raises`
+───╯

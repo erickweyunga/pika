@@ -1,0 +1,121 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis).replace(&prefix, \"\")"
+input_file: crates/pika_driver/tests/check_packages/err_modules/pika.toml
+---
+module /app
+fn main() -> nothing
+    c: Counter
+    made: Counter
+
+module /app/counter
+fn _bump(self: Counter) -> i64
+fn _make() -> Counter
+fn make() -> Counter
+
+module /app/util
+fn _times(x: i64, n: i64) -> i64
+
+--- diagnostics ---
+[E0223] Error: `_times` is private to the module `/app/util`
+   ╭─[ src/main.pk:1:16 ]
+   │
+ 1 │ :use /app/util/_times
+   │                ───┬──  
+   │                   ╰──── `_times` is private to the module `/app/util`
+   │ 
+   │ Help: names that start with `_` can only be used in the module that declares them
+───╯
+[E0224] Error: `app` is the name of a package, so it cannot name an imported module
+   ╭─[ src/main.pk:2:19 ]
+   │
+ 2 │ :use /app/util as=app
+   │                   ─┬─  
+   │                    ╰─── `app` is the name of a package, so it cannot name an imported module
+   │ 
+   │ Help: give the module another name with `as=`
+───╯
+[E0204] Error: `helpers` names two imported modules
+   ╭─[ src/main.pk:4:22 ]
+   │
+ 4 │ :use /app/counter as=helpers
+   │                      ───┬───  
+   │                         ╰───── `helpers` names two imported modules
+───╯
+[E0222] Error: unknown package `colors`
+   ╭─[ src/main.pk:5:7 ]
+   │
+ 5 │ :use /colors/Color
+   │       ───┬──  
+   │          ╰──── unknown package `colors`
+   │ 
+   │ Help: the path of a `:use` starts with the name of this package or of a package it depends on
+───╯
+[E0223] Error: `_times` is private to the module `/app/util`
+   ╭─[ src/main.pk:8:21 ]
+   │
+ 8 │     :put [/app/util/_times 2 3]
+   │                     ───┬──  
+   │                        ╰──── `_times` is private to the module `/app/util`
+   │ 
+   │ Help: names that start with `_` can only be used in the module that declares them
+───╯
+[E0222] Error: the module `/helpers` has no function named `nothing`
+   ╭─[ src/main.pk:9:20 ]
+   │
+ 9 │     :put [/helpers/nothing]
+   │                    ───┬───  
+   │                       ╰───── the module `/helpers` has no function named `nothing`
+───╯
+[E0222] Error: the module `/app` has no module named `missing`
+    ╭─[ src/main.pk:10:16 ]
+    │
+ 10 │     :put [/app/missing/thing]
+    │                ───┬───  
+    │                   ╰───── the module `/app` has no module named `missing`
+────╯
+[E0223] Error: the field `_step` of `Counter` is private to its module
+    ╭─[ src/main.pk:11:50 ]
+    │
+ 11 │     :const c /app/counter/Counter{count=1; _step=2}
+    │                                                  ┬  
+    │                                                  ╰── the field `_step` of `Counter` is private to its module
+    │ 
+    │ Help: names that start with `_` can only be used in the module that declares them
+────╯
+[E0223] Error: the field `_step` of `Counter` is private to its module
+    ╭─[ src/main.pk:12:27 ]
+    │
+ 12 │     :put ($c->count + $c->_step)
+    │                           ──┬──  
+    │                             ╰──── the field `_step` of `Counter` is private to its module
+    │ 
+    │ Help: names that start with `_` can only be used in the module that declares them
+────╯
+[E0223] Error: the method `_bump` of `Counter` is private to its module
+    ╭─[ src/main.pk:13:11 ]
+    │
+ 13 │     :put [$c->_bump]
+    │           ────┬────  
+    │               ╰────── the method `_bump` of `Counter` is private to its module
+    │ 
+    │ Help: names that start with `_` can only be used in the module that declares them
+────╯
+[E0223] Error: the function `_make` of `Counter` is private to its module
+    ╭─[ src/main.pk:14:18 ]
+    │
+ 14 │     :const made [/app/counter/Counter->_make]
+    │                  ─────────────┬─────────────  
+    │                               ╰─────────────── the function `_make` of `Counter` is private to its module
+    │ 
+    │ Help: names that start with `_` can only be used in the module that declares them
+────╯
+[E0225] Error: only the program's entry module can have top-level statements
+   ╭─[ src/util.pk:3:1 ]
+   │
+ 3 │ :put "modules other than the entry module only declare items"
+   │ ──────────────────────────────┬──────────────────────────────  
+   │                               ╰──────────────────────────────── only the program's entry module can have top-level statements
+   │ 
+   │ Help: other modules contain only declarations; move the statement into a function
+───╯

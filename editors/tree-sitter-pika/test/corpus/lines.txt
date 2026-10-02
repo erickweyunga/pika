@@ -1,0 +1,127 @@
+================================================================================
+Semicolons and blank lines
+================================================================================
+
+:put 1; :put 2
+
+
+:put 3;;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (integer))
+  (call
+    (command_name)
+    (integer))
+  (call
+    (command_name)
+    (integer)))
+
+================================================================================
+Comments
+================================================================================
+
+# a comment
+## a documentation comment
+:put 1  # trailing comment
+:put "# not a comment"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comment)
+  (doc_comment)
+  (call
+    (command_name)
+    (integer))
+  (comment)
+  (call
+    (command_name)
+    (string
+      (string_content))))
+
+================================================================================
+Line continuation
+================================================================================
+
+:put 1 \
+    2 \
+    3
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (integer)
+    (integer)
+    (integer)))
+
+================================================================================
+Line breaks inside parentheses and brackets
+================================================================================
+
+:if ($a and
+     $b) do={ :put "both" }
+:local total [:sum
+    $first
+    $second]
+:local m:Map<
+    String,
+    i64
+> {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (if_statement
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (block
+      (call
+        (command_name)
+        (string
+          (string_content)))))
+  (variable_declaration
+    (identifier)
+    (command_substitution
+      (call
+        (command_name)
+        (variable)
+        (variable))))
+  (variable_declaration
+    (identifier)
+    (generic_type
+      (type_identifier)
+      (type_arguments
+        (type_identifier)
+        (type_identifier)))
+    (collection_literal)))
+
+================================================================================
+Else on the line of the closing brace
+================================================================================
+
+:if (true) do={
+    :put 1
+} else={ :put 2 }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (if_statement
+    (parenthesized_expression
+      (boolean))
+    (block
+      (call
+        (command_name)
+        (integer)))
+    (block
+      (call
+        (command_name)
+        (integer)))))

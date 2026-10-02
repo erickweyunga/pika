@@ -1,0 +1,4 @@
+:local xs:List<List<i64>>={}
+:local m:Map<String, List<i64>> {}
+:put ($a >> 2) ($a>=$b) ($a > = $b)
+:local x:i64? none

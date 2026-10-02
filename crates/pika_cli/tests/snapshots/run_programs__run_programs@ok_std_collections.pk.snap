@@ -1,0 +1,46 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: "run_both(dir, &name, &name)"
+input_file: crates/pika_cli/tests/run/ok_std_collections.pk
+---
+exit: 0
+--- stdout ---
+{9; 64; 1; 81; 16}
+{"#3"; "#8"; "#1"; "#9"; "#4"}
+{8; 4}
+25
+cba
+true false 2
+[some 1] [some 8] none
+{"ada"; "al"; "cy"; "bo"}
+{"cy"; "bo"; "al"; "ada"}
+{"apple"; "fig"; "fig"; "pear"} true false
+{1; 2; 3; 1}
+{1; 2; 7; 8}
+{8; 7; 2; 1}
+[some 4] none 1 4 6
+none none [some 9]
+{3; 1; 2}
+{1; 2; 3}
+{"b"; "c"}
+{{1; 2}; {3; 4}; {5}}
+{{1; 2; 3}; {2; 3; 4}}
+{}
+{Pair{first=1; second="one"}; Pair{first=2; second="two"}}
+{"ab"; "ab"; "ab"}
+36 0
+{"a"=3; "b"=1; "c"=1}
+{'a'={"apple"; "avocado"}; 'b'={"banana"; "blueberry"}; 'c'={"cherry"}}
+{Pair{first="ada"; second=36}; Pair{first="alan"; second=41}}
+true
+7 [some 1]
+[some 1] [some 2]
+{3; 5; 8; 8; 9}
+true none
+{"apple"; "fig"; "pear"}
+9 [some "a"] [some "x6"] [some "c"] none
+[some "a"] [some "x6"] [some "b"]
+{"z"; "c"; "x1"; "x2"; "x3"; "x4"; "x5"}
+none none none
+0
+--- stderr ---

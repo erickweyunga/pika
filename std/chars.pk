@@ -1,0 +1,75 @@
+# Characters: classifying them and changing their case, following Unicode.
+
+:extern lib="pika" {
+    :fn _char_is_whitespace c:char -> bool
+    :fn _char_is_alphabetic c:char -> bool
+    :fn _char_is_numeric c:char -> bool
+    :fn _char_is_alphanumeric c:char -> bool
+    :fn _char_is_uppercase c:char -> bool
+    :fn _char_is_lowercase c:char -> bool
+    :fn _char_to_upper c:char -> char
+    :fn _char_to_lower c:char -> char
+    :fn _char_is_valid code:i64 -> bool
+    :fn _char_from_int code:i64 -> char
+}
+
+# Returns true for white space: spaces, tabs, line breaks and the other Unicode spaces.
+:fn is_whitespace c:char -> bool do={ :return [:_char_is_whitespace $c] }
+# Returns true for a letter.
+:fn is_alphabetic c:char -> bool do={ :return [:_char_is_alphabetic $c] }
+# Returns true for a numeric character, in any script.
+:fn is_numeric c:char -> bool do={ :return [:_char_is_numeric $c] }
+# Returns true for a letter or a numeric character.
+:fn is_alphanumeric c:char -> bool do={ :return [:_char_is_alphanumeric $c] }
+# Returns true for an uppercase letter.
+:fn is_uppercase c:char -> bool do={ :return [:_char_is_uppercase $c] }
+# Returns true for a lowercase letter.
+:fn is_lowercase c:char -> bool do={ :return [:_char_is_lowercase $c] }
+# Returns true for an ASCII digit, `0` to `9`.
+:fn is_digit c:char -> bool do={ :return (($c >= '0') and ($c <= '9')) }
+
+# The uppercase form of a character; the character itself when its uppercase form is not a
+# single character, as for `ß`.
+:fn to_upper c:char -> char do={ :return [:_char_to_upper $c] }
+# The lowercase form of a character, under the same rule as `to_upper`.
+:fn to_lower c:char -> char do={ :return [:_char_to_lower $c] }
+
+# The value of an ASCII digit, or none for any other character.
+:fn to_digit c:char -> i64? do={
+    :if (![:is_digit $c]) do={ :return none }
+    :return ((($c as u32) - ('0' as u32)) as i64)
+}
+
+# The character with a Unicode code point, or none if the number is not one.
+:fn from_code code:i64 -> char? do={
+    :if (![:_char_is_valid $code]) do={ :return none }
+    :return [:_char_from_int $code]
+}
+
+# The number of bytes of a character in UTF-8, from 1 to 4.
+:fn utf8_len c:char -> i64 do={
+    :const code ($c as u32)
+    :if ($code < 128) do={ :return 1 }
+    :if ($code < 2048) do={ :return 2 }
+    :if ($code < 65536) do={ :return 3 }
+    :return 4
+}
+
+# ----- Methods -----------------------------------------------------------------------------
+
+# The functions of this module as methods of characters, as in `[$c->is_digit]`.
+:impl char {
+    :fn is_whitespace self -> bool do={ :return [:_char_is_whitespace $self] }
+    :fn is_alphabetic self -> bool do={ :return [:_char_is_alphabetic $self] }
+    :fn is_numeric self -> bool do={ :return [:_char_is_numeric $self] }
+    :fn is_alphanumeric self -> bool do={ :return [:_char_is_alphanumeric $self] }
+    :fn is_uppercase self -> bool do={ :return [:_char_is_uppercase $self] }
+    :fn is_lowercase self -> bool do={ :return [:_char_is_lowercase $self] }
+    :fn is_digit self -> bool do={ :return [/std/chars/is_digit $self] }
+    :fn to_upper self -> char do={ :return [:_char_to_upper $self] }
+    :fn to_lower self -> char do={ :return [:_char_to_lower $self] }
+    :fn to_digit self -> i64? do={ :return [/std/chars/to_digit $self] }
+    :fn utf8_len self -> i64 do={ :return [/std/chars/utf8_len $self] }
+    # The character with a Unicode code point, or none if the number is not one.
+    :fn from_code code:i64 -> char? do={ :return [/std/chars/from_code $code] }
+}

@@ -1,0 +1,28 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: "run_both(dir, &name, &name)"
+input_file: crates/pika_cli/tests/run/ok_std_strings.pk
+---
+exit: 0
+--- stdout ---
+[some 3] none 2 2
+[some "happy"] none [some "file"]
+[some Split{before="key"; after="value=more"}]
+[some Split{before="key=value"; after="more"}]
+none
+host / 8080
+{"a"; "b,c,d"}
+{"a"; "b"}
+[007] [ab..] [**mid***] [long]
+[--é]
+[a-b] [hixx] [xxhi] []
+olléh true false true
+false true Élan
+pika
+{104; 195; 169}
+{}
+ff -11111111 z 0
+255 -5 35
+error: not an integer in base 2: "12"
+3.14 2 -0.500 1.50e3 1.2e-4
+--- stderr ---

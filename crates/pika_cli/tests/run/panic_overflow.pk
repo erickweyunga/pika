@@ -1,0 +1,4 @@
+:fn add a:u8 b:u8 -> u8 do={ :return ($a + $b) }
+:put "before"
+:put [:add 200 100]
+:put "after"

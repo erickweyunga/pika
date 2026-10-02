@@ -1,0 +1,5 @@
+[package]
+name = "app"
+
+[dependencies]
+shapes = { path = "vendor/shapes" }

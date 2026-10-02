@@ -1,0 +1,2 @@
+:local x -128
+:put (-($x as i8))

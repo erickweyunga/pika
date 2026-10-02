@@ -1,0 +1,208 @@
+================================================================================
+Operator precedence
+================================================================================
+
+:put (1 + 2 * 3 - 4 / 2 % 1) ($a or $b and $c) (1 << 2 >> 1 & 3 ^ 4 | 5)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (parenthesized_expression
+      (binary_expression
+        (binary_expression
+          (integer)
+          (binary_expression
+            (integer)
+            (integer)))
+        (binary_expression
+          (binary_expression
+            (integer)
+            (integer))
+          (integer))))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (binary_expression
+          (variable)
+          (variable))))
+    (parenthesized_expression
+      (binary_expression
+        (binary_expression
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (integer)
+                (integer))
+              (integer))
+            (integer))
+          (integer))
+        (integer)))))
+
+================================================================================
+Comparisons and membership
+================================================================================
+
+:put ($a = $b) ($a != $b) ($a < $b) ($a <= $b) ($a > $b) ($a >= $b) ($x in $c) ($a->len < 3)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (member_expression
+          (variable)
+          (identifier))
+        (integer)))))
+
+================================================================================
+Concatenation, logic and casts
+================================================================================
+
+:put ($a . $b) (!$ok) (-$x) (~$bits) ($a && $b || $c) ($n as u16) (-5) ((0 as u8) as i64)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (variable)))
+    (parenthesized_expression
+      (unary_expression
+        (variable)))
+    (parenthesized_expression
+      (unary_expression
+        (variable)))
+    (parenthesized_expression
+      (unary_expression
+        (variable)))
+    (parenthesized_expression
+      (binary_expression
+        (binary_expression
+          (variable)
+          (variable))
+        (variable)))
+    (parenthesized_expression
+      (cast_expression
+        (variable)
+        (type_identifier)))
+    (parenthesized_expression
+      (integer))
+    (parenthesized_expression
+      (cast_expression
+        (parenthesized_expression
+          (cast_expression
+            (integer)
+            (type_identifier)))
+        (type_identifier)))))
+
+================================================================================
+Collection and typed literals
+================================================================================
+
+:put {1; 2; 3} {"a"=1; "b"=2} {}
+:put Point{x=1.0; y=2.0} Pair<i64, String>{first=1; second="a"} List<i64>{} /geo/Point{x=1.0}
+:put Set<String>{
+    "a"
+    "b"
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (collection_literal
+      (integer)
+      (integer)
+      (integer))
+    (collection_literal
+      (map_entry
+        (string
+          (string_content))
+        (integer))
+      (map_entry
+        (string
+          (string_content))
+        (integer)))
+    (collection_literal))
+  (call
+    (command_name)
+    (typed_literal
+      (type_identifier)
+      (field_initializer
+        (identifier)
+        (float))
+      (field_initializer
+        (identifier)
+        (float)))
+    (typed_literal
+      (generic_type
+        (type_identifier)
+        (type_arguments
+          (type_identifier)
+          (type_identifier)))
+      (field_initializer
+        (identifier)
+        (integer))
+      (field_initializer
+        (identifier)
+        (string
+          (string_content))))
+    (typed_literal
+      (generic_type
+        (type_identifier)
+        (type_arguments
+          (type_identifier))))
+    (typed_literal
+      (path
+        (identifier)
+        (identifier))
+      (field_initializer
+        (identifier)
+        (float))))
+  (call
+    (command_name)
+    (typed_literal
+      (generic_type
+        (type_identifier)
+        (type_arguments
+          (type_identifier)))
+      (string
+        (string_content))
+      (string
+        (string_content)))))

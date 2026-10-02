@@ -1,0 +1,117 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_errors.pk
+---
+const C: i64
+fn load<Self: Loader>(self: Self) -> String
+fn load(self: Disk) -> String
+fn fmt(self: Show, out: Formatter) -> nothing
+fn risky() -> i64
+fn plain() -> i64
+fn fails() -> nothing
+fn bad_value() -> i64
+fn chained() -> nothing
+    e: Error
+fn main() -> nothing
+    e: Error
+
+--- diagnostics ---
+[E0321] Error: an error raised by `:risky` is not caught
+   ╭─[ err_errors.pk:3:32 ]
+   │
+ 3 │ :fn plain -> i64 do={ :return [:risky] }
+   │                                ───┬──  
+   │                                   ╰──── an error raised by `:risky` is not caught
+   │ 
+   │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
+───╯
+[E0321] Error: the error raised here is not caught
+   ╭─[ err_errors.pk:4:16 ]
+   │
+ 4 │ :fn fails do={ :error "nope" }
+   │                ──────┬──────  
+   │                      ╰──────── the error raised here is not caught
+   │ 
+   │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
+───╯
+[E0301] Error: `:error` takes a message `String` or an `Error`, not `{integer}`
+   ╭─[ err_errors.pk:5:41 ]
+   │
+ 5 │ :fn bad_value -> i64 raises do={ :error 5 }
+   │                                         ┬  
+   │                                         ╰── `:error` takes a message `String` or an `Error`, not `{integer}`
+───╯
+[E0305] Error: `source=` gives the cause of a new error, made from a message
+   ╭─[ err_errors.pk:8:22 ]
+   │
+ 8 │     :error $e source=$e
+   │                      ─┬  
+   │                       ╰── `source=` gives the cause of a new error, made from a message
+   │ 
+   │ Help: raise the error as it is, or write `:error "message" source=$e`
+───╯
+[E0320] Error: `Disk->load` does not match its declaration in the trait `Loader`: the trait's function is declared `raises`, but it is not
+    ╭─[ err_errors.pk:14:9 ]
+    │
+ 14 │     :fn load self -> String do={ :return "ok" }
+    │         ──┬─  
+    │           ╰─── `Disk->load` does not match its declaration in the trait `Loader`: the trait's function is declared `raises`, but it is not
+    │
+    ├─[ err_errors.pk:14:9 ]
+    │
+ 11 │     :fn load self -> String raises
+    │         ──┬─  
+    │           ╰─── declared here
+    │ 
+    │ Help: declare it as `:fn load self -> String raises`
+────╯
+[E0320] Error: `Show->fmt` does not match the trait `Display`
+    ╭─[ err_errors.pk:17:9 ]
+    │
+ 17 │     :fn fmt self mut out:Formatter raises do={}
+    │         ─┬─  
+    │          ╰─── `Show->fmt` does not match the trait `Display`
+    │ 
+    │ Help: declare it as `:fn fmt self mut out:Formatter`
+────╯
+[E0214] Error: module-level initializers must be constant, and cannot use calls
+    ╭─[ err_errors.pk:19:11 ]
+    │
+ 19 │ :const C [:risky]
+    │           ───┬──  
+    │              ╰──── module-level initializers must be constant, and cannot use calls
+    │ 
+    │ Help: use literals, operators, casts and other constants; for a value computed when the program runs, use `:local`
+────╯
+[E0207] Error: cannot assign twice to `e`
+    ╭─[ err_errors.pk:22:14 ]
+    │
+ 22 │         :set e Error{message="y"}
+    │              ┬  
+    │              ╰── cannot assign twice to `e`
+    │
+    ├─[ err_errors.pk:22:14 ]
+    │
+ 21 │     :onerror e in={ :put [:risky] } do={
+    │              ┬  
+    │              ╰── declared here
+    │ 
+    │ Help: copy it first: `:local mine [$e->clone]`
+────╯
+[E0321] Error: an error raised by `:risky` is not caught
+    ╭─[ err_errors.pk:23:15 ]
+    │
+ 23 │         :put [:risky]
+    │               ───┬──  
+    │                  ╰──── an error raised by `:risky` is not caught
+    │ 
+    │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
+────╯
+[E0201] Error: cannot find variable `e` in this scope
+    ╭─[ err_errors.pk:25:10 ]
+    │
+ 25 │     :put $e
+    │          ─┬  
+    │           ╰── cannot find variable `e` in this scope
+────╯

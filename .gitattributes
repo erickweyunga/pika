@@ -1,0 +1,8 @@
+* text=auto eol=lf
+# Lexer test inputs deliberately contain CR and CRLF line endings; keep them byte-exact.
+crates/pika_syntax/tests/lexer/*.pk -text
+# Generated from editors/tree-sitter-pika/grammar.js by `tree-sitter generate`.
+editors/tree-sitter-pika/src/parser.c linguist-generated
+editors/tree-sitter-pika/src/grammar.json linguist-generated
+editors/tree-sitter-pika/src/node-types.json linguist-generated
+editors/tree-sitter-pika/src/tree_sitter/** linguist-generated

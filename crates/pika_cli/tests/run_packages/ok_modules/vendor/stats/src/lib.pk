@@ -1,0 +1,46 @@
+# Statistics: a library package.
+
+:const limit 100
+:global calls:i64 0
+
+:struct Summary impl=Display {
+    count:i64
+    total:i64
+    _log:List<i64>={}
+    :fn new -> Summary do={ :return Summary{count=0; total=0} }
+    :fn add mut self value:i64 do={
+        :set calls ($calls + 1)
+        $self->_log->push $value
+        :set ($self->count) ($self->count + 1)
+        :set ($self->total) ($self->total + $value)
+    }
+    :fn mean self -> f64 do={ :return (($self->total as f64) / ($self->count as f64)) }
+    :fn fmt self mut out:Formatter do={ $out->write "n=$($self->count) total=$($self->total)" }
+}
+
+:trait Shape {
+    :fn area self -> i64
+}
+
+:struct Tracked impl=Drop,Display {
+    name:String
+    :fn drop mut self do={ :put "dropped $($self->name)" }
+}
+
+:fn largest<T: Ord + Copy> items:List<T> -> T do={
+    :local best $items->0
+    :foreach item in=$items do={
+        :if ($item > $best) do={ :set best $item }
+    }
+    :return $best
+}
+
+:fn total_area<S: Shape> shapes:List<S> -> i64 do={
+    :local sum 0
+    :foreach shape in=$shapes do={ :set sum ($sum + [$shape->area]) }
+    :return $sum
+}
+
+:fn scaler factor:i64 -> fn(i64) -> i64 do={
+    :return [:fn x:i64 -> i64 do={ :return ($x * $factor) }]
+}

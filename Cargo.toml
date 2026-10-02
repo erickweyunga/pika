@@ -1,0 +1,50 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "editors/tree-sitter-pika"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+
+[workspace.dependencies]
+pika_codegen = { path = "crates/pika_codegen" }
+pika_diagnostics = { path = "crates/pika_diagnostics" }
+pika_driver = { path = "crates/pika_driver" }
+pika_hir = { path = "crates/pika_hir" }
+pika_mir = { path = "crates/pika_mir" }
+pika_runtime = { path = "crates/pika_runtime" }
+pika_syntax = { path = "crates/pika_syntax" }
+pika_ty = { path = "crates/pika_ty" }
+pika_types = { path = "crates/pika_types" }
+ariadne = "0.6"
+cc = "1.2"
+cranelift-codegen = "0.136"
+cranelift-frontend = "0.136"
+cranelift-jit = "0.136"
+cranelift-module = "0.136"
+cranelift-native = "0.136"
+clap = { version = "4.6", features = ["derive"] }
+insta = { version = "1.48", features = ["glob"] }
+la-arena = "0.3"
+libm = "0.2"
+proptest = "1.11"
+rowan = "0.16"
+serde = { version = "1", features = ["derive"] }
+toml = "1.1"
+tree-sitter = "0.27"
+tree-sitter-language = "0.1"
+
+[workspace.lints.rust]
+# Denied everywhere; the runtime ABI and the JIT entry point allow it locally, with a
+# documented safety argument for each use.
+unsafe_code = "deny"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"

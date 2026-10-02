@@ -1,0 +1,31 @@
+# The additions to /std/strings: searching from the end, splitting once, padding, trimming
+# sets of characters, conversions and number formatting.
+
+:use /std/strings
+
+:fn main raises do={
+    :put "$([/strings/rfind "banana" "an"]) $([/strings/rfind "banana" "x"]) $([/strings/count "banana" "an"]) $([/strings/count "aaaa" "aa"])"
+    :put "$([/strings/strip_prefix "unhappy" "un"]) $([/strings/strip_prefix "happy" "un"]) $([/strings/strip_suffix "file.txt" ".txt"])"
+    :put [/strings/split_once "key=value=more" "="]
+    :put [/strings/rsplit_once "key=value=more" "="]
+    :put [/strings/split_once "novalue" "="]
+    :const parts [/strings/split_once "host:8080" ":"]
+    :match $parts {
+        some split do={ :put "$($split->before) / $($split->after)" }
+        none do={ :put "no port" }
+    }
+    :put [/strings/split_n "a,b,c,d" "," 2]
+    :put [/strings/split_n "a,b" "," 5]
+    :put "[$([/strings/pad_start "7" 3 '0'])] [$([/strings/pad_end "ab" 4 '.'])] [$([/strings/center "mid" 8 '*'])] [$([/strings/pad_start "long" 2 ' '])]"
+    :put "[$([/strings/pad_start "é" 3 '-'])]"
+    :put "[$([/strings/trim_chars "--a-b--" "-"])] [$([/strings/trim_start_chars "xxhixx" "x"])] [$([/strings/trim_end_chars "xxhixx" "x"])] [$([/strings/trim_chars "---" "-"])]"
+    :put "$([/strings/reverse "héllo"]) $([/strings/is_blank " \t\n"]) $([/strings/is_blank " a "]) $([/strings/is_blank ""])"
+    :put "$([/strings/equals_ignore_case "Straße" "STRASSE"]) $([/strings/equals_ignore_case "Hello" "hELLO"]) $([/strings/capitalize "élan"])"
+    :put [/strings/from_chars {'p'; 'i'; 'k'; 'a'}]
+    :put [/strings/bytes "hé"]
+    :put [/strings/bytes ""]
+    :put "$([/strings/format_int 255 16]) $([/strings/format_int -255 2]) $([/strings/format_int 35 36]) $([/strings/format_int 0 8])"
+    :put "$([/strings/parse_int_base "ff" 16]) $([/strings/parse_int_base "-101" 2]) $([/strings/parse_int_base "Z" 36])"
+    :onerror e in={ :put [/strings/parse_int_base "12" 2] } do={ :put "error: $e" }
+    :put "$([/strings/format_float 3.14159 2]) $([/strings/format_float 2.0 0]) $([/strings/format_float -0.5 3]) $([/strings/format_exp 1500.0 2]) $([/strings/format_exp 0.00012 1])"
+}

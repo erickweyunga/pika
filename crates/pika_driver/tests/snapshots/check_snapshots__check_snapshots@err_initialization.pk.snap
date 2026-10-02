@@ -1,0 +1,63 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_initialization.pk
+---
+fn maybe(flag: bool) -> i64
+    x: i64
+fn assigned_in_both(flag: bool) -> i64
+    x: i64
+fn assigned_before_break() -> i64
+    y: i64
+fn maybe_loop(n: i64) -> i64
+    z: i64
+    i: i64
+fn reported_once() -> i64
+    w: i64
+
+--- diagnostics ---
+[E0401] Error: `x` is read before it is assigned
+   ╭─[ err_initialization.pk:4:13 ]
+   │
+ 4 │     :return $x
+   │             ─┬  
+   │              ╰── `x` is read before it is assigned
+   │
+   ├─[ err_initialization.pk:4:13 ]
+   │
+ 2 │     :local x:i64
+   │            ┬  
+   │            ╰── declared here without a value
+   │ 
+   │ Help: assign it with `:set x ...` on every path before this
+───╯
+[E0401] Error: `z` is read before it is assigned
+    ╭─[ err_initialization.pk:22:16 ]
+    │
+ 22 │     :put "z is $z"
+    │                ─┬  
+    │                 ╰── `z` is read before it is assigned
+    │
+    ├─[ err_initialization.pk:22:16 ]
+    │
+ 20 │     :local z:i64
+    │            ┬  
+    │            ╰── declared here without a value
+    │ 
+    │ Help: assign it with `:set z ...` on every path before this
+────╯
+[E0401] Error: `w` is read before it is assigned
+    ╭─[ err_initialization.pk:27:10 ]
+    │
+ 27 │     :put $w
+    │          ─┬  
+    │           ╰── `w` is read before it is assigned
+    │
+    ├─[ err_initialization.pk:27:10 ]
+    │
+ 26 │     :local w:i64
+    │            ┬  
+    │            ╰── declared here without a value
+    │ 
+    │ Help: assign it with `:set w ...` on every path before this
+────╯

@@ -1,0 +1,23 @@
+:local script_var 1
+:fn uses_script do={ :put $script_var }
+:fn put do={}
+:fn dup do={}
+:fn dup do={}
+:const VALUE 1
+:global VALUE:i64 2
+:fn names p:i64 do={
+    :put $missing
+    :local x 1
+    :local x 2
+    :const c 1
+    :set c 2
+    :set p 3
+    :set VALUE 4
+    :for i from=1 to=3 do={ :set i 5 }
+    :break
+    :global g:i64 0
+    :fn nested do={}
+    :set ($x) 5
+    :set (1) 5
+    :put "$x"
+}

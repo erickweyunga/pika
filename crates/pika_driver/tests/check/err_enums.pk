@@ -1,0 +1,53 @@
+# Name resolution and type errors of enums, options, boxes and `:match`.
+
+:enum Shape impl=Copy,Eq {
+    circle radius:f64
+    rect width:f64 height:f64
+    circle
+    named label:String
+
+    :fn rect do={}
+}
+
+:enum Empty {}
+
+:enum Chain {
+    cons head:i64 tail:Chain
+    nil
+}
+
+:enum Tree {
+    leaf
+    node left:Box<Tree> right:Tree?
+}
+
+:fn main do={
+    :local a [Shape->circle 1.0 2.0]
+    :local b Shape->rect
+    :local c Shape->triangle
+    :local d Shape{radius=1.0}
+    :put $a->radius
+    :local o:i64? [some "text"]
+    :local p [some]
+    :local q:Box<String> [Box->new 1]
+    :put $q->inner
+    :local r [Box->open 1]
+    :local u none
+    :match $a {
+        Shape->circle do={}
+        Shape->rect w do={}
+        Shape->square do={}
+        1.5 do={}
+        some x do={}
+    }
+    :match $a {
+        Shape->circle r if=($r) do={}
+    }
+    :match $o {
+        some x do={}
+        some 1 do={}
+    }
+    :match [:nothing] {
+        _ do={}
+    }
+}

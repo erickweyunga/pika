@@ -1,0 +1,69 @@
+# Methods of options (`T?`), besides the built-in `is_some`, `is_none`, `unwrap`,
+# `unwrap_or`, `take` and `clone`.
+
+:impl<T> T? {
+    # The result of `f` for the value, or none.
+    :fn map<U> self f:fn(T) -> U -> U? do={
+        :match $self {
+            some value do={ :return [$f $value] }
+            none do={ :return none }
+        }
+    }
+
+    # The option that `f` gives for the value, or none.
+    :fn and_then<U> self f:fn(T) -> U? -> U? do={
+        :match $self {
+            some value do={ :return [$f $value] }
+            none do={ :return none }
+        }
+    }
+
+    # Returns true if there is a value and `test` is true for it.
+    :fn is_some_and self test:fn(T) -> bool -> bool do={
+        :match $self {
+            some value do={ :return [$test $value] }
+            none do={ :return false }
+        }
+    }
+
+    # Returns true if there is no value, or `test` is true for it.
+    :fn is_none_or self test:fn(T) -> bool -> bool do={
+        :match $self {
+            some value do={ :return [$test $value] }
+            none do={ :return true }
+        }
+    }
+
+    # The value; panics with `message` for none.
+    :fn expect owned self message:String -> T do={
+        :match [:_pass $self] {
+            some value do={ :return $value }
+            none do={ :panic $message }
+        }
+    }
+
+    # The value, or the result of `f` for none, which is only called then.
+    :fn unwrap_or_else owned self f:fn() -> T -> T do={
+        :match [:_pass $self] {
+            some value do={ :return $value }
+            none do={ :return [$f] }
+        }
+    }
+
+    # This option if it has a value, otherwise `other`.
+    :fn otherwise owned self owned other:T? -> T? do={
+        :if ([$self->is_some]) do={ :return $self }
+        :return $other
+    }
+
+    # The value; raises an error with `message` for none.
+    :fn or_error owned self message:String -> T raises do={
+        :match [:_pass $self] {
+            some value do={ :return $value }
+            none do={ :error "$message" }
+        }
+    }
+}
+
+# The option itself, so that `:match` takes ownership of its value.
+:fn _pass<T> owned option:T? -> T? do={ :return $option }

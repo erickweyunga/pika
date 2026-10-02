@@ -1,0 +1,218 @@
+---
+source: crates/pika_syntax/tests/parser_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_syntax/tests/parser/err_arguments.pk
+---
+SourceFile@0..126
+  Call@0..12
+    CommandName@0..4
+      Colon@0..1 ":"
+      Ident@1..4 "put"
+    Whitespace@4..5 " "
+    ArgList@5..12
+      VarExpr@5..7
+        Variable@5..7 "$a"
+      Whitespace@7..8 " "
+      Error@8..9
+        Plus@8..9 "+"
+      Whitespace@9..10 " "
+      VarExpr@10..12
+        Variable@10..12 "$b"
+  Newline@12..13 "\n"
+  ForStmt@13..49
+    Colon@13..14 ":"
+    Ident@14..17 "for"
+    Whitespace@17..18 " "
+    Name@18..19
+      Ident@18..19 "i"
+    Whitespace@19..20 " "
+    NamedArg@20..28
+      NameRef@20..24
+        Ident@20..24 "from"
+      Whitespace@24..25 " "
+      Eq@25..26 "="
+      Whitespace@26..27 " "
+      Literal@27..28
+        Int@27..28 "1"
+    Whitespace@28..29 " "
+    NamedArg@29..34
+      NameRef@29..31
+        Ident@29..31 "to"
+      Eq@31..32 "="
+      Literal@32..34
+        Int@32..34 "10"
+    Whitespace@34..35 " "
+    NamedArg@35..49
+      NameRef@35..37
+        Ident@35..37 "do"
+      Eq@37..38 "="
+      Block@38..49
+        LBrace@38..39 "{"
+        Whitespace@39..40 " "
+        Call@40..47
+          CommandName@40..44
+            Colon@40..41 ":"
+            Ident@41..44 "put"
+          Whitespace@44..45 " "
+          ArgList@45..47
+            VarExpr@45..47
+              Variable@45..47 "$i"
+        Whitespace@47..48 " "
+        RBrace@48..49 "}"
+  Newline@49..50 "\n"
+  Call@50..62
+    CommandName@50..54
+      Colon@50..51 ":"
+      Ident@51..54 "put"
+    Whitespace@54..55 " "
+    ArgList@55..62
+      VarExpr@55..57
+        Variable@55..57 "$a"
+      Whitespace@57..58 " "
+      Error@58..59
+        Eq@58..59 "="
+      Whitespace@59..60 " "
+      VarExpr@60..62
+        Variable@60..62 "$b"
+  Newline@62..63 "\n"
+  Call@63..70
+    CommandName@63..68
+      Colon@63..64 ":"
+      Whitespace@64..65 " "
+      Ident@65..68 "put"
+    Whitespace@68..69 " "
+    ArgList@69..70
+      Literal@69..70
+        Int@69..70 "1"
+  Newline@70..71 "\n"
+  FnDecl@71..90
+    Colon@71..72 ":"
+    Ident@72..74 "fn"
+    Whitespace@74..75 " "
+    Name@75..76
+      Ident@75..76 "f"
+    Whitespace@76..77 " "
+    ParamList@77..84
+      Param@77..84
+        Name@77..78
+          Ident@77..78 "a"
+        Whitespace@78..79 " "
+        TypeAnnotation@79..84
+          Colon@79..80 ":"
+          Whitespace@80..81 " "
+          PathType@81..84
+            NameRef@81..84
+              Ident@81..84 "i64"
+    Whitespace@84..85 " "
+    NamedArg@85..90
+      NameRef@85..87
+        Ident@85..87 "do"
+      Eq@87..88 "="
+      Block@88..90
+        LBrace@88..89 "{"
+        RBrace@89..90 "}"
+  Newline@90..91 "\n"
+  Call@91..108
+    CommandName@91..95
+      Colon@91..92 ":"
+      Ident@92..95 "put"
+    Whitespace@95..96 " "
+    ArgList@96..108
+      BracketExpr@96..108
+        LBracket@96..97 "["
+        Call@97..107
+          PathExpr@97..107
+            PathType@97..107
+              Path@97..107
+                Slash@97..98 "/"
+                Ident@98..101 "std"
+                Slash@101..102 "/"
+                Whitespace@102..103 " "
+                Ident@103..107 "math"
+          ArgList@107..107
+        RBracket@107..108 "]"
+  Newline@108..109 "\n"
+  Call@109..125
+    CommandName@109..113
+      Colon@109..110 ":"
+      Ident@110..113 "put"
+    Whitespace@113..114 " "
+    ArgList@114..125
+      ParenExpr@114..125
+        LParen@114..115 "("
+        BinExpr@115..124
+          MemberExpr@115..122
+            VarExpr@115..117
+              Variable@115..117 "$a"
+            Arrow@117..119 "->"
+            NameRef@119..122
+              Ident@119..122 "len"
+          Lt@122..123 "<"
+          Literal@123..124
+            Int@123..124 "3"
+        RParen@124..125 ")"
+  Newline@125..126 "\n"
+
+--- diagnostics ---
+[E0102] Error: operator `+` in a command argument must be inside parentheses
+   ╭─[ err_arguments.pk:1:9 ]
+   │
+ 1 │ :put $a + $b
+   │         ┬  
+   │         ╰── operator `+` in a command argument must be inside parentheses
+   │ 
+   │ Help: write the expression in parentheses, for example `($a + $b)`
+───╯
+[E0103] Error: named arguments must be written without spaces around `=`
+   ╭─[ err_arguments.pk:2:8 ]
+   │
+ 2 │ :for i from = 1 to=10 do={ :put $i }
+   │        ────┬───  
+   │            ╰───── named arguments must be written without spaces around `=`
+   │ 
+   │ Help: write `from=...`
+───╯
+[E0102] Error: operator `=` in a command argument must be inside parentheses
+   ╭─[ err_arguments.pk:3:9 ]
+   │
+ 3 │ :put $a = $b
+   │         ┬  
+   │         ╰── operator `=` in a command argument must be inside parentheses
+   │ 
+   │ Help: write the expression in parentheses, for example `($a = $b)`
+───╯
+[E0105] Error: expected a command name directly after `:`
+   ╭─[ err_arguments.pk:4:1 ]
+   │
+ 4 │ : put 1
+   │ ┬  
+   │ ╰── expected a command name directly after `:`
+   │ 
+   │ Help: write commands as `:name`, for example `:put`
+───╯
+[E0104] Error: type annotations must be written without spaces around `:`
+   ╭─[ err_arguments.pk:5:9 ]
+   │
+ 5 │ :fn f a : i64 do={}
+   │         ┬  
+   │         ╰── type annotations must be written without spaces around `:`
+   │ 
+   │ Help: write `name:Type`, for example `x:i64`
+───╯
+[E0114] Error: paths must be written without spaces around `/`
+   ╭─[ err_arguments.pk:6:11 ]
+   │
+ 6 │ :put [/std/ math]
+   │           ───┬──  
+   │              ╰──── paths must be written without spaces around `/`
+───╯
+[E0101] Error: expected a type argument after `<`, found integer literal
+   ╭─[ err_arguments.pk:7:15 ]
+   │
+ 7 │ :put ($a->len<3)
+   │               ┬  
+   │               ╰── expected a type argument after `<`, found integer literal
+   │ 
+   │ Help: a `<` joined to a name starts type arguments; to compare, put spaces around it: `a < b`
+───╯

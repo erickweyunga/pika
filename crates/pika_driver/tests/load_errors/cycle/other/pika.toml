@@ -1,0 +1,5 @@
+[package]
+name = "other"
+
+[dependencies]
+third = { path = "../third" }

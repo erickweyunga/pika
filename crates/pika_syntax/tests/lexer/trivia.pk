@@ -1,0 +1,9 @@
+﻿# BOM, then CRLF and CR line endings
+:put 1:put 2
+## doc comment
+:put 3 # trailing comment
+:put "#not a comment"
+:put (1 + \
+  2)
+:put 4 \
+  5

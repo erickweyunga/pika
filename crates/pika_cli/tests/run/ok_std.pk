@@ -1,0 +1,106 @@
+# The standard library: math, strings, characters, lists, input and output, the
+# environment, clocks and files.
+
+:use /std/math
+:use /std/strings
+:use /std/chars
+:use /std/collections as=col
+:use /std/io
+:use /std/fs
+:use /std/time
+:use /std/env
+
+:fn math_demo do={
+    :put [/math/sqrt 2.0]
+    :put "$([/math/floor 2.7]) $([/math/ceil 2.1]) $([/math/round -2.5]) $([/math/trunc -2.7])"
+    :put [/math/pow 2.0 10.0]
+    :put ([/math/sin (/math/pi / 2.0)] = 1.0)
+    :put [/math/hypot 3.0 4.0]
+    :put "$([/math/abs -5]) $([/math/abs 2.5]) $([/math/min 3 7]) $([/math/max 3 7])"
+    :put [/math/clamp 15 0 10]
+    :put [/math/pow_int 3 4]
+    :put [/math/is_nan ([/math/sqrt -1.0])]
+    :put "$([/math/ln /math/e]) $(/math/tau)"
+}
+
+:fn strings_demo raises do={
+    :const text "  Hello, wörld!  "
+    :put "[$([/strings/trim $text])] [$([/strings/trim_start $text])] [$([/strings/trim_end $text])]"
+    :put [/strings/split "a,b,,c" ","]
+    :put [/strings/join {"x"; "y"; "z"} "-"]
+    :put [/strings/replace "one two two" "two" "2"]
+    :put [/strings/find "banana" "na"]
+    :put [/strings/find "banana" "x"]
+    :put [/strings/find_from "banana" "na" 3]
+    :put "$([/strings/starts_with "banana" "ban"]) $([/strings/ends_with "banana" "nan"])"
+    :put [/strings/slice "héllo" 0 3]
+    :put [/strings/chars "héllo"]
+    :put "$([:len "héllo"]) $([/strings/char_count "héllo"])"
+    :put [/strings/words "  the quick\tbrown  fox "]
+    :put [/strings/lines "one\r\ntwo\nthree\n"]
+    :put "$([/strings/to_upper "straße"]) $([/strings/to_lower "ÀB"])"
+    :put [/strings/repeat "ab" 3]
+    :put ([/strings/parse_int "-42"] + 1)
+    :put [/strings/parse_float "2.5e3"]
+    :onerror e in={ :put [/strings/parse_int "4x"] } do={ :put "error: $e" }
+    :onerror e in={ :put [/strings/parse_float ""] } do={ :put "error: $e" }
+    :put [/strings/char_at "héllo" 1]
+}
+
+:fn chars_demo do={
+    :put "$([/chars/is_digit '7']) $([/chars/is_alphabetic 'é']) $([/chars/is_whitespace '\t'])"
+    :put "$([/chars/to_upper 'ß']) $([/chars/to_upper 'q']) $([/chars/to_lower 'Q'])"
+    :put "$([/chars/to_digit '7']) $([/chars/to_digit 'x']) $([/chars/from_code 955])"
+    :put [/chars/utf8_len '€']
+}
+
+:struct Score impl=Ord,Eq,Clone,Display {
+    points:i64
+    name:String
+}
+
+:fn collections_demo do={
+    :local numbers {5; 3; 9; 1; 3; 7}
+    /col/sort $numbers
+    :put $numbers
+    :local words {"pear"; "apple"; "fig"}
+    :put [/col/sorted $words]
+    :put $words
+    /col/reverse $words
+    :put $words
+    :const scores {Score{points=2; name="b"}; Score{points=1; name="a"}; Score{points=2; name="a"}}
+    :put [/col/sorted $scores]
+    :put "$([/col/index_of $numbers 7]) $([/col/index_of $numbers 4])"
+    :put "$([/col/min_of $numbers]) $([/col/max_of $words]) $([/col/sum {1.5; 2.5}])"
+    :put [/col/range 2 6]
+    :const empty:List<i64> {}
+    :put [/col/max_of $empty]
+}
+
+:fn system_demo raises do={
+    /io/print "no line break, "
+    /io/print "then one\n"
+    /io/eput "to standard error"
+    :put [/io/read_line]
+    :put [/env/args]
+    :put [/env/var "PIKA_SURELY_UNSET_VARIABLE"]
+    :const started [/time/monotonic]
+    /time/sleep 1ms
+    :put (([/time/monotonic] - $started) >= 1ms)
+    :put ([/time/unix_time] > 0s)
+    :const path "std_test_output.txt"
+    /fs/write $path "first line\nsecond line"
+    :put [/fs/exists $path]
+    :put [/strings/lines [/fs/read $path]]
+    /fs/remove $path
+    :put [/fs/exists $path]
+    :onerror e in={ :put [/fs/read $path] } do={ :put "caught: $([/strings/starts_with $e->message "cannot read std_test_output.txt"])" }
+}
+
+:fn main raises do={
+    :math_demo
+    :strings_demo
+    :chars_demo
+    :collections_demo
+    :system_demo
+}

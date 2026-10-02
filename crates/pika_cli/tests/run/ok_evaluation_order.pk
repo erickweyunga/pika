@@ -1,0 +1,39 @@
+# Operands and arguments are evaluated left to right as written; each value is taken when
+# it is evaluated, even if a later operand changes the variable.
+
+:struct Pair impl=Display {
+    first:i64
+    second:i64
+}
+
+:fn show tag:String a:i64 b:i64 do={ :put "$tag $a $b" }
+
+:fn note text:String -> i64 do={
+    :put $text
+    :return 1
+}
+
+:fn bump mut n:i64 -> i64 do={
+    :set n ($n + 1)
+    :return $n
+}
+
+:fn main do={
+    # Named arguments run in the order written, then bind to parameters.
+    :show "named" b=[:note "b first"] a=[:note "a second"]
+    :local m:Map<String, i64> {}
+    :put [$m->insert value=[:note "value"] key="k"]
+    :local xs:List<i64> {}
+    $xs->insert value=[:note "v"] index=([:note "i"] - 1)
+    :put "$m $xs"
+
+    # A later operand that changes a variable does not change earlier reads of it.
+    :local n 1
+    :put "$n $[:bump $n] $n"
+    :put ($n + [:bump $n])
+    :const values {$n; [:bump $n]; $n}
+    :put $values
+    :put Pair{first=$n; second=[:bump $n]}
+    :local list {1; 2; 3}
+    :put "$list $[$list->pop] $list"
+}

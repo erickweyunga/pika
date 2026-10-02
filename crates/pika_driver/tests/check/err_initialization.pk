@@ -1,0 +1,30 @@
+:fn maybe flag:bool -> i64 do={
+    :local x:i64
+    :if ($flag) do={ :set x 1 }
+    :return $x
+}
+:fn assigned_in_both flag:bool -> i64 do={
+    :local x:i64
+    :if ($flag) do={ :set x 1 } else={ :set x 2 }
+    :return $x
+}
+:fn assigned_before_break -> i64 do={
+    :local y:i64
+    :while (true) do={
+        :set y 1
+        :break
+    }
+    :return $y
+}
+:fn maybe_loop n:i64 -> i64 do={
+    :local z:i64
+    :for i from=1 to=$n do={ :set z $i }
+    :put "z is $z"
+    :return 0
+}
+:fn reported_once -> i64 do={
+    :local w:i64
+    :put $w
+    :put $w
+    :return 0
+}

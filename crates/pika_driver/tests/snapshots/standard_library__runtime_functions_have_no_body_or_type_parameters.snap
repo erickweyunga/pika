@@ -1,0 +1,25 @@
+---
+source: crates/pika_driver/tests/standard_library.rs
+expression: "diagnostics_of(\":extern lib=\\\"pika\\\" {\\n    :fn pow<T> x:T y:T -> T\\n    :fn sqrt x:f64=1.0 -> f64 do={ :return $x }\\n}\\n\",)"
+---
+[E0226] Error: a function of the runtime cannot have type parameters
+   ╭─[ std/lib.pk:2:12 ]
+   │
+ 2 │     :fn pow<T> x:T y:T -> T
+   │            ─┬─  
+   │             ╰─── a function of the runtime cannot have type parameters
+───╯
+[E0226] Error: a function of the runtime cannot have default values
+   ╭─[ std/lib.pk:3:20 ]
+   │
+ 3 │     :fn sqrt x:f64=1.0 -> f64 do={ :return $x }
+   │                    ─┬─  
+   │                     ╰─── a function of the runtime cannot have default values
+───╯
+[E0226] Error: a function of the runtime cannot have a body
+   ╭─[ std/lib.pk:3:34 ]
+   │
+ 3 │     :fn sqrt x:f64=1.0 -> f64 do={ :return $x }
+   │                                  ───────┬──────  
+   │                                         ╰──────── a function of the runtime cannot have a body
+───╯

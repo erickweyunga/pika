@@ -1,0 +1,57 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_builtin_traits.pk
+---
+exit: 0
+--- stdout ---
+V{x=11; y=22}
+V{x=9; y=18}
+V{x=10; y=40}
+V{x=-1; y=-2}
+V{x=12; y=24}
+6
+Text{parts={"a"; "b"; "c"}}
+xy
+made x
+drop x
+replaced x
+pair made
+drop a
+drop b
+2
+drop t1
+drop t2
+drop l1
+drop l2
+cleared
+none
+drop k
+[some 1]
+end of main
+drop opt
+drop kept
+drop k
+drop slot
+drop in slot
+drop x2
+Config{name="app"; retries=0; verbose=false; tags={}; limit=none; wait=0s}
+Duo{first=0; second=""}
+Level->high
+Counter{n=100}
+Duo{first=Level->high; second=0.0}
+{}
+[] 0 0
+(1, 2)
+p is (1, 2)
+Line{from=(1, 2); to=(3, 4); label="l"}
+dot at (1, 2)
+path -> (1, 2) -> (5, 6)
+{(1, 2); (1, 2)}
+[some (1, 2)]
+<empty>
+wrap[(1, 2)]
+wrap[s]
+{"a"=(1, 2)}
+drop global
+--- stderr ---

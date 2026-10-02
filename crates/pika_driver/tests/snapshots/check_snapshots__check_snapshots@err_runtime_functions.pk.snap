@@ -1,0 +1,24 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_runtime_functions.pk
+---
+script main() -> nothing
+
+--- diagnostics ---
+[E0226] Error: only the standard library can declare functions of the Pika runtime
+   ╭─[ err_runtime_functions.pk:2:1 ]
+   │
+ 2 │ :extern lib="pika" {
+   │ ───┬───  
+   │    ╰───── only the standard library can declare functions of the Pika runtime
+───╯
+[E0208] Error: foreign functions are not supported yet
+   ╭─[ err_runtime_functions.pk:5:1 ]
+   │
+ 5 │ :extern lib="c" {
+   │ ───┬───  
+   │    ╰───── foreign functions are not supported yet
+   │ 
+   │ Help: planned for milestone M6 of the compiler
+───╯

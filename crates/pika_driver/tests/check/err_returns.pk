@@ -1,0 +1,14 @@
+:fn missing n:i64 -> i64 do={
+    :if ($n > 0) do={ :return 1 }
+}
+:fn no_value -> i64 do={ :return }
+:fn extra do={ :return 5 }
+:fn finishes -> never do={ :put "done" }
+:fn unreachable -> i64 do={
+    :return 1
+    :put "never printed"
+}
+:fn ok_both n:i64 -> i64 do={
+    :if ($n > 0) do={ :return 1 } else={ :return 2 }
+}
+:fn main x:i64 -> i64 do={ :return $x }

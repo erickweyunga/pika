@@ -1,0 +1,11 @@
+:struct Point impl=Copy,Display {
+    x:f64
+    y:f64
+    :fn norm2 self -> f64 do={ :return (($self->x * $self->x) + ($self->y * $self->y)) }
+    :fn origin -> Point do={ :return Point{x=0.0; y=0.0} }
+}
+
+:fn distance2 a:Point b:Point -> f64 do={
+    :const d Point{x=($b->x - $a->x); y=($b->y - $a->y)}
+    :return [$d->norm2]
+}

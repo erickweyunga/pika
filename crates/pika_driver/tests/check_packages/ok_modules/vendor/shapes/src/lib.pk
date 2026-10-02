@@ -1,0 +1,8 @@
+:enum Color impl=Display {
+    red
+    green
+}
+
+:trait Area {
+    :fn area self -> f64
+}

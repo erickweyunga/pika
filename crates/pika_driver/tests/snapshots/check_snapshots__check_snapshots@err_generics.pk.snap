@@ -1,0 +1,168 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_generics.pk
+---
+fn get<T>(self: Cell<T>) -> i64
+fn needs_ord<T: Ord>(a: T, b: T) -> bool
+fn no_bound<T>(a: T, b: T) -> bool
+fn no_display<T>(x: T) -> nothing
+fn no_clone<T>(x: T) -> T
+fn twice_copy<T: Copy>(x: T) -> List<T>
+fn keys<K>(m: Map<K, i64>) -> i64
+fn with_default<T>(x: T, y: T) -> nothing
+fn no_method<T>(x: T) -> i64
+fn main<T>() -> nothing
+    h: Holder<i64>
+    s: Map<f64, i64>
+    bad: Sorted<bool>
+    list: List<i64>
+    c: Cell<i64>
+
+--- diagnostics ---
+[E0303] Error: operator `<` cannot be used with `T`
+   ╭─[ err_generics.pk:2:50 ]
+   │
+ 2 │ :fn no_bound<T> a:T b:T -> bool do={ :return ($a < $b) }
+   │                                                  ┬  
+   │                                                  ╰── operator `<` cannot be used with `T`
+   │ 
+   │ Help: add a bound to the type parameter: `<T: Ord>`
+───╯
+[E0303] Error: `:put` cannot be used with a value of type `T`
+   ╭─[ err_generics.pk:3:33 ]
+   │
+ 3 │ :fn no_display<T> x:T do={ :put $x }
+   │                                 ─┬  
+   │                                  ╰── `:put` cannot be used with a value of type `T`
+   │ 
+   │ Help: add a bound to the type parameter: `<T: Display>`
+───╯
+[E0312] Error: `T` has no method named `clone`
+   ╭─[ err_generics.pk:4:44 ]
+   │
+ 4 │ :fn no_clone<T> x:T -> T do={ :return [$x->clone] }
+   │                                            ──┬──  
+   │                                              ╰──── `T` has no method named `clone`
+   │ 
+   │ Help: add a bound to the type parameter: `<T: Clone>`
+───╯
+[E0317] Error: `K` cannot be a map key or a set element
+   ╭─[ err_generics.pk:6:15 ]
+   │
+ 6 │ :fn keys<K> m:Map<K, i64> -> i64 do={ :return [:len $m] }
+   │               ─────┬─────  
+   │                    ╰─────── `K` cannot be a map key or a set element
+   │ 
+   │ Help: add a bound to the type parameter: `<K: Hash + Eq>`
+───╯
+[E0215] Error: a parameter whose type has type parameters cannot have a default value
+   ╭─[ err_generics.pk:7:29 ]
+   │
+ 7 │ :fn with_default<T> x:T y:T=0 do={}
+   │                             ┬  
+   │                             ╰── a parameter whose type has type parameters cannot have a default value
+   │ 
+   │ Help: a default value is a constant, so it cannot have every type
+───╯
+[E0215] Error: a field whose type has type parameters cannot have a default value
+    ╭─[ err_generics.pk:11:13 ]
+    │
+ 11 │     count:T=1
+    │             ┬  
+    │             ╰── a field whose type has type parameters cannot have a default value
+    │ 
+    │ Help: a default value is a constant, so it cannot have every type
+────╯
+[E0312] Error: `T` has no method named `len`
+    ╭─[ err_generics.pk:18:47 ]
+    │
+ 18 │ :fn no_method<T> x:T -> i64 do={ :return [$x->len] }
+    │                                               ─┬─  
+    │                                                ╰─── `T` has no method named `len`
+    │ 
+    │ Help: a value of type parameter `T` has only the methods of the traits it is bound by
+────╯
+[E0311] Error: `main` cannot have type parameters
+    ╭─[ err_generics.pk:30:10 ]
+    │
+ 30 │ :fn main<T> do={
+    │          ┬  
+    │          ╰── `main` cannot have type parameters
+────╯
+[E0319] Error: `Map<i64, i64>` does not implement `Ord`, which `:needs_ord` requires of `T`
+    ╭─[ err_generics.pk:31:11 ]
+    │
+ 31 │     :put [:needs_ord {1=1} {2=2}]
+    │           ───────────┬──────────  
+    │                      ╰──────────── `Map<i64, i64>` does not implement `Ord`, which `:needs_ord` requires of `T`
+────╯
+[E0305] Error: `:needs_ord` takes 1 type argument, but 2 were given
+    ╭─[ err_generics.pk:32:21 ]
+    │
+ 32 │     :put [:needs_ord<i64, i64> 1 2]
+    │                     ─────┬────  
+    │                          ╰────── `:needs_ord` takes 1 type argument, but 2 were given
+────╯
+[E0319] Error: `String` does not implement `Copy`, which `:twice_copy` requires of `T`
+    ╭─[ err_generics.pk:33:11 ]
+    │
+ 33 │     :put [:twice_copy "s"]
+    │           ───────┬───────  
+    │                  ╰───────── `String` does not implement `Copy`, which `:twice_copy` requires of `T`
+────╯
+[E0317] Error: `f64` cannot be a map key or a set element
+    ╭─[ err_generics.pk:35:14 ]
+    │
+ 35 │     :const s:Map<f64, i64> {}
+    │              ──────┬──────  
+    │                    ╰──────── `f64` cannot be a map key or a set element
+    │ 
+    │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+────╯
+[E0319] Error: `bool` does not implement `Ord`, which `Sorted` requires of `T`
+    ╭─[ err_generics.pk:36:16 ]
+    │
+ 36 │     :const bad:Sorted<bool> Sorted{items={true}}
+    │                ──────┬─────  
+    │                      ╰─────── `bool` does not implement `Ord`, which `Sorted` requires of `T`
+────╯
+[E0305] Error: the built-in method `len` takes no type arguments
+    ╭─[ err_generics.pk:38:21 ]
+    │
+ 38 │     :put [$list->len<i64>]
+    │                     ──┬──  
+    │                       ╰──── the built-in method `len` takes no type arguments
+────╯
+[E0303] Error: `:put` cannot be used with a value of type `Opt<i64>`
+    ╭─[ err_generics.pk:39:11 ]
+    │
+ 39 │     :put [Opt->just<i64> 1]
+    │           ────────┬───────  
+    │                   ╰───────── `:put` cannot be used with a value of type `Opt<i64>`
+────╯
+[E0217] Error: a variant takes no type arguments
+    ╭─[ err_generics.pk:39:20 ]
+    │
+ 39 │     :put [Opt->just<i64> 1]
+    │                    ──┬──  
+    │                      ╰──── a variant takes no type arguments
+    │ 
+    │ Help: write the enum's type arguments before `->`, as in `Opt<i64>->some`
+────╯
+[E0217] Error: a member that is not called takes no type arguments
+    ╭─[ err_generics.pk:41:20 ]
+    │
+ 41 │     :put ($c->value<i64>)
+    │                    ──┬──  
+    │                      ╰──── a member that is not called takes no type arguments
+    │ 
+    │ Help: type arguments are given to calls of functions and methods, as in `[$a->map<f64> ...]`
+────╯
+[E0305] Error: `Cell->get` does not take type arguments
+    ╭─[ err_generics.pk:42:18 ]
+    │
+ 42 │     :put [$c->get<i64>]
+    │                  ──┬──  
+    │                    ╰──── `Cell->get` does not take type arguments
+────╯

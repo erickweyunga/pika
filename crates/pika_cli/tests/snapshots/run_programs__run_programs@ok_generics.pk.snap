@@ -1,0 +1,34 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_generics.pk
+---
+exit: 0
+--- stdout ---
+7
+2.5
+p
+[some 9]
+[some "c"]
+none
+moved
+<42>
+<[some 'c']>
+2
+Pair{first="one"; second=1}
+true
+Pair{first=1; second="one"}
+Pair{first=2.5; second=1}
+Pair{first=7; second=1}
+Pair{first="x"; second="y"}
+Pair{first=Pair{first=1; second=2}; second={"x"; "y"}}
+Wrapper{value=5} Wrapper{value=5}
+Wrapper{value="text"}
+{"1"; "2"; "3"; "5"; "8"; "9"}
+Tree->node{left=Tree->node{left=Tree->leaf; value="a"; right=Tree->leaf}; value="m"; right=Tree->leaf}
+3
+Maybe->nothing false
+fallback
+Maybe->just{value=2.5} true Maybe<f64>
+items {1; 2}
+--- stderr ---

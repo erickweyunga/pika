@@ -1,0 +1,162 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_collections.pk
+---
+fn keys(k: Map<f64, i64>, s: Set<List<i64>>) -> nothing
+fn main() -> nothing
+    empty: {error}
+    mixed: List<i64>
+    named: {error}
+    xs: List<i64>
+    text: String
+    set: Set<i64>
+    x: {error}
+    i: {error}
+    x: i64
+    x: i64
+    m: Map<String, i64>
+
+--- diagnostics ---
+[E0314] Error: `Reading` cannot implement `Hash`: field `value` of type `f64` does not
+   ╭─[ err_collections.pk:3:25 ]
+   │
+ 3 │ :struct Reading impl=Eq,Hash {
+   │                         ──┬─  
+   │                           ╰─── `Reading` cannot implement `Hash`: field `value` of type `f64` does not
+ 4 │     value:f64
+   │           ─┬─  
+   │            ╰─── not `Hash`
+───╯
+[E0317] Error: `f64` cannot be a map key or a set element
+   ╭─[ err_collections.pk:7:12 ]
+   │
+ 7 │ :fn keys k:Map<f64, i64> s:Set<List<i64>> do={}
+   │            ──────┬──────  
+   │                  ╰──────── `f64` cannot be a map key or a set element
+   │ 
+   │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+───╯
+[E0317] Error: `List<i64>` cannot be a map key or a set element
+   ╭─[ err_collections.pk:7:28 ]
+   │
+ 7 │ :fn keys k:Map<f64, i64> s:Set<List<i64>> do={}
+   │                            ───────┬──────  
+   │                                   ╰──────── `List<i64>` cannot be a map key or a set element
+   │ 
+   │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+───╯
+[E0302] Error: cannot infer the type of an empty collection
+    ╭─[ err_collections.pk:10:18 ]
+    │
+ 10 │     :local empty {}
+    │                  ─┬  
+    │                   ╰── cannot infer the type of an empty collection
+    │ 
+    │ Help: write its type: `List<i64>{}`, `Set<String>{}` or `Map<String, i64>{}`
+────╯
+[E0301] Error: a `List<{integer}>` literal lists values, not `key=value` entries
+    ╭─[ err_collections.pk:11:22 ]
+    │
+ 11 │     :local mixed {1; "a"=2}
+    │                      ─┬─  
+    │                       ╰─── a `List<{integer}>` literal lists values, not `key=value` entries
+────╯
+[E0302] Error: cannot infer the type of an empty collection
+    ╭─[ err_collections.pk:12:18 ]
+    │
+ 12 │     :local named {a=1}
+    │                  ──┬──  
+    │                    ╰──── cannot infer the type of an empty collection
+    │ 
+    │ Help: write its type: `List<i64>{}`, `Set<String>{}` or `Map<String, i64>{}`
+────╯
+[E0219] Error: the keys of a map literal are values
+    ╭─[ err_collections.pk:12:19 ]
+    │
+ 12 │     :local named {a=1}
+    │                   ─┬─  
+    │                    ╰─── the keys of a map literal are values
+    │ 
+    │ Help: write a string key in quotes: `"a"=...`, or a variable: `$a=...`
+────╯
+[E0301] Error: mismatched types: expected `i64`, found `String`
+    ╭─[ err_collections.pk:14:15 ]
+    │
+ 14 │     :put $xs->"a"
+    │               ─┬─  
+    │                ╰─── expected `i64`
+────╯
+[E0318] Error: `String` cannot be indexed
+    ╭─[ err_collections.pk:16:10 ]
+    │
+ 16 │     :put $text->0
+    │          ────┬───  
+    │              ╰───── `String` cannot be indexed
+    │ 
+    │ Help: strings are not indexable (planned: `[$s->chars]` and `[$s->bytes]`)
+────╯
+[E0318] Error: `Set<i64>` cannot be indexed
+    ╭─[ err_collections.pk:18:10 ]
+    │
+ 18 │     :put $set->0
+    │          ───┬───  
+    │             ╰───── `Set<i64>` cannot be indexed
+    │ 
+    │ Help: test membership with `($value in $set)`
+────╯
+[E0318] Error: `{integer}` cannot be iterated with `:foreach`
+    ╭─[ err_collections.pk:19:19 ]
+    │
+ 19 │     :foreach x in=5 do={}
+    │                   ┬  
+    │                   ╰── `{integer}` cannot be iterated with `:foreach`
+    │ 
+    │ Help: add a type annotation to the collection
+────╯
+[E0318] Error: a set has no index; iterate with one name: `:foreach x in=$set`
+    ╭─[ err_collections.pk:20:21 ]
+    │
+ 20 │     :foreach i,x in=$set do={}
+    │                     ──┬─  
+    │                       ╰─── a set has no index; iterate with one name: `:foreach x in=$set`
+────╯
+[E0318] Error: the elements of a set cannot be modified
+    ╭─[ err_collections.pk:21:23 ]
+    │
+ 21 │     :foreach mut x in=$set do={}
+    │                       ──┬─  
+    │                         ╰─── the elements of a set cannot be modified
+────╯
+[E0312] Error: `List<{integer}>` has no method named `shuffle`
+    ╭─[ err_collections.pk:22:16 ]
+    │
+ 22 │     :put [$xs->shuffle]
+    │                ───┬───  
+    │                   ╰───── `List<{integer}>` has no method named `shuffle`
+    │ 
+    │ Help: the built-in methods of lists are `push`, `pop`, `insert`, `remove`, `swap`, `get`, `contains`, `len`, `is_empty`, `clear` and `clone`; /std/collections adds `sort`, `map`, `filter` and others
+────╯
+[E0312] Error: `Set<i64>` has no method named `push`
+    ╭─[ err_collections.pk:23:17 ]
+    │
+ 23 │     :put [$set->push 1]
+    │                 ──┬─  
+    │                   ╰─── `Set<i64>` has no method named `push`
+    │ 
+    │ Help: the built-in methods of sets are `insert`, `remove`, `contains`, `len`, `is_empty`, `clear` and `clone`
+────╯
+[E0301] Error: mismatched types: expected `String`, found `{integer}`
+    ╭─[ err_collections.pk:25:27 ]
+    │
+ 25 │     :put ([:len $m] + $m->1)
+    │                           ┬  
+    │                           ╰── expected `String`
+────╯
+[E0303] Error: operator `<` cannot be used with `Set<i64>`
+    ╭─[ err_collections.pk:26:16 ]
+    │
+ 26 │     :put ($set < $set)
+    │                ┬  
+    │                ╰── operator `<` cannot be used with `Set<i64>`
+────╯

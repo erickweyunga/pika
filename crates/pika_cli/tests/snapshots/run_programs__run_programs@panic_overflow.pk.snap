@@ -1,0 +1,11 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_overflow.pk
+---
+exit: 101
+--- stdout ---
+before
+--- stderr ---
+panic: integer overflow
+  at panic_overflow.pk:1:39

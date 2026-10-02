@@ -1,0 +1,18 @@
+[package]
+name = "pika_mir"
+description = "Mid-level intermediate representation of Pika programs: control-flow graphs, analyses and an interpreter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+pika_ty.workspace = true
+la-arena.workspace = true
+pika_diagnostics.workspace = true
+pika_hir.workspace = true
+pika_runtime.workspace = true
+pika_types.workspace = true
+
+[lints]
+workspace = true

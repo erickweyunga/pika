@@ -1,0 +1,11 @@
+:fn find needle:String -> i64? do={
+    :if ($needle = "pika") do={ :return [some 1] }
+    :return none
+}
+
+:fn main do={
+    :const found [:find "pika"]
+    :put [$found->unwrap]
+    :const missing [:find "other"]
+    :put [$missing->unwrap]
+}

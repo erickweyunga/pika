@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/bad_name
+---
+the package name `my-app` in tests/load_errors/bad_name/pika.toml is not an identifier: use letters, digits and `_`, as in `my_package`

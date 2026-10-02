@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/binary_dep
+---
+the package in tests/load_errors/binary_dep/tool is a program (src/main.pk), not a library (src/lib.pk), so it cannot be a dependency

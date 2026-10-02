@@ -1,0 +1,59 @@
+:use /std/math
+# <- keyword
+
+:struct Point impl=Copy,Display {
+# <- keyword
+#       ^ type
+#             ^ keyword
+#                  ^ type.interface
+#                       ^ type.interface
+    x:f64
+#   ^ property
+#     ^ type.builtin
+    label:String="origin"
+#   ^ property
+#         ^ type
+#                ^ string
+
+    :fn new x:f64 -> Self do={
+#   ^ keyword
+#       ^ function.definition
+#           ^ variable.parameter
+#                    ^ type
+#                         ^ keyword.control
+        :return Self{x=$x; label="p"}
+#       ^ keyword.control
+#               ^ type
+#                    ^ property
+#                      ^ variable
+    }
+
+    :fn dist self other:Point -> f64 do={
+#            ^ variable.special
+#                 ^ variable.parameter
+        :return [/math/sqrt ($self->x * $other->x)]
+#                      ^ function
+#                            ^ variable.special
+#                                   ^ property
+#                                     ^ operator
+    }
+}
+
+:enum Shape<T: Ord> {
+#           ^ type
+#              ^ type.interface
+    circle center:Point radius:f64
+#   ^ variant
+#          ^ property
+}
+
+:trait Area {
+#      ^ type.interface
+    :fn area mut self -> f64 raises
+#            ^ keyword
+#                            ^ keyword
+}
+
+:const LIMIT 100
+#      ^ constant
+#            ^ number

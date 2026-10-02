@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/duplicate_names
+---
+two different packages are named `shared`: one in tests/load_errors/duplicate_names/y, the other in tests/load_errors/duplicate_names/x

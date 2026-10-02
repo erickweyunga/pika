@@ -1,0 +1,11 @@
+# An error raised in one module and wrapped in another: the report gives each one's file.
+:use /app/config/load
+
+:fn main raises do={
+    :onerror e in={
+        :put [:load "port"]
+        :put [:load "colour"]
+    } do={
+        :error "cannot start" source=$e
+    }
+}

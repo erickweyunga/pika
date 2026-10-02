@@ -1,0 +1,5 @@
+# The Pika standard library.
+#
+# Its modules: /std/math (numbers), /std/strings (text), /std/chars (characters),
+# /std/collections (lists), /std/io (input and output), /std/env (the program's
+# environment), /std/time (clocks) and /std/fs (files).

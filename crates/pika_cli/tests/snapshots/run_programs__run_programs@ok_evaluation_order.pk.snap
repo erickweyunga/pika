@@ -1,0 +1,21 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_evaluation_order.pk
+---
+exit: 0
+--- stdout ---
+b first
+a second
+named 1 1
+value
+none
+v
+i
+{"k"=1} {1}
+1 2 2
+5
+{3; 4; 4}
+Pair{first=4; second=5}
+{1; 2; 3} [some 3] {1; 2}
+--- stderr ---

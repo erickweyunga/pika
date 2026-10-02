@@ -1,0 +1,11 @@
+:extern lib="c" {
+    :fn strlen s:Ptr<u8> -> u64
+}
+:test "addition" do={
+    :assert ((2 + 2) = 4) "2 + 2 should be 4"
+}
+:fn main do={
+    :unsafe {
+        :put 1
+    }
+}

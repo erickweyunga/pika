@@ -1,0 +1,17 @@
+:use /app/util/_times
+:use /app/util as=app
+:use /app/util as=helpers
+:use /app/counter as=helpers
+:use /colors/Color
+
+:fn main do={
+    :put [/app/util/_times 2 3]
+    :put [/helpers/nothing]
+    :put [/app/missing/thing]
+    :const c /app/counter/Counter{count=1; _step=2}
+    :put ($c->count + $c->_step)
+    :put [$c->_bump]
+    :const made [/app/counter/Counter->_make]
+    :put [/app/counter/Counter->make]->count
+    :put [/shapes/area 2.0]
+}

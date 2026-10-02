@@ -1,0 +1,16 @@
+# Ownership is checked once on the default functions of a trait, for every implementing type.
+:trait Dup {
+    :fn both owned self -> List<Self> do={ :return {$self; $self} }
+    :fn steal self -> Self do={ :return $self }
+}
+:trait CopyDup impl=Copy {
+    :fn both2 owned self -> List<Self> do={ :return {$self; $self} }
+}
+:struct A impl=Dup { s:String }
+:struct B impl=CopyDup,Copy { n:i64 }
+:fn main do={
+    :const a A{s="x"}
+    :put [:len [$a->both]]
+    :const b B{n=1}
+    :put [:len [$b->both2]]
+}

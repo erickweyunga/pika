@@ -1,0 +1,37 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+assertion_line: 61
+expression: native
+input_file: crates/pika_cli/tests/run/ok_structs.pk
+---
+exit: 0
+--- stdout ---
+Point{x=3.0; y=4.0}
+25.0
+4.5
+p=Point{x=4.5; y=4.0} q=Point{x=4.5; y=10.0}
+false
+true
+true
+Person{name="Alice"; age=30; tag='p'; home=Point{x=1.0; y=2.0}}
+hi Alice
+30
+31
+Alicia
+6
+Person{name="Alicia"; age=31; tag='p'; home=Point{x=1.0; y=2.0}} / Person{name="Bob"; age=31; tag='p'; home=Point{x=9.5; y=2.0}}
+false
+true
+Pair{left=Person{name="Alicia"; age=31; tag='p'; home=Point{x=1.0; y=2.0}}; right=Person{name="Bob"; age=31; tag='p'; home=Point{x=9.5; y=2.0}}}
+Point{x=9.5; y=2.0}
+Alicia Carol
+Alicia
+Empty{}
+true
+Person{name="global"; age=1; tag='p'; home=Point{x=1.0; y=2.0}}
+Person{name="changed"; age=2; tag='p'; home=Point{x=1.0; y=2.0}}
+false
+true
+false
+Person{name="quote\"d"; age=30; tag='\''; home=Point{x=1.0; y=2.0}}
+--- stderr ---

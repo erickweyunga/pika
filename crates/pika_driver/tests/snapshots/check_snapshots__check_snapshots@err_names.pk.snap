@@ -1,0 +1,163 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_names.pk
+---
+const VALUE: i64
+fn uses_script() -> nothing
+fn dup() -> nothing
+fn names(p: i64) -> nothing
+    x: i64
+    x: i64
+    c: i64
+    i: i64
+script main() -> nothing
+    script_var: i64
+
+--- diagnostics ---
+[E0201] Error: cannot find variable `script_var` in this scope
+   ╭─[ err_names.pk:2:27 ]
+   │
+ 2 │ :fn uses_script do={ :put $script_var }
+   │                           ─────┬─────  
+   │                                ╰─────── cannot find variable `script_var` in this scope
+   │ 
+   │ Help: top-level `:local` variables belong to the script, not to functions; use `:const` or `:global` to share a value with functions
+───╯
+[E0206] Error: `put` is a built-in command and cannot name a function
+   ╭─[ err_names.pk:3:5 ]
+   │
+ 3 │ :fn put do={}
+   │     ─┬─  
+   │      ╰─── `put` is a built-in command and cannot name a function
+   │ 
+   │ Help: choose another name
+───╯
+[E0204] Error: the function `dup` is declared more than once
+   ╭─[ err_names.pk:5:5 ]
+   │
+ 5 │ :fn dup do={}
+   │     ─┬─  
+   │      ╰─── the function `dup` is declared more than once
+   │
+   ├─[ err_names.pk:5:5 ]
+   │
+ 4 │ :fn dup do={}
+   │     ─┬─  
+   │      ╰─── first declared here
+───╯
+[E0204] Error: the value `VALUE` is declared more than once
+   ╭─[ err_names.pk:7:9 ]
+   │
+ 7 │ :global VALUE:i64 2
+   │         ──┬──  
+   │           ╰──── the value `VALUE` is declared more than once
+   │
+   ├─[ err_names.pk:7:9 ]
+   │
+ 6 │ :const VALUE 1
+   │        ──┬──  
+   │          ╰──── first declared here
+───╯
+[E0201] Error: cannot find variable `missing` in this scope
+   ╭─[ err_names.pk:9:10 ]
+   │
+ 9 │     :put $missing
+   │          ────┬───  
+   │              ╰───── cannot find variable `missing` in this scope
+───╯
+[E0205] Error: `x` is already declared in this scope
+    ╭─[ err_names.pk:11:12 ]
+    │
+ 11 │     :local x 2
+    │            ┬  
+    │            ╰── `x` is already declared in this scope
+    │
+    ├─[ err_names.pk:11:12 ]
+    │
+ 10 │     :local x 1
+    │            ┬  
+    │            ╰── first declared here
+    │ 
+    │ Help: use `:set` to change its value, or choose another name
+────╯
+[E0207] Error: cannot assign twice to `c`
+    ╭─[ err_names.pk:13:10 ]
+    │
+ 13 │     :set c 2
+    │          ┬  
+    │          ╰── cannot assign twice to `c`
+    │
+    ├─[ err_names.pk:13:10 ]
+    │
+ 12 │     :const c 1
+    │            ┬  
+    │            ╰── declared here
+    │ 
+    │ Help: declare it with `:local c` to allow reassignment
+────╯
+[E0207] Error: cannot assign twice to `p`
+    ╭─[ err_names.pk:14:10 ]
+    │
+ 14 │     :set p 3
+    │          ┬  
+    │          ╰── cannot assign twice to `p`
+    │
+    ├─[ err_names.pk:14:10 ]
+    │
+  8 │ :fn names p:i64 do={
+    │           ┬  
+    │           ╰── declared here
+    │ 
+    │ Help: declare the parameter as `mut p` to modify it
+────╯
+[E0207] Error: cannot assign to the constant `VALUE`
+    ╭─[ err_names.pk:15:10 ]
+    │
+ 15 │     :set VALUE 4
+    │          ──┬──  
+    │            ╰──── cannot assign to the constant `VALUE`
+    │ 
+    │ Help: use `:global` for a module-level variable that changes
+────╯
+[E0207] Error: cannot assign twice to `i`
+    ╭─[ err_names.pk:16:34 ]
+    │
+ 16 │     :for i from=1 to=3 do={ :set i 5 }
+    │          ┬                       ┬  
+    │          │                       ╰── cannot assign twice to `i`
+    │          │                          
+    │          ╰────────────────────────── declared here
+    │ 
+    │ Help: loop variables cannot be reassigned
+────╯
+[E0209] Error: `:break` can only be used inside a loop
+    ╭─[ err_names.pk:17:5 ]
+    │
+ 17 │     :break
+    │     ───┬──  
+    │        ╰──── `:break` can only be used inside a loop
+────╯
+[E0211] Error: `:global` can only be used at the top level of a file
+    ╭─[ err_names.pk:18:5 ]
+    │
+ 18 │     :global g:i64 0
+    │     ───┬───  
+    │        ╰───── `:global` can only be used at the top level of a file
+    │ 
+    │ Help: use `:local` for a variable of this function
+────╯
+[E0212] Error: functions can only be declared at the top level of a file
+    ╭─[ err_names.pk:19:5 ]
+    │
+ 19 │     :fn nested do={}
+    │     ─┬─  
+    │      ╰─── functions can only be declared at the top level of a file
+────╯
+[E0213] Error: only variables can be assigned with `:set`
+    ╭─[ err_names.pk:21:11 ]
+    │
+ 21 │     :set (1) 5
+    │           ┬  
+    │           ╰── only variables can be assigned with `:set`
+────╯

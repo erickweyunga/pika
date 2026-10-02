@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_shift.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `amount` is never modified
+   ╭─[ panic_shift.pk:1:8 ]
+   │
+ 1 │ :local amount 64
+   │        ───┬──  
+   │           ╰──── variable `amount` is never modified
+   │ 
+   │ Help: declare it with `:const amount`
+───╯
+panic: shift amount is not smaller than the bit width
+  at panic_shift.pk:2:7

@@ -1,0 +1,18 @@
+# Ownership is checked once on the generic body, for every type argument.
+:fn twice<T> owned x:T -> List<T> do={ :return {$x; $x} }
+:fn twice_copy<T: Copy> x:T -> List<T> do={ :return {$x; $x} }
+:fn read_then_move<T> x:T -> T do={ :return $x }
+
+# Each call needs an instance with a deeper type than the last.
+:fn grow<T> n:i64 owned x:T -> i64 do={
+    :if ($n = 0) do={ :return 0 }
+    :return [:grow ($n - 1) {$x}]
+}
+
+:fn main do={
+    :put [:twice "a"]
+    :put [:twice 1]
+    :put [:twice_copy 1]
+    :put [:read_then_move "s"]
+    :put [:grow 3 1]
+}

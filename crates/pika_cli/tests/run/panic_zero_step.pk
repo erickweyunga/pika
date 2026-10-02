@@ -1,0 +1,2 @@
+:local step 0
+:for i from=1 to=10 step=$step do={ :put $i }

@@ -1,0 +1,44 @@
+:trait Shape {
+    :fn area self -> f64
+    :fn scale mut self by:f64
+    :fn id x:i64=3 -> i64 do={ :return $x }
+}
+:trait Named impl=Shape,Eq {
+    :fn name self -> String do={ :return "?" }
+}
+:trait Loop1 impl=Loop2 {}
+:trait Loop2 impl=Loop1 {}
+:trait Other {
+    :fn name self -> String
+}
+
+:struct Bad impl=Shape {
+    side:f64
+    :fn area self -> i64 do={ :return 1 }
+}
+:struct Bad2 impl=Named,Other {
+    x:f64
+    :fn area self -> f64 do={ :return 1.0 }
+    :fn scale self by:f64 do={}
+}
+:struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    side:f64
+}
+:struct Ok impl=Shape {
+    side:f64
+    :fn area self -> f64 do={ :return 1.0 }
+    :fn scale mut self by:f64 do={}
+}
+
+:fn needs<T: Shape> x:T -> f64 do={ :return [$x->area] }
+:fn unbounded<T> x:T -> f64 do={ :return [$x->area] }
+:fn amb<T: Named + Other> x:T -> String do={ :return [$x->name] }
+:fn eq<T: Named> a:T b:T -> bool do={ :return ($a = $b) }
+:trait Eq {}
+
+:fn main do={
+    :put [:needs 5]
+    :put [:needs Ok{side=1.0}]
+    :local x:Shape Ok{side=1.0}
+    :trait Inner {}
+}

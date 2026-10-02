@@ -1,0 +1,504 @@
+# Strings: searching, slicing, splitting, joining and converting text.
+#
+# Positions in a string are byte offsets, as `:len` counts bytes. A position must be at the
+# start of a character, or at the end of the string: other positions panic.
+
+:use /std/chars
+
+:extern lib="pika" {
+    :fn _str_find text:String pattern:String from:i64 -> i64
+    :fn _str_slice text:String start:i64 end:i64 -> String
+    :fn _str_is_boundary text:String position:i64 -> bool
+    :fn _str_char_at text:String position:i64 -> char
+    :fn _str_to_upper text:String -> String
+    :fn _str_to_lower text:String -> String
+    :fn _str_is_int text:String -> bool
+    :fn _str_to_int text:String -> i64
+    :fn _str_is_float text:String -> bool
+    :fn _str_to_float text:String -> f64
+    :fn _str_rfind text:String pattern:String -> i64
+    :fn _str_byte_at text:String position:i64 -> i64
+    :fn _str_is_int_base text:String base:i64 -> bool
+    :fn _str_to_int_base text:String base:i64 -> i64
+    :fn _int_to_string_base value:i64 base:i64 -> String
+    :fn _float_to_string_fixed value:f64 decimals:i64 -> String
+    :fn _float_to_string_exp value:f64 decimals:i64 -> String
+}
+
+# The two parts of a string around a separator, from `split_once` and `rsplit_once`.
+:struct Split impl=Clone,Eq,Display {
+    # The part before the separator.
+    before:String
+    # The part after the separator.
+    after:String
+}
+
+# Panics unless `position` is at the start of a character of `text`, or at its end.
+:fn _check_position text:String position:i64 do={
+    :if (![:_str_is_boundary $text $position]) do={
+        :panic "position $position is not at the start of a character in a string of $([:len $text]) bytes"
+    }
+}
+
+# The position of the first occurrence of `pattern` in `text`, or none.
+:fn find text:String pattern:String -> i64? do={
+    :const found [:_str_find $text $pattern 0]
+    :if ($found < 0) do={ :return none }
+    :return $found
+}
+
+# The position of the first occurrence of `pattern` in `text` at or after `from`, or none.
+:fn find_from text:String pattern:String from:i64 -> i64? do={
+    :_check_position $text $from
+    :const found [:_str_find $text $pattern $from]
+    :if ($found < 0) do={ :return none }
+    :return $found
+}
+
+# Returns true if `pattern` occurs in `text`.
+:fn contains text:String pattern:String -> bool do={ :return ($pattern in $text) }
+
+# The part of `text` from position `start` to position `end`, not included.
+:fn slice text:String start:i64 end:i64 -> String do={
+    :_check_position $text $start
+    :_check_position $text $end
+    :assert ($start <= $end) "slice: the start is after the end"
+    :return [:_str_slice $text $start $end]
+}
+
+# Returns true if `text` starts with `prefix`.
+:fn starts_with text:String prefix:String -> bool do={
+    :if ([:len $prefix] > [:len $text]) do={ :return false }
+    :return ([:_str_slice $text 0 [:len $prefix]] = $prefix)
+}
+
+# Returns true if `text` ends with `suffix`.
+:fn ends_with text:String suffix:String -> bool do={
+    :const start ([:len $text] - [:len $suffix])
+    :if ($start < 0) do={ :return false }
+    :return ([:_str_slice $text $start [:len $text]] = $suffix)
+}
+
+# The character at a position of `text`.
+:fn char_at text:String position:i64 -> char do={
+    :_check_position $text $position
+    :assert ($position < [:len $text]) "char_at: the position is at the end of the string"
+    :return [:_str_char_at $text $position]
+}
+
+# The characters of `text`, in order.
+:fn chars text:String -> List<char> do={
+    :local result:List<char> {}
+    :local position 0
+    :while ($position < [:len $text]) do={
+        :const c [:_str_char_at $text $position]
+        $result->push $c
+        :set position ($position + [/chars/utf8_len $c])
+    }
+    :return $result
+}
+
+# The number of characters of `text`, which can be less than its number of bytes.
+:fn char_count text:String -> i64 do={
+    :local count 0
+    :local position 0
+    :while ($position < [:len $text]) do={
+        :set position ($position + [/chars/utf8_len [:_str_char_at $text $position]])
+        :set count ($count + 1)
+    }
+    :return $count
+}
+
+# The parts of `text` between occurrences of `separator`, in order. Two separators in a row
+# give an empty part between them. Panics if `separator` is empty.
+:fn split text:String separator:String -> List<String> do={
+    :assert ([:len $separator] > 0) "split: the separator is empty"
+    :local parts:List<String> {}
+    :local start 0
+    :local found [:_str_find $text $separator 0]
+    :while ($found >= 0) do={
+        $parts->push [:_str_slice $text $start $found]
+        :set start ($found + [:len $separator])
+        :set found [:_str_find $text $separator $start]
+    }
+    $parts->push [:_str_slice $text $start [:len $text]]
+    :return $parts
+}
+
+# The lines of `text`, without their line breaks (`\n` or `\r\n`). A line break at the end
+# does not start another line.
+:fn lines text:String -> List<String> do={
+    :local result:List<String> {}
+    :if ([:len $text] = 0) do={ :return $result }
+    :foreach line in=[:split $text "\n"] do={
+        :if ([:ends_with $line "\r"]) do={
+            $result->push [:_str_slice $line 0 ([:len $line] - 1)]
+        } else={
+            $result->push [$line->clone]
+        }
+    }
+    :if ([:ends_with $text "\n"]) do={ $result->pop }
+    :return $result
+}
+
+# The words of `text`: its parts separated by white space, which are not empty.
+:fn words text:String -> List<String> do={
+    :local result:List<String> {}
+    :local start -1
+    :local position 0
+    :while ($position < [:len $text]) do={
+        :const c [:_str_char_at $text $position]
+        :if ([/chars/is_whitespace $c]) do={
+            :if ($start >= 0) do={
+                $result->push [:_str_slice $text $start $position]
+                :set start -1
+            }
+        } else={
+            :if ($start < 0) do={ :set start $position }
+        }
+        :set position ($position + [/chars/utf8_len $c])
+    }
+    :if ($start >= 0) do={ $result->push [:_str_slice $text $start [:len $text]] }
+    :return $result
+}
+
+# The strings of `parts` with `separator` between each two.
+:fn join parts:List<String> separator:String -> String do={
+    :local result ""
+    :foreach i,part in=$parts do={
+        :if ($i > 0) do={ :set result "$result$separator" }
+        :set result "$result$part"
+    }
+    :return $result
+}
+
+# `text` with every occurrence of `pattern` replaced by `replacement`, from left to right.
+# Panics if `pattern` is empty.
+:fn replace text:String pattern:String replacement:String -> String do={
+    :return [:join [:split $text $pattern] $replacement]
+}
+
+# `text` repeated `count` times. Panics if `count` is negative.
+:fn repeat text:String count:i64 -> String do={
+    :assert ($count >= 0) "repeat: the count is negative"
+    :local result ""
+    :for i from=1 to=$count do={ :set result "$result$text" }
+    :return $result
+}
+
+# The position after the white space at the start of `text`.
+:fn _first_non_space text:String -> i64 do={
+    :local position 0
+    :while ($position < [:len $text]) do={
+        :const c [:_str_char_at $text $position]
+        :if (![/chars/is_whitespace $c]) do={ :return $position }
+        :set position ($position + [/chars/utf8_len $c])
+    }
+    :return $position
+}
+
+# The position of the white space at the end of `text`.
+:fn _end_non_space text:String -> i64 do={
+    :local end [:len $text]
+    :while ($end > 0) do={
+        :local start ($end - 1)
+        :while (![:_str_is_boundary $text $start]) do={ :set start ($start - 1) }
+        :if (![/chars/is_whitespace [:_str_char_at $text $start]]) do={ :return $end }
+        :set end $start
+    }
+    :return 0
+}
+
+# `text` without white space at its start and end.
+:fn trim text:String -> String do={
+    :const start [:_first_non_space $text]
+    :const end [:_end_non_space $text]
+    :if ($end <= $start) do={ :return "" }
+    :return [:_str_slice $text $start $end]
+}
+
+# `text` without white space at its start.
+:fn trim_start text:String -> String do={
+    :return [:_str_slice $text [:_first_non_space $text] [:len $text]]
+}
+
+# `text` without white space at its end.
+:fn trim_end text:String -> String do={
+    :return [:_str_slice $text 0 [:_end_non_space $text]]
+}
+
+# `text` in uppercase, following Unicode: the result can be longer, as `ß` becomes `SS`.
+:fn to_upper text:String -> String do={ :return [:_str_to_upper $text] }
+
+# `text` in lowercase, following Unicode.
+:fn to_lower text:String -> String do={ :return [:_str_to_lower $text] }
+
+# The integer written in `text`, in decimal with an optional sign, as in `-42`; raises an
+# error for any other text, or a number that does not fit an `i64`.
+:fn parse_int text:String -> i64 raises do={
+    :if (![:_str_is_int $text]) do={ :error "not an integer: \"$text\"" }
+    :return [:_str_to_int $text]
+}
+
+# The float written in `text`, as in `2.5`, `-1e10`, `inf` or `NaN`; raises an error for any
+# other text.
+:fn parse_float text:String -> f64 raises do={
+    :if (![:_str_is_float $text]) do={ :error "not a number: \"$text\"" }
+    :return [:_str_to_float $text]
+}
+
+# The position of the last occurrence of `pattern` in `text`, or none.
+:fn rfind text:String pattern:String -> i64? do={
+    :const found [:_str_rfind $text $pattern]
+    :if ($found < 0) do={ :return none }
+    :return $found
+}
+
+# The number of occurrences of `pattern` in `text` that do not overlap, from left to right.
+# Panics if `pattern` is empty.
+:fn count text:String pattern:String -> i64 do={
+    :assert ([:len $pattern] > 0) "count: the pattern is empty"
+    :local result 0
+    :local found [:_str_find $text $pattern 0]
+    :while ($found >= 0) do={
+        :set result ($result + 1)
+        :set found [:_str_find $text $pattern ($found + [:len $pattern])]
+    }
+    :return $result
+}
+
+# `text` without `prefix` at its start, or none if it does not start with it.
+:fn strip_prefix text:String prefix:String -> String? do={
+    :if (![:starts_with $text $prefix]) do={ :return none }
+    :return [:_str_slice $text [:len $prefix] [:len $text]]
+}
+
+# `text` without `suffix` at its end, or none if it does not end with it.
+:fn strip_suffix text:String suffix:String -> String? do={
+    :if (![:ends_with $text $suffix]) do={ :return none }
+    :return [:_str_slice $text 0 ([:len $text] - [:len $suffix])]
+}
+
+# The parts of `text` before and after the first occurrence of `separator`, or none.
+:fn split_once text:String separator:String -> Split? do={
+    :const found [:_str_find $text $separator 0]
+    :if ($found < 0) do={ :return none }
+    :return Split{
+        before=[:_str_slice $text 0 $found]
+        after=[:_str_slice $text ($found + [:len $separator]) [:len $text]]
+    }
+}
+
+# The parts of `text` before and after the last occurrence of `separator`, or none.
+:fn rsplit_once text:String separator:String -> Split? do={
+    :const found [:_str_rfind $text $separator]
+    :if ($found < 0) do={ :return none }
+    :return Split{
+        before=[:_str_slice $text 0 $found]
+        after=[:_str_slice $text ($found + [:len $separator]) [:len $text]]
+    }
+}
+
+# The parts of `text` between occurrences of `separator`, splitting at most `limit` - 1
+# times: the last part holds the rest. Panics if `separator` is empty or `limit` is not
+# positive.
+:fn split_n text:String separator:String limit:i64 -> List<String> do={
+    :assert ([:len $separator] > 0) "split_n: the separator is empty"
+    :assert ($limit > 0) "split_n: the limit is not positive"
+    :local parts:List<String> {}
+    :local start 0
+    :local found [:_str_find $text $separator 0]
+    :while (($found >= 0) and ([$parts->len] < ($limit - 1))) do={
+        $parts->push [:_str_slice $text $start $found]
+        :set start ($found + [:len $separator])
+        :set found [:_str_find $text $separator $start]
+    }
+    $parts->push [:_str_slice $text $start [:len $text]]
+    :return $parts
+}
+
+# `text` with copies of `fill` before it, to make it at least `width` characters long.
+:fn pad_start text:String width:i64 fill:char -> String do={
+    :const missing ($width - [:char_count $text])
+    :if ($missing <= 0) do={ :return [$text->clone] }
+    :return "$([:repeat "$fill" $missing])$text"
+}
+
+# `text` with copies of `fill` after it, to make it at least `width` characters long.
+:fn pad_end text:String width:i64 fill:char -> String do={
+    :const missing ($width - [:char_count $text])
+    :if ($missing <= 0) do={ :return [$text->clone] }
+    :return "$text$([:repeat "$fill" $missing])"
+}
+
+# `text` with copies of `fill` on both sides, to make it at least `width` characters long;
+# an odd extra one goes after it.
+:fn center text:String width:i64 fill:char -> String do={
+    :const missing ($width - [:char_count $text])
+    :if ($missing <= 0) do={ :return [$text->clone] }
+    :const before ($missing / 2)
+    :return "$([:repeat "$fill" $before])$text$([:repeat "$fill" ($missing - $before)])"
+}
+
+# `text` without the characters of `set` at its start.
+:fn trim_start_chars text:String set:String -> String do={
+    :local position 0
+    :while ($position < [:len $text]) do={
+        :const c [:_str_char_at $text $position]
+        :if (!("$c" in $set)) do={ :return [:_str_slice $text $position [:len $text]] }
+        :set position ($position + [/chars/utf8_len $c])
+    }
+    :return ""
+}
+
+# `text` without the characters of `set` at its end.
+:fn trim_end_chars text:String set:String -> String do={
+    :local end [:len $text]
+    :while ($end > 0) do={
+        :local start ($end - 1)
+        :while (![:_str_is_boundary $text $start]) do={ :set start ($start - 1) }
+        :if (!("$([:_str_char_at $text $start])" in $set)) do={
+            :return [:_str_slice $text 0 $end]
+        }
+        :set end $start
+    }
+    :return ""
+}
+
+# `text` without the characters of `set` at its start and end, as `trim_chars "--a-b--" "-"`
+# gives `a-b`.
+:fn trim_chars text:String set:String -> String do={
+    :return [:trim_end_chars [:trim_start_chars $text $set] $set]
+}
+
+# The characters of `text` in reverse order.
+:fn reverse text:String -> String do={
+    :local result ""
+    :foreach c in=[:chars $text] do={ :set result "$c$result" }
+    :return $result
+}
+
+# Returns true if `text` is empty or only white space.
+:fn is_blank text:String -> bool do={ :return ([:_first_non_space $text] = [:len $text]) }
+
+# Returns true if `a` and `b` have the same lowercase form (`to_lower`), as `Hello` and
+# `hELLO`. `Straße` and `STRASSE` differ: their lowercase forms are `straße` and `strasse`.
+:fn equals_ignore_case a:String b:String -> bool do={
+    :return ([:_str_to_lower $a] = [:_str_to_lower $b])
+}
+
+# `text` with its first character in uppercase.
+:fn capitalize text:String -> String do={
+    :if ([:len $text] = 0) do={ :return "" }
+    :const first [:_str_char_at $text 0]
+    :return "$([/chars/to_upper $first])$([:_str_slice $text [/chars/utf8_len $first] [:len $text]])"
+}
+
+# The string of a list of characters.
+:fn from_chars chars:List<char> -> String do={
+    :local result ""
+    :foreach c in=$chars do={ :set result "$result$c" }
+    :return $result
+}
+
+# The bytes of `text`, in UTF-8.
+:fn bytes text:String -> List<u8> do={
+    :local result:List<u8> {}
+    :for position from=0 to=([:len $text] - 1) do={
+        $result->push ([:_str_byte_at $text $position] as u8)
+    }
+    :return $result
+}
+
+# An integer written in base `base`, from 2 to 36, with lowercase letters for the digits
+# above 9: `format_int 255 16` gives `ff`.
+:fn format_int value:i64 base:i64 -> String do={
+    :assert (($base >= 2) and ($base <= 36)) "format_int: the base is not from 2 to 36"
+    :return [:_int_to_string_base $value $base]
+}
+
+# The integer written in `text` in base `base`, from 2 to 36, with an optional sign; letters
+# can be upper or lowercase. Raises an error for any other text, or a number that does not
+# fit an `i64`.
+:fn parse_int_base text:String base:i64 -> i64 raises do={
+    :assert (($base >= 2) and ($base <= 36)) "parse_int_base: the base is not from 2 to 36"
+    :if (![:_str_is_int_base $text $base]) do={
+        :error "not an integer in base $base: \"$text\""
+    }
+    :return [:_str_to_int_base $text $base]
+}
+
+# A float written with `decimals` digits after the point, rounded: `format_float 2.0 3`
+# gives `2.000`. Panics if `decimals` is negative or above 100.
+:fn format_float value:f64 decimals:i64 -> String do={
+    :assert (($decimals >= 0) and ($decimals <= 100)) "format_float: the number of decimals is not from 0 to 100"
+    :return [:_float_to_string_fixed $value $decimals]
+}
+
+# A float in scientific notation, with `decimals` digits after the point: `format_exp 1500.0
+# 2` gives `1.50e3`. Panics if `decimals` is negative or above 100.
+:fn format_exp value:f64 decimals:i64 -> String do={
+    :assert (($decimals >= 0) and ($decimals <= 100)) "format_exp: the number of decimals is not from 0 to 100"
+    :return [:_float_to_string_exp $value $decimals]
+}
+
+
+# ----- Methods -----------------------------------------------------------------------------
+
+# The functions of this module as methods of strings, as in `[$text->trim]`.
+:impl String {
+    # The number of bytes, as `:len` counts them.
+    :fn len self -> i64 do={ :return [:len $self] }
+    # Returns true for the empty string.
+    :fn is_empty self -> bool do={ :return ([:len $self] = 0) }
+    :fn find self pattern:String -> i64? do={ :return [/std/strings/find $self $pattern] }
+    :fn find_from self pattern:String from:i64 -> i64? do={ :return [/std/strings/find_from $self $pattern $from] }
+    :fn rfind self pattern:String -> i64? do={ :return [/std/strings/rfind $self $pattern] }
+    :fn contains self pattern:String -> bool do={ :return ($pattern in $self) }
+    :fn count self pattern:String -> i64 do={ :return [/std/strings/count $self $pattern] }
+    :fn starts_with self prefix:String -> bool do={ :return [/std/strings/starts_with $self $prefix] }
+    :fn ends_with self suffix:String -> bool do={ :return [/std/strings/ends_with $self $suffix] }
+    :fn slice self start:i64 end:i64 -> String do={ :return [/std/strings/slice $self $start $end] }
+    :fn char_at self position:i64 -> char do={ :return [/std/strings/char_at $self $position] }
+    :fn chars self -> List<char> do={ :return [/std/strings/chars $self] }
+    :fn char_count self -> i64 do={ :return [/std/strings/char_count $self] }
+    :fn bytes self -> List<u8> do={ :return [/std/strings/bytes $self] }
+    :fn split self separator:String -> List<String> do={ :return [/std/strings/split $self $separator] }
+    :fn split_n self separator:String limit:i64 -> List<String> do={ :return [/std/strings/split_n $self $separator $limit] }
+    :fn split_once self separator:String -> Split? do={ :return [/std/strings/split_once $self $separator] }
+    :fn rsplit_once self separator:String -> Split? do={ :return [/std/strings/rsplit_once $self $separator] }
+    :fn lines self -> List<String> do={ :return [/std/strings/lines $self] }
+    :fn words self -> List<String> do={ :return [/std/strings/words $self] }
+    :fn replace self pattern:String replacement:String -> String do={ :return [/std/strings/replace $self $pattern $replacement] }
+    :fn repeat self count:i64 -> String do={ :return [/std/strings/repeat $self $count] }
+    :fn trim self -> String do={ :return [/std/strings/trim $self] }
+    :fn trim_start self -> String do={ :return [/std/strings/trim_start $self] }
+    :fn trim_end self -> String do={ :return [/std/strings/trim_end $self] }
+    :fn trim_chars self set:String -> String do={ :return [/std/strings/trim_chars $self $set] }
+    :fn trim_start_chars self set:String -> String do={ :return [/std/strings/trim_start_chars $self $set] }
+    :fn trim_end_chars self set:String -> String do={ :return [/std/strings/trim_end_chars $self $set] }
+    :fn strip_prefix self prefix:String -> String? do={ :return [/std/strings/strip_prefix $self $prefix] }
+    :fn strip_suffix self suffix:String -> String? do={ :return [/std/strings/strip_suffix $self $suffix] }
+    :fn pad_start self width:i64 fill:char -> String do={ :return [/std/strings/pad_start $self $width $fill] }
+    :fn pad_end self width:i64 fill:char -> String do={ :return [/std/strings/pad_end $self $width $fill] }
+    :fn center self width:i64 fill:char -> String do={ :return [/std/strings/center $self $width $fill] }
+    :fn to_upper self -> String do={ :return [:_str_to_upper $self] }
+    :fn to_lower self -> String do={ :return [:_str_to_lower $self] }
+    :fn capitalize self -> String do={ :return [/std/strings/capitalize $self] }
+    :fn reverse self -> String do={ :return [/std/strings/reverse $self] }
+    :fn is_blank self -> bool do={ :return [/std/strings/is_blank $self] }
+    :fn equals_ignore_case self other:String -> bool do={ :return [/std/strings/equals_ignore_case $self $other] }
+    :fn parse_int self -> i64 raises do={ :return [/std/strings/parse_int $self] }
+    :fn parse_int_base self base:i64 -> i64 raises do={ :return [/std/strings/parse_int_base $self $base] }
+    :fn parse_float self -> f64 raises do={ :return [/std/strings/parse_float $self] }
+    # The string of a list of characters.
+    :fn from_chars chars:List<char> -> String do={ :return [/std/strings/from_chars $chars] }
+}
+
+# The functions of this module on lists of strings.
+:impl List<String> {
+    # The strings with `separator` between each two.
+    :fn join self separator:String -> String do={ :return [/std/strings/join $self $separator] }
+    # The strings one after the other.
+    :fn concat self -> String do={ :return [/std/strings/join $self ""] }
+}

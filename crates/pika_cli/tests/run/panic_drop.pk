@@ -1,0 +1,8 @@
+# A `drop` function that panics stops the program.
+:struct Loud impl=Drop {
+    :fn drop mut self do={ :panic "drop failed" }
+}
+:fn main do={
+    :const l Loud{}
+    :put "before"
+}

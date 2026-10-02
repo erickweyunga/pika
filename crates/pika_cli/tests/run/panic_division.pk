@@ -1,0 +1,2 @@
+:local zero 0
+:put (10 / $zero)

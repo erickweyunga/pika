@@ -1,0 +1,5 @@
+:fn main do={
+    :const xs {10; 20; 30}
+    :put $xs->2
+    :put $xs->3
+}

@@ -1,0 +1,27 @@
+# Type errors of lists, maps and sets.
+
+:struct Reading impl=Eq,Hash {
+    value:f64
+}
+
+:fn keys k:Map<f64, i64> s:Set<List<i64>> do={}
+
+:fn main do={
+    :local empty {}
+    :local mixed {1; "a"=2}
+    :local named {a=1}
+    :const xs {1; 2}
+    :put $xs->"a"
+    :const text "abc"
+    :put $text->0
+    :const set Set<i64>{1}
+    :put $set->0
+    :foreach x in=5 do={}
+    :foreach i,x in=$set do={}
+    :foreach mut x in=$set do={}
+    :put [$xs->shuffle]
+    :put [$set->push 1]
+    :const m {"a"=1}
+    :put ([:len $m] + $m->1)
+    :put ($set < $set)
+}

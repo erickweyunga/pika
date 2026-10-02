@@ -1,0 +1,59 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_builtin_methods.pk
+---
+fn main() -> nothing
+    words: List<String>
+    adders: List<fn() -> i64>
+closure closure() -> i64
+
+--- diagnostics ---
+[E0227] Error: only the standard library can declare functions of built-in types
+   ╭─[ err_builtin_methods.pk:3:1 ]
+   │
+ 3 │ :impl String {
+   │ ──┬──  
+   │   ╰──── only the standard library can declare functions of built-in types
+   │ 
+   │ Help: declare the functions of a struct or enum in its body
+───╯
+[E0301] Error: `join` is a function of `List<String>`, not of `List<{integer}>`
+   ╭─[ err_builtin_methods.pk:9:11 ]
+   │
+ 9 │     :put [{1; 2}->join ","]
+   │           ────────┬───────  
+   │                   ╰───────── `join` is a function of `List<String>`, not of `List<{integer}>`
+───╯
+[E0319] Error: `fn() -> i64` does not implement `Ord`, which `List<T>->sort` requires of `T`
+    ╭─[ err_builtin_methods.pk:11:5 ]
+    │
+ 11 │     $adders->sort
+    │     ──────┬──────  
+    │           ╰──────── `fn() -> i64` does not implement `Ord`, which `List<T>->sort` requires of `T`
+────╯
+[E0219] Error: `String` has no function named `nope`
+    ╭─[ err_builtin_methods.pk:12:19 ]
+    │
+ 12 │     :put [String->nope]
+    │                   ──┬─  
+    │                     ╰─── `String` has no function named `nope`
+────╯
+[E0312] Error: `List<String>` has no method named `nope`
+    ╭─[ err_builtin_methods.pk:13:19 ]
+    │
+ 13 │     :put [$words->nope]
+    │                   ──┬─  
+    │                     ╰─── `List<String>` has no method named `nope`
+    │ 
+    │ Help: the built-in methods of lists are `push`, `pop`, `insert`, `remove`, `swap`, `get`, `contains`, `len`, `is_empty`, `clear` and `clone`; /std/collections adds `sort`, `map`, `filter` and others
+────╯
+[E0202] Error: a literal cannot be called
+    ╭─[ err_builtin_methods.pk:14:5 ]
+    │
+ 14 │     "just a literal"
+    │     ────────┬───────  
+    │             ╰───────── a literal cannot be called
+    │ 
+    │ Help: to call a method of the value, write `[value->method ...]`
+────╯

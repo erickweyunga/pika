@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/both_roots
+---
+the package in tests/load_errors/both_roots has both src/main.pk and src/lib.pk; a package is either a program or a library

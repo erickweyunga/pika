@@ -1,0 +1,57 @@
+# Strings as values: literals, interpolation, concatenation, comparisons and conventions.
+:global LOG:String "start"
+:const PREFIX "> "
+
+:fn greet name:String greeting:String="Hello" -> String do={
+    :return "$greeting, $name!"
+}
+
+:fn shout owned text:String -> String do={
+    :return ($text . "!!")
+}
+
+:fn append mut text:String suffix:String do={
+    :set text ($text . $suffix)
+}
+
+:fn describe n:i64 -> String do={
+    :if ($n < 0) do={ :return "negative" }
+    :return [:tostr $n]
+}
+
+:fn longest a:String b:String -> String do={
+    :if ([:len $a] >= [:len $b]) do={ :return [$a->clone] }
+    :return [$b->clone]
+}
+
+:fn log message:String do={
+    :set LOG "$LOG | $message"
+}
+
+:fn main do={
+    :const name "Ada"
+    :put [:greet $name]
+    :put [:greet "Bob" greeting="Hi"]
+    :put [:shout [$name->clone]]
+    :local text "abc"
+    :append $text "def"
+    :append $text [:describe -3]
+    :append $text [:describe 42]
+    :put "$text has $[:len $text] bytes"
+    :const copy [$text->clone]
+    :put "equal=$($text = $copy) less=$("abc" < $text) contains=$("negative" in $text) missing=$("xyz" in $text)"
+    :put [:longest "short" "much longer"]
+    :log "first"
+    :log [:greet "log"]
+    :put $LOG
+    :put "$PREFIX$[:typeof $name] $[:typeof [:len $name]]"
+    :local built ""
+    :for i from=1 to=5 do={
+        :set built ($built . [:tostr $i])
+        :if ($i < 5) do={ :set built "$built," }
+    }
+    :put "built: $built"
+    :const empty ""
+    :put "empty=$([:len $empty] = 0) unicode=$[:len "héllo"]"
+    :put "comparisons: $("a" < "b") $("b" <= "a") $("" < "a") $("same" = "same") $("same" != "same")"
+}

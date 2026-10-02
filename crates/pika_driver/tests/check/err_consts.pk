@@ -1,0 +1,9 @@
+:const A ($B + 1)
+:const B ($A + 1)
+:const C [:len "x"]
+:fn f do={}
+:const D $E
+:global G 0
+:global H:i64
+:fn defaults x:i64=[:len "x"] do={}
+:put "$A $B $C $D"

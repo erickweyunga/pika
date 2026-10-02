@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUSTDOCFLAGS: -D warnings
+
+jobs:
+  lint:
+    name: Format and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked
+      - run: cargo doc --workspace --no-deps --locked
+
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain from rust-toolchain.toml
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace --locked
+
+  grammar:
+    name: Tree-sitter grammar and Zed extension
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/tree-sitter-pika
+    env:
+      TREE_SITTER_VERSION: 0.26.11
+      # The wasi-sdk release that Zed compiles grammars with.
+      WASI_SDK_VERSION: "34"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the tree-sitter CLI
+        run: npm install --global "tree-sitter-cli@$TREE_SITTER_VERSION"
+      - name: Check that the generated parser is up to date
+        run: |
+          tree-sitter generate
+          git add --intent-to-add src
+          git diff --exit-code -- src
+      - name: Run the corpus and highlighting tests
+        run: tree-sitter test
+      - name: Compile the grammar to WebAssembly as Zed does
+        run: |
+          curl --fail --location --silent --show-error \
+            "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-$WASI_SDK_VERSION/wasi-sdk-$WASI_SDK_VERSION.0-x86_64-linux.tar.gz" \
+            | tar --extract --gzip --directory "$RUNNER_TEMP"
+          "$RUNNER_TEMP/wasi-sdk-$WASI_SDK_VERSION.0-x86_64-linux/bin/clang" \
+            -fPIC -shared -Os -Wall -Wextra -Werror \
+            -Wl,--export=tree_sitter_pika \
+            -o "$RUNNER_TEMP/pika.wasm" -I src src/parser.c src/scanner.c

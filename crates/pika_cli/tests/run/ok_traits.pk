@@ -1,0 +1,147 @@
+# User-defined traits: required and default functions, associated functions, supertraits,
+# bounds on type parameters, generic implementors and calls resolved per instance.
+
+:trait Shape {
+    :fn area self -> f64
+    :fn name self -> String
+    :fn describe self -> String do={
+        :return "$([$self->name]) with area $([$self->area])"
+    }
+}
+
+:trait Make {
+    :fn make -> Self
+}
+
+:struct Square impl=Shape,Make,Display {
+    side:f64
+    :fn area self -> f64 do={ :return ($self->side * $self->side) }
+    :fn name self -> String do={ :return "square" }
+    :fn make -> Self do={ :return Square{side=1.0} }
+}
+
+:enum Blob impl=Shape {
+    small
+    big size:f64
+    :fn area self -> f64 do={
+        :match $self {
+            Blob->small do={ :return 0.5 }
+            Blob->big s do={ :return $s }
+        }
+    }
+    :fn name self -> String do={ :return "blob" }
+    :fn describe self -> String do={ :return "a blob" }
+}
+
+:fn total<T: Shape> items:List<T> -> f64 do={
+    :local sum 0.0
+    :foreach item in=$items do={ :set sum ($sum + [$item->area]) }
+    :return $sum
+}
+
+:fn fresh<T: Make + Shape> -> f64 do={
+    :const x [T->make]
+    :return [$x->area]
+}
+
+:fn shapes do={
+    :const s Square{side=2.0}
+    :put [$s->describe]
+    :const b [Blob->big 3.0]
+    :put [$b->area]
+    :put [$b->describe]
+    :put [:total {Square{side=1.0}; Square{side=3.0}}]
+    :put [:total {Blob->small; [Blob->big 2.0]}]
+    :put [:fresh<Square>]
+    :put [Square->make]
+}
+
+:trait Pretty impl=Display {
+    :fn pretty self -> String do={ :return "<$self>" }
+}
+
+:trait Counter {
+    :fn count self -> i64
+    :fn bump mut self
+    :fn bumped owned self -> Self do={
+        :local me $self
+        $me->bump
+        :return $me
+    }
+    :fn fresh -> Self
+    :fn twice -> Self do={
+        :local x [Self->fresh]
+        $x->bump
+        $x->bump
+        :return $x
+    }
+    :fn pair<U: Clone> self owned other:U -> List<U> do={
+        :return {[$other->clone]; $other}
+    }
+}
+
+:trait Point impl=Copy,Display {
+    :fn x self -> i64
+}
+
+:struct Tally impl=Counter,Pretty,Display,Clone {
+    n:i64
+    :fn count self -> i64 do={ :return $self->n }
+    :fn bump mut self do={ :set ($self->n) ($self->n + 1) }
+    :fn fresh -> Self do={ :return Tally{n=0} }
+    :fn report self -> String do={ :return "tally $([$self->pretty])" }
+}
+
+:struct Stack<T: Clone> impl=Counter,Display,Clone {
+    items:List<T>
+    :fn count self -> i64 do={ :return [:len $self->items] }
+    :fn bump mut self do={
+        :if ([:len $self->items] > 0) do={
+            :const top [$self->items->get 0]
+            $self->items->push [$top->unwrap]
+        }
+    }
+    :fn fresh -> Self do={ :return Stack{items={}} }
+    :fn pair<U: Clone> self owned other:U -> List<U> do={ :return {$other} }
+}
+
+:struct P impl=Point,Copy,Display {
+    v:i64
+    :fn x self -> i64 do={ :return $self->v }
+}
+
+:fn bump_all<C: Counter> mut items:List<C> do={
+    :foreach mut c in=$items do={ $c->bump }
+}
+
+:fn sum_twice<T: Point> p:T -> i64 do={
+    :const a $p
+    :const b $p
+    :return ([$a->x] + [$b->x])
+}
+
+:fn counters do={
+    :local t Tally{n=1}
+    $t->bump
+    :put [$t->count]
+    :put [$t->pretty]
+    :put [$t->report]
+    :const copy [$t->clone]
+    :put [$copy->bumped]
+    :put [Tally->twice]
+    :put [$t->pair "x"]
+    :local s Stack<String>{items={"a"}}
+    $s->bump
+    :put "$s $[$s->count]"
+    :put [$s->pair 2]
+    :put [Stack<i64>->twice]
+    :local all {Tally{n=0}; Tally{n=5}}
+    :bump_all $all
+    :put $all
+    :put [:sum_twice P{v=21}]
+}
+
+:fn main do={
+    :shapes
+    :counters
+}

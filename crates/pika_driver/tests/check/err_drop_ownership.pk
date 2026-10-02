@@ -1,0 +1,16 @@
+# `drop` needs whole values: no parts moved out of them, and no destruction in constants.
+:struct G impl=Drop {
+    name:String
+    :fn drop mut self do={ :put "drop" }
+}
+:enum E impl=Drop {
+    one g:String
+    :fn drop mut self do={}
+}
+:const N G{name="x"}->name
+:fn mk -> E do={ :return [E->one "a"] }
+:fn main do={
+    :match [:mk] {
+        E->one s do={ :put $s }
+    }
+}

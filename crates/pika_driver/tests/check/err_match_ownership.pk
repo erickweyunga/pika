@@ -1,0 +1,35 @@
+# Ownership errors involving `:match`, options and boxes.
+
+:enum Token {
+    word text:String
+    number value:f64
+}
+
+:fn take owned t:Token do={}
+:fn grow mut t:Token do={}
+
+:fn main do={
+    :local t [Token->word "pika"]
+    :match $t {
+        Token->word w do={
+            :set t [Token->number 1.0]
+            :take $t
+            :grow $t
+            :const stolen $w
+        }
+        Token->number n do={
+            # A copy borrows nothing: changing the value is allowed.
+            :set t [Token->number ($n + 1.0)]
+        }
+    }
+
+    :const fixed:String? [some "x"]
+    :const first [$fixed->take]
+
+    :const b [Box->new "boxed"]
+    :const inner $b->value
+
+    :const o:String? none
+    :const value [$o->unwrap]
+    :put $o
+}

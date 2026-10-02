@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_strings.pk
+---
+exit: 0
+--- stdout ---
+Hello, Ada!
+Hi, Bob!
+Ada!!
+abcdefnegative42 has 16 bytes
+equal=true less=true contains=true missing=false
+much longer
+start | first | Hello, log!
+> String i64
+built: 1,2,3,4,5
+empty=true unicode=6
+comparisons: true false true true false
+--- stderr ---

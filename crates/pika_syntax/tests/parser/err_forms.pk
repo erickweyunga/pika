@@ -1,0 +1,15 @@
+:if $x do={ :put 1 }
+:if ($x) { :put 1 }
+:while ($x) do={} step=1
+:for i to=10 do={}
+:foreach x do={}
+:match $v {
+    Shape-> do={}
+    = do={}
+}
+:struct S {
+    x i64
+    5
+}
+:fn f x:i64 ->
+:use math

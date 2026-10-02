@@ -1,0 +1,88 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_closure_ownership.pk
+---
+fn borrowed(s: String) -> fn() -> String
+fn main() -> nothing
+    s: String
+    f: fn() -> i64
+    list: List<i64>
+    push: fn()
+    steal: fn() -> List<i64>
+closure closure() -> String
+    s: String
+closure closure() -> i64
+    s: String
+closure closure() -> nothing
+    list: List<i64>
+closure closure() -> List<i64>
+    list: List<i64>
+
+--- diagnostics ---
+[E0408] Error: cannot move `s` out: it is a borrowed parameter
+   ╭─[ err_closure_ownership.pk:3:13 ]
+   │
+ 3 │     :return [:fn -> String do={ :return [$s->clone] }]
+   │             ─────────────────────┬────────────────────  
+   │                                  ╰────────────────────── cannot move `s` out: it is a borrowed parameter
+   │ 
+   │ Help: pass a copy with `[$s->clone]`, or declare the parameter `owned`
+───╯
+[E0404] Error: `s` is used after its value was moved
+   ╭─[ err_closure_ownership.pk:8:10 ]
+   │
+ 8 │     :put $s
+   │          ─┬  
+   │           ╰── `s` is used after its value was moved
+   │
+   ├─[ err_closure_ownership.pk:8:10 ]
+   │
+ 7 │     :const f [:fn -> i64 do={ :return [:len $s] }]
+   │              ──────────────────┬──────────────────  
+   │                                ╰──────────────────── the value is moved here
+   │ 
+   │ Help: copy the value before moving it: `[$s->clone]`
+───╯
+[W0001] Warning: variable `list` is never modified
+   ╭─[ err_closure_ownership.pk:9:12 ]
+   │
+ 9 │     :local list {1}
+   │            ──┬─  
+   │              ╰─── variable `list` is never modified
+   │ 
+   │ Help: declare it with `:const list`
+───╯
+[E0406] Error: cannot modify `list`: it is captured by this function value
+    ╭─[ err_closure_ownership.pk:10:27 ]
+    │
+ 10 │     :const push [:fn do={ $list->push 2 }]
+    │                           ──┬──  
+    │                             ╰──── cannot modify `list`: it is captured by this function value
+    │ 
+    │ Help: a function value can only read what it captured; compute a new value instead
+────╯
+[E0404] Error: `list` is used after its value was moved
+    ╭─[ err_closure_ownership.pk:11:18 ]
+    │
+ 11 │     :const steal [:fn -> List<i64> do={ :return $list }]
+    │                  ───────────────────┬───────────────────  
+    │                                     ╰───────────────────── `list` is used after its value was moved
+    │
+    ├─[ err_closure_ownership.pk:11:18 ]
+    │
+ 10 │     :const push [:fn do={ $list->push 2 }]
+    │                 ─────────────┬────────────  
+    │                              ╰────────────── the value is moved here
+    │ 
+    │ Help: copy the value before moving it: `[$list->clone]`
+────╯
+[E0408] Error: cannot move `list` out: it is captured by this function value
+    ╭─[ err_closure_ownership.pk:11:49 ]
+    │
+ 11 │     :const steal [:fn -> List<i64> do={ :return $list }]
+    │                                                 ──┬──  
+    │                                                   ╰──── cannot move `list` out: it is captured by this function value
+    │ 
+    │ Help: copies of a function value share what it captured; use a copy: `[$list->clone]`
+────╯

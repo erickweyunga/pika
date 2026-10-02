@@ -1,0 +1,50 @@
+:put "Hello $name, $($a + 1) and $[:len $items]\n"
+# <- function.builtin
+#    ^ string
+#           ^ variable
+#                  ^ punctuation.special
+#                                    ^ function.builtin
+#                                              ^ string.escape
+:greet "Ada" greeting="Hi"
+# <- function
+#            ^ label
+:local p [Point->new 1.0 2.0]
+# <- keyword
+#                ^ function
+:local s [Shape->circle radius=2.0]
+#                ^ function
+:put Color->red 500ms true none 'c' r"raw"
+#           ^ variant
+#               ^ number
+#                     ^ boolean
+#                          ^ constant.builtin
+#                               ^ string
+#                                   ^ string
+$list->push 5
+# <- variable
+#      ^ function.method
+:put ($a in $b) ($x and $y) ($n + 1)
+#        ^ keyword
+#                   ^ keyword
+#                               ^ operator
+:if ($x < 0) do={ :return } else={ :break }
+# <- keyword.control
+#            ^ keyword.control
+#                           ^ keyword.control
+:foreach k,v in=$map do={ :continue }
+# <- keyword.control
+#            ^ keyword.control
+:match $s {
+    Shape->circle _ r do={}
+#   ^ type
+#          ^ variant
+#                 ^ variable.special
+#                   ^ variable
+    some n if=($n > 0) do={}
+#   ^ keyword
+#          ^ keyword.control
+}
+# a comment
+# <- comment
+## documentation
+# <- comment.doc

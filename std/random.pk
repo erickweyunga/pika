@@ -1,0 +1,72 @@
+# Random numbers from a seeded generator (SplitMix64). The same seed always gives the same
+# numbers, on every platform; `Random->new` seeds from the operating system instead.
+# The numbers are not suitable for cryptography.
+
+:extern lib="pika" {
+    :fn _random_mix state:i64 -> i64
+    :fn _random_below bits:i64 bound:i64 -> i64
+    :fn _random_unit bits:i64 -> f64
+    :fn _random_seed -> i64
+}
+
+# A generator of random numbers.
+:struct Random impl=Clone {
+    _state:i64
+
+    # A generator seeded from the operating system, different on each run.
+    :fn new -> Random do={ :return Random{_state=[:_random_seed]} }
+
+    # A generator that always gives the same numbers for the same seed.
+    :fn seeded seed:i64 -> Random do={ :return Random{_state=$seed} }
+
+    # The next 64 random bits, as any `i64`.
+    :fn next mut self -> i64 do={
+        :set ($self->_state) [/std/math/wrapping_add $self->_state -7046029254386353131]
+        :return [:_random_mix $self->_state]
+    }
+
+    # A random integer from 0 to `bound`, not included, with every value equally likely.
+    # Panics unless `bound` is positive.
+    :fn below mut self bound:i64 -> i64 do={
+        :assert ($bound > 0) "below: the bound is not positive"
+        :local value [:_random_below [$self->next] $bound]
+        :while ($value < 0) do={ :set value [:_random_below [$self->next] $bound] }
+        :return $value
+    }
+
+    # A random integer from `low` to `high`, both included. Panics if `low` is greater than
+    # `high`, or the range has more than max_int values.
+    :fn between mut self low:i64 high:i64 -> i64 do={
+        :assert ($low <= $high) "between: the low bound is greater than the high bound"
+        :return ($low + [$self->below (($high - $low) + 1)])
+    }
+
+    # A random float from 0.0 (included) to 1.0 (not included).
+    :fn float mut self -> f64 do={ :return [:_random_unit [$self->next]] }
+
+    # A random float from `low` (included) to `high` (not included).
+    :fn float_between mut self low:f64 high:f64 -> f64 do={
+        :return ($low + ([$self->float] * ($high - $low)))
+    }
+
+    # `true` or `false`, equally likely.
+    :fn bool mut self -> bool do={ :return ([$self->next] < 0) }
+
+    # `true` with probability `p`, from 0.0 to 1.0.
+    :fn chance mut self p:f64 -> bool do={ :return ([$self->float] < $p) }
+
+    # Puts the elements of a list in a random order, every order equally likely.
+    :fn shuffle<T> mut self mut items:List<T> do={
+        :local i ([$items->len] - 1)
+        :while ($i > 0) do={
+            $items->swap $i [$self->below ($i + 1)]
+            :set i ($i - 1)
+        }
+    }
+
+    # A copy of a random element of a list, or none for an empty list.
+    :fn choice<T: Clone> mut self items:List<T> -> T? do={
+        :if ([$items->is_empty]) do={ :return none }
+        :return [$items->([$self->below [$items->len]])->clone]
+    }
+}

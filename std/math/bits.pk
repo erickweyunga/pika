@@ -1,0 +1,65 @@
+# The bits of `i64` values, in two's complement: counting, rotating and reordering them.
+# `&`, `|`, `^`, `~`, `<<` and `>>` are operators of the language.
+
+:extern lib="pika" {
+    :fn _int_count_ones n:i64 -> i64
+    :fn _int_leading_zeros n:i64 -> i64
+    :fn _int_trailing_zeros n:i64 -> i64
+    :fn _int_rotate_left n:i64 by:i64 -> i64
+    :fn _int_reverse_bits n:i64 -> i64
+    :fn _int_swap_bytes n:i64 -> i64
+}
+
+# The number of bits that are 1.
+:fn count_ones n:i64 -> i64 do={ :return [:_int_count_ones $n] }
+
+# The number of bits that are 0.
+:fn count_zeros n:i64 -> i64 do={ :return (64 - [:_int_count_ones $n]) }
+
+# The number of 0 bits before the highest 1 bit; 64 for 0.
+:fn leading_zeros n:i64 -> i64 do={ :return [:_int_leading_zeros $n] }
+
+# The number of 0 bits after the lowest 1 bit; 64 for 0.
+:fn trailing_zeros n:i64 -> i64 do={ :return [:_int_trailing_zeros $n] }
+
+# The bits rotated left by `by` positions (modulo 64): bits leaving at the top come back at
+# the bottom.
+:fn rotate_left n:i64 by:i64 -> i64 do={ :return [:_int_rotate_left $n $by] }
+
+# The bits rotated right by `by` positions (modulo 64).
+:fn rotate_right n:i64 by:i64 -> i64 do={ :return [:_int_rotate_left $n (-($by % 64))] }
+
+# The bits in reverse order.
+:fn reverse_bits n:i64 -> i64 do={ :return [:_int_reverse_bits $n] }
+
+# The bytes in reverse order, to convert between big- and little-endian.
+:fn swap_bytes n:i64 -> i64 do={ :return [:_int_swap_bytes $n] }
+
+# Returns true if `n` is a power of two: exactly one of its bits is 1, and it is positive.
+:fn is_power_of_two n:i64 -> bool do={
+    :return (($n > 0) and ([:_int_count_ones $n] = 1))
+}
+
+# The smallest power of two that is at least `n` (1 for `n` <= 1), or none if it does not fit.
+:fn next_power_of_two n:i64 -> i64? do={
+    :if ($n <= 1) do={ :return 1 }
+    :const shift (64 - [:_int_leading_zeros ($n - 1)])
+    :if ($shift >= 63) do={ :return none }
+    :return (1 << $shift)
+}
+
+# ----- Methods -----------------------------------------------------------------------------
+
+# The functions of this module as methods of integers, as in `[$n->count_ones]`.
+:impl i64 {
+    :fn count_ones self -> i64 do={ :return [:_int_count_ones $self] }
+    :fn count_zeros self -> i64 do={ :return [/std/math/bits/count_zeros $self] }
+    :fn leading_zeros self -> i64 do={ :return [:_int_leading_zeros $self] }
+    :fn trailing_zeros self -> i64 do={ :return [:_int_trailing_zeros $self] }
+    :fn rotate_left self by:i64 -> i64 do={ :return [:_int_rotate_left $self $by] }
+    :fn rotate_right self by:i64 -> i64 do={ :return [/std/math/bits/rotate_right $self $by] }
+    :fn reverse_bits self -> i64 do={ :return [:_int_reverse_bits $self] }
+    :fn swap_bytes self -> i64 do={ :return [:_int_swap_bytes $self] }
+    :fn is_power_of_two self -> bool do={ :return [/std/math/bits/is_power_of_two $self] }
+    :fn next_power_of_two self -> i64? do={ :return [/std/math/bits/next_power_of_two $self] }
+}

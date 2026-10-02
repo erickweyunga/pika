@@ -1,0 +1,12 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+assertion_line: 61
+expression: native
+input_file: crates/pika_cli/tests/run/panic_unwrap_none.pk
+---
+exit: 101
+--- stdout ---
+1
+--- stderr ---
+panic: `unwrap` of `none`
+  at panic_unwrap_none.pk:10:11

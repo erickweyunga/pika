@@ -1,0 +1,81 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_returns.pk
+---
+fn missing(n: i64) -> i64
+fn no_value() -> i64
+fn extra() -> nothing
+fn finishes() -> never
+fn unreachable() -> i64
+fn ok_both(n: i64) -> i64
+fn main(x: i64) -> i64
+
+--- diagnostics ---
+[E0306] Error: function `missing` can finish without returning a value of type `i64`
+   ╭─[ err_returns.pk:1:5 ]
+   │
+ 1 │ :fn missing n:i64 -> i64 do={
+   │     ───┬───  
+   │        ╰───── function `missing` can finish without returning a value of type `i64`
+   │ 
+ 3 │ }
+   │ ┬  
+   │ ╰── the function can reach its end here
+   │ 
+   │ Help: end every path with `:return value`, or with `:panic` if it cannot happen
+───╯
+[E0308] Error: `:return` needs a value of type `i64`
+   ╭─[ err_returns.pk:4:26 ]
+   │
+ 4 │ :fn no_value -> i64 do={ :return }
+   │                          ───┬───  
+   │                             ╰───── `:return` needs a value of type `i64`
+   │ 
+   │ Help: write `:return value`
+───╯
+[E0301] Error: this function does not return a value, but a `{integer}` is returned
+   ╭─[ err_returns.pk:5:24 ]
+   │
+ 5 │ :fn extra do={ :return 5 }
+   │                        ┬  
+   │                        ╰── this function does not return a value, but a `{integer}` is returned
+   │ 
+   │ Help: declare the return type after the parameters, as in `-> i64`
+───╯
+[E0306] Error: function `finishes` returns `never` but can finish
+   ╭─[ err_returns.pk:6:5 ]
+   │
+ 6 │ :fn finishes -> never do={ :put "done" }
+   │     ────┬───                           ┬  
+   │         ╰───────────────────────────────── function `finishes` returns `never` but can finish
+   │                                        │  
+   │                                        ╰── the function can reach its end here
+   │ 
+   │ Help: end every path with `:return value`, or with `:panic` if it cannot happen
+───╯
+[W0101] Warning: unreachable code
+   ╭─[ err_returns.pk:9:5 ]
+   │
+ 9 │     :put "never printed"
+   │     ──────────┬─────────  
+   │               ╰─────────── unreachable code
+   │ 
+   │ Help: the statement before this one never finishes
+───╯
+[E0311] Error: `main` cannot take parameters
+    ╭─[ err_returns.pk:14:10 ]
+    │
+ 14 │ :fn main x:i64 -> i64 do={ :return $x }
+    │          ┬  
+    │          ╰── `main` cannot take parameters
+    │ 
+    │ Help: read command-line arguments with `/std/os/args` (planned for M6)
+────╯
+[E0311] Error: `main` cannot return a value
+    ╭─[ err_returns.pk:14:19 ]
+    │
+ 14 │ :fn main x:i64 -> i64 do={ :return $x }
+    │                   ─┬─  
+    │                    ╰─── `main` cannot return a value
+────╯

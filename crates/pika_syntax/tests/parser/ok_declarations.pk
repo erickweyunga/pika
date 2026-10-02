@@ -1,0 +1,50 @@
+:use /std/math
+:use /std/collections as=col
+## Adds two numbers.
+:fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+:fn greet name:String greeting:String="Hello" do={
+    :put "$greeting, $name"
+}
+:fn max<T: Ord + Copy, U> a:T b:T -> T do={ :return $a }
+:fn parse s:String -> u16 raises do={ :error "bad" }
+:fn shift mut p:Point owned q:Point by:f64 do={}
+:fn main do={}
+:local x 5
+:local y:f64 1.0
+:local z:String
+:local o:i64? none
+:local f:fn(i64, i64) -> i64 raises $add
+:local nested:Map<String, List<List<i64>>> {}
+:fn defaults xs:List<i64>={} ys:Map<i64, List<i64>>={} do={}
+:const limit 100
+:global COUNT:i64 0
+:set x ($x + 1)
+:set ($p->x) 2.0
+:set ($map->"k") 1
+:struct Pair<A, B> impl=Eq,/std/fmt/Display {
+    first:A
+    second:B=[:default]
+
+    :fn swap owned self -> Pair<B, A> do={
+        :return Pair<B, A>{first=$self->second; second=$self->first}
+    }
+    :fn new first:A second:B -> Self do={ :return Self{first=$first; second=$second} }
+}
+:enum Shape {
+    circle center:Point radius:f64
+    rect min:Point max:Point
+    empty
+    :fn area self -> f64 do={ :return 0.0 }
+}
+:trait Shape impl=Display {
+    :fn area self -> f64
+    :fn describe self -> String do={ :return "shape" }
+    :fn scale mut self k:f64
+}
+:extern lib="c" {
+    :fn strlen s:Ptr<u8> -> u64
+}
+:test "addition works" do={
+    :assert ([:add 2 2] = 4) "2 + 2 should be 4"
+}
+:fn spaced_arrow x:i64=0 y:f64=1.5 -> f64 do={ :return $y }

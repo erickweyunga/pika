@@ -1,0 +1,32 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_errors.pk
+---
+exit: 0
+--- stdout ---
+port = 8080
+failed: port out of range: 99999
+at 6:29
+loaded 8080
+load failed: could not load 
+because: empty port
+abab
+failed: broken source
+xx
+no sources
+loop ended: stop at 3
+3
+outer saw: middle
+main saw: middle (line 74)
+{middle; middle}
+--- stderr ---
+[W0101] Warning: unreachable code
+    ╭─[ ok_errors.pk:79:5 ]
+    │
+ 79 │     :return 0
+    │     ────┬────  
+    │         ╰────── unreachable code
+    │ 
+    │ Help: the statement before this one never finishes
+────╯

@@ -1,0 +1,15 @@
+:fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+:fn main do={
+    :put [:add 1]
+    :put [:add 1 2 3]
+    :put [:add a=1 c=2]
+    :put [:add 1 a=2]
+    :put [:add b=1 2]
+    :put [:add "one" 2]
+    :put 1 2
+    :put value=1
+    :len 5
+    :nope 1
+    :local add 1
+    :add
+}

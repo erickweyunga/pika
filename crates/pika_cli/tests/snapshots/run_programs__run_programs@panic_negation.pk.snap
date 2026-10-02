@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_negation.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `x` is never modified
+   ╭─[ panic_negation.pk:1:8 ]
+   │
+ 1 │ :local x -128
+   │        ┬  
+   │        ╰── variable `x` is never modified
+   │ 
+   │ Help: declare it with `:const x`
+───╯
+panic: integer overflow
+  at panic_negation.pk:2:7

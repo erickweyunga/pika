@@ -1,0 +1,34 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "pika",
+      "camelcase": "Pika",
+      "title": "Pika",
+      "scope": "source.pika",
+      "path": ".",
+      "file-types": [
+        "pk"
+      ],
+      "injection-regex": "^pika$",
+      "highlights": "../zed/languages/pika/highlights.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "description": "Pika grammar for tree-sitter",
+    "links": {
+      "repository": "https://github.com/erickweyunga/pika"
+    }
+  },
+  "bindings": {
+    "c": false,
+    "go": false,
+    "java": false,
+    "node": false,
+    "python": false,
+    "rust": false,
+    "swift": false,
+    "zig": false
+  }
+}

@@ -1,0 +1,135 @@
+# Enums, options, boxes and `:match`.
+
+:enum Shape impl=Clone,Eq,Ord,Display {
+    circle radius:f64
+    rect width:f64 height:f64
+    dot
+
+    :fn area self -> f64 do={
+        :match $self {
+            Shape->circle r do={ :return (3.0 * $r * $r) }
+            Shape->rect w h do={ :return ($w * $h) }
+            Shape->dot do={ :return 0.0 }
+        }
+    }
+}
+
+:enum Token impl=Clone,Display {
+    number value:f64
+    word text:String
+    plus
+}
+
+:enum Expr impl=Clone,Eq,Display {
+    num value:i64
+    add left:Box<Expr> right:Box<Expr>
+    neg inner:Box<Expr>
+}
+
+:fn eval e:Expr -> i64 do={
+    :match $e {
+        Expr->num v do={ :return $v }
+        Expr->add l r do={ :return ([:eval $l->value] + [:eval $r->value]) }
+        Expr->neg inner do={ :return (-[:eval $inner->value]) }
+    }
+}
+
+:fn describe t:Token -> String do={
+    :match $t {
+        Token->number v if=($v < 0.0) do={ :return "negative" }
+        Token->number v do={ :return "number $v" }
+        Token->word "hello" do={ :return "greeting" }
+        Token->word w do={ :return "word $w" }
+        Token->plus do={ :return "plus" }
+    }
+}
+
+:fn make_word text:String -> Token do={
+    :return [Token->word text=[$text->clone]]
+}
+
+:fn first_char s:String -> char? do={
+    :if ([:len $s] = 0) do={ :return none }
+    :return [some 'x']
+}
+
+:fn classify n:i64 -> String do={
+    :match $n {
+        0 do={ :return "zero" }
+        1 do={ :return "one" }
+        -1 do={ :return "minus one" }
+        _ do={ :return "many" }
+    }
+}
+
+:global current:Token? none
+
+:fn main do={
+    :const shapes:Shape? [some [Shape->rect 2.0 3.0]]
+    :put $shapes
+    :const c [Shape->circle radius=1.5]
+    :put $c
+    :put Shape->dot
+    :put [$c->area]
+    :put ([Shape->rect 1.0 1.0] < $c)
+    :put ($c < Shape->dot)
+    :put ($c = [$c->clone])
+
+    :put [:describe [Token->number -2.0]]
+    :put [:describe [Token->number 4.0]]
+    :put [:describe [Token->word "hello"]]
+    :put [:describe [:make_word "pika"]]
+    :put [:describe Token->plus]
+
+    :const tree [Expr->add [Box->new [Expr->num 40]] [Box->new [Expr->neg [Box->new [Expr->num -2]]]]]
+    :put [:eval $tree]
+    :put $tree
+    :const copy [$tree->clone]
+    :put ($copy = $copy)
+
+    :put [:classify 0]
+    :put [:classify -1]
+    :put [:classify 7]
+
+    :const maybe [:first_char "abc"]
+    :const empty [:first_char ""]
+    :put "$maybe $[$empty->is_none] $[$maybe->is_some]"
+    :put [$maybe->unwrap]
+    :put [$empty->unwrap_or 'z']
+
+    :local name:String? [some "Ada"]
+    :match $name {
+        some n if=([:len $n] > 5) do={ :put "long $n" }
+        some n do={ :put "short $n" }
+        none do={ :put "nobody" }
+    }
+    :const taken [$name->take]
+    :put "$taken $name"
+    :put [$taken->unwrap]
+
+    :match [:make_word "owned"] {
+        Token->word w do={
+            :const keep $w
+            :put "kept $keep"
+        }
+        _ do={ :put "other" }
+    }
+
+    :set current [some [Token->number 1.0]]
+    :match $current {
+        some (Token->number v) do={ :put "current $v" }
+        _ do={ :put "no number" }
+    }
+
+    :local b [Box->new "boxed"]
+    :put $b
+    :set ($b->value) "changed"
+    :put $b->value
+    :const s [$b->unbox]
+    :put $s
+
+    :const options:i64? none
+    :put ($options < [some 1])
+    :put ([some 2] > [some 1])
+    :put [some [some "x"]]
+}

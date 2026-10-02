@@ -1,0 +1,130 @@
+================================================================================
+Match arms
+================================================================================
+
+:match $value {
+    _ do={}
+    x if=($x > 0) do={}
+    1 do={}
+    -1 do={}
+    'c' do={}
+    "text" do={}
+    true do={}
+    none do={}
+    some n do={}
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (match_statement
+    (variable)
+    (match_body
+      (match_arm
+        (wildcard_pattern)
+        (block))
+      (match_arm
+        (binding_pattern
+          (identifier))
+        (parenthesized_expression
+          (binary_expression
+            (variable)
+            (integer)))
+        (block))
+      (match_arm
+        (integer)
+        (block))
+      (match_arm
+        (integer)
+        (block))
+      (match_arm
+        (char)
+        (block))
+      (match_arm
+        (string
+          (string_content))
+        (block))
+      (match_arm
+        (boolean)
+        (block))
+      (match_arm
+        (none)
+        (block))
+      (match_arm
+        (some_pattern
+          (binding_pattern
+            (identifier)))
+        (block)))))
+
+================================================================================
+Variant patterns
+================================================================================
+
+:match $shape {
+    Shape->circle _ r do={}
+    Shape->pair (some x) Color->red do={}
+    Shape->nested (Shape->circle c _) _ do={}
+    /geo/Color->red do={}
+    Tree<i64>->leaf do={}
+    Self->empty do={}
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (match_statement
+    (variable)
+    (match_body
+      (match_arm
+        (variant_pattern
+          (type_identifier)
+          (identifier)
+          (wildcard_pattern)
+          (binding_pattern
+            (identifier)))
+        (block))
+      (match_arm
+        (variant_pattern
+          (type_identifier)
+          (identifier)
+          (parenthesized_pattern
+            (some_pattern
+              (binding_pattern
+                (identifier))))
+          (variant_pattern
+            (type_identifier)
+            (identifier)))
+        (block))
+      (match_arm
+        (variant_pattern
+          (type_identifier)
+          (identifier)
+          (parenthesized_pattern
+            (variant_pattern
+              (type_identifier)
+              (identifier)
+              (binding_pattern
+                (identifier))
+              (wildcard_pattern)))
+          (wildcard_pattern))
+        (block))
+      (match_arm
+        (variant_pattern
+          (path
+            (identifier)
+            (identifier))
+          (identifier))
+        (block))
+      (match_arm
+        (variant_pattern
+          (generic_type
+            (type_identifier)
+            (type_arguments
+              (type_identifier)))
+          (identifier))
+        (block))
+      (match_arm
+        (variant_pattern
+          (self_type)
+          (identifier))
+        (block)))))

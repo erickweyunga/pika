@@ -1,0 +1,7 @@
+:struct Counter {
+    count:i64
+    _step:i64=1
+    :fn _bump self -> i64 do={ :return ($self->count + $self->_step) }
+    :fn _make -> Counter do={ :return Counter{count=0} }
+    :fn make -> Counter do={ :return [Counter->_make] }
+}

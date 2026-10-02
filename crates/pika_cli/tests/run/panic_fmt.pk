@@ -1,0 +1,15 @@
+# A `fmt` function that panics leaves the text printed before it.
+:struct Bad impl=Display {
+    n:i64
+    :fn fmt self mut out:Formatter do={
+        :if ($self->n = 0) do={ :panic "cannot show zero" }
+        $out->write $self->n
+    }
+}
+:struct Loud impl=Drop {
+    :fn drop mut self do={ :panic "drop failed" }
+}
+:fn main do={
+    :put Bad{n=1}
+    :put "x $(Bad{n=0})"
+}

@@ -1,0 +1,43 @@
+# A script: top-level statements form an implicit `main`.
+:const LIMIT 100
+:const RATIO (1.5 * 2.0)
+:const GREETING "hello"
+:const MASK (0xFF as u8)
+:global COUNT:i64 0
+
+:fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+
+:fn greet name:String greeting:String="Hello" do={
+    :put "$greeting, $name"
+}
+
+:fn classify n:i64 -> String do={
+    :if ($n < 0) do={
+        :return "negative"
+    } else=:if ($n = 0) do={
+        :return "zero"
+    } else={
+        :return "positive"
+    }
+}
+
+:fn fib n:u64 -> u64 do={
+    :if ($n < 2) do={ :return $n }
+    :return ([:fib ($n - 1)] + [:fib ($n - 2)])
+}
+
+:fn forever do={
+    :while (true) do={ :put "tick" }
+}
+
+:fn fail message:String -> never do={ :panic $message }
+
+:local total 0
+:for i from=1 to=$LIMIT do={
+    :set total ($total + $i)
+}
+:put "sum = $total, $[:classify -5], fib = $[:fib 10]"
+:greet "Ada"
+:greet name="Bob" greeting="Hi"
+:set COUNT ($COUNT + 1)
+:put [:add 1 2]

@@ -1,0 +1,176 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_structs.pk
+---
+fn norm(self: Point) -> f64
+fn origin() -> Point
+fn misplaced() -> nothing
+fn read(p: Point) -> nothing
+fn main() -> nothing
+    p: Point
+    a0: Point
+    a1: Point
+    a2: Point
+    a3: Point
+    q: Unordered
+
+--- diagnostics ---
+[E0314] Error: `Named` cannot implement `Copy`: field `name` of type `String` does not
+    ╭─[ err_structs.pk:11:20 ]
+    │
+ 11 │ :struct Named impl=Copy {
+    │                    ──┬─  
+    │                      ╰─── `Named` cannot implement `Copy`: field `name` of type `String` does not
+ 12 │     name:String
+    │          ───┬──  
+    │             ╰──── not `Copy`
+────╯
+[E0315] Error: type `Loop` contains itself
+    ╭─[ err_structs.pk:15:9 ]
+    │
+ 15 │ :struct Loop {
+    │         ──┬─  
+    │           ╰─── type `Loop` contains itself
+    │ 
+    │ Help: through the field `next`; a value cannot contain itself, so store it in a `Box`, as in `Box<Loop>`
+────╯
+[E0204] Error: the field `a` is declared more than once
+    ╭─[ err_structs.pk:21:5 ]
+    │
+ 21 │     a:i64
+    │     ┬  
+    │     ╰── the field `a` is declared more than once
+    │
+    ├─[ err_structs.pk:21:5 ]
+    │
+ 20 │     a:i64
+    │     ┬  
+    │     ╰── first declared here
+────╯
+[E0218] Error: `self` can only be a parameter of a method declared in a struct
+    ╭─[ err_structs.pk:28:15 ]
+    │
+ 28 │ :fn misplaced self do={}
+    │               ──┬─  
+    │                 ╰─── `self` can only be a parameter of a method declared in a struct
+────╯
+[E0207] Error: cannot assign to a field of `p`: it cannot be modified
+    ╭─[ err_structs.pk:31:11 ]
+    │
+ 31 │     :set ($p->x) 1.0
+    │           ─┬  
+    │            ╰── cannot assign to a field of `p`: it cannot be modified
+    │
+    ├─[ err_structs.pk:31:11 ]
+    │
+ 30 │ :fn read p:Point do={
+    │          ┬  
+    │          ╰── declared here
+    │ 
+    │ Help: declare the parameter as `mut p` to modify it
+────╯
+[E0219] Error: missing field `x` in `Point` literal
+    ╭─[ err_structs.pk:36:20 ]
+    │
+ 36 │     :local a0 Point{y=2.0}
+    │                    ┬  
+    │                    ╰── missing field `x` in `Point` literal
+────╯
+[E0219] Error: `Point` has no field named `z`
+    ╭─[ err_structs.pk:37:28 ]
+    │
+ 37 │     :local a1 Point{x=1.0; z=3.0}
+    │                            ┬  
+    │                            ╰── `Point` has no field named `z`
+    │ 
+    │ Help: the fields of `Point` are `x`, `y`
+────╯
+[E0216] Error: field `x` is given more than once
+    ╭─[ err_structs.pk:38:28 ]
+    │
+ 38 │     :local a2 Point{x=1.0; x=2.0}
+    │                     ┬      ┬  
+    │                     │      ╰── field `x` is given more than once
+    │                     │         
+    │                     ╰───────── first given here
+────╯
+[E0301] Error: mismatched types: expected `f64`, found `String`
+    ╭─[ err_structs.pk:39:23 ]
+    │
+ 39 │     :local a3 Point{x="one"}
+    │                       ──┬──  
+    │                         ╰──── expected `f64`
+────╯
+[E0313] Error: `Point` has no field named `z`
+    ╭─[ err_structs.pk:40:14 ]
+    │
+ 40 │     :put $p->z
+    │              ┬  
+    │              ╰── `Point` has no field named `z`
+    │ 
+    │ Help: the fields of `Point` are `x`, `y`
+────╯
+[E0303] Error: `:put` cannot be used with a value of type `Point`
+    ╭─[ err_structs.pk:41:10 ]
+    │
+ 41 │     :put $p
+    │          ─┬  
+    │           ╰── `:put` cannot be used with a value of type `Point`
+────╯
+[E0312] Error: `Point` has no method named `missing`
+    ╭─[ err_structs.pk:42:15 ]
+    │
+ 42 │     :put [$p->missing]
+    │               ───┬───  
+    │                  ╰───── `Point` has no method named `missing`
+────╯
+[E0305] Error: missing argument `self` in call to `Point->norm`
+    ╭─[ err_structs.pk:43:11 ]
+    │
+ 43 │     :put [Point->norm]
+    │           ─────┬─────  
+    │                ╰─────── missing argument `self` in call to `Point->norm`
+────╯
+[E0219] Error: `Point` has no function named `nothing`
+    ╭─[ err_structs.pk:44:18 ]
+    │
+ 44 │     :put [Point->nothing]
+    │                  ───┬───  
+    │                     ╰───── `Point` has no function named `nothing`
+────╯
+[E0305] Error: `Point->norm` takes 0 arguments, but 1 were given
+    ╭─[ err_structs.pk:45:20 ]
+    │
+ 45 │     :put [$p->norm 1]
+    │                    ┬  
+    │                    ╰── `Point->norm` takes 0 arguments, but 1 were given
+────╯
+[E0303] Error: operator `=` cannot be used with `Unordered`
+    ╭─[ err_structs.pk:47:14 ]
+    │
+ 47 │     :put ($q = $q)
+    │              ┬  
+    │              ╰── operator `=` cannot be used with `Unordered`
+────╯
+[E0303] Error: operator `<` cannot be used with `Point`
+    ╭─[ err_structs.pk:48:14 ]
+    │
+ 48 │     :put ($p < $p)
+    │              ┬  
+    │              ╰── operator `<` cannot be used with `Point`
+────╯
+[E0301] Error: mismatched types: expected `f64`, found `String`
+    ╭─[ err_structs.pk:49:18 ]
+    │
+ 49 │     :set ($p->x) "two"
+    │                  ──┬──  
+    │                    ╰──── expected `f64`
+────╯
+[E0203] Error: unknown type `Nowhere`
+    ╭─[ err_structs.pk:50:10 ]
+    │
+ 50 │     :put Nowhere{a=1}
+    │          ───┬───  
+    │             ╰───── unknown type `Nowhere`
+────╯

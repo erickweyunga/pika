@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/cycle
+---
+the dependencies of tests/load_errors/cycle/other form a cycle

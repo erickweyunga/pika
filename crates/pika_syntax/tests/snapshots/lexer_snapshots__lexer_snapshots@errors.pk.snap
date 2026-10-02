@@ -1,0 +1,140 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/errors.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ LParen 5..6 "("
++Variable 6..8 "$a"
+ Whitespace 8..9 " "
+ Eq 9..11 "=="
+ Whitespace 11..12 " "
+ Variable 12..14 "$b"
++RParen 14..15 ")"
++Newline 15..16 "\n"
+ Colon 16..17 ":"
++Ident 17..20 "put"
+ Whitespace 20..21 " "
+ Int 21..22 "1"
+ Whitespace 22..23 " "
+ Error 23..24 "\\"
+ Whitespace 24..25 " "
+ Int 25..26 "2"
++Newline 26..27 "\n"
+ Colon 27..28 ":"
++Ident 28..31 "put"
+ Whitespace 31..32 " "
+ Error 32..33 "$"
+ Whitespace 33..34 " "
+ Ident 34..35 "x"
++Newline 35..36 "\n"
+ Colon 36..37 ":"
++Ident 37..40 "put"
+ Whitespace 40..41 " "
+ Error 41..46 "café"
+ Whitespace 46..47 " "
+ Error 47..53 "naïve"
++Newline 53..54 "\n"
+ Colon 54..55 ":"
++Ident 55..58 "put"
+ Whitespace 58..59 " "
+ Error 59..60 "@"
+ Whitespace 60..61 " "
+ Error 61..62 "`"
+ Whitespace 62..63 " "
+ Error 63..67 "😀"
++Newline 67..68 "\n"
+ Colon 68..69 ":"
++Ident 69..72 "put"
+ Whitespace 72..73 " "
+ StringStart 73..74 "\""
++StringText 74..75 "a"
++StringEnd 75..76 "\""
++Error 76..77 "\u{1}"
++Error 77..78 "\u{7f}"
++Newline 78..79 "\n"
+ Eof 79..79 ""
+
+--- diagnostics ---
+[E0011] Error: `==` is not an operator
+   ╭─[ errors.pk:1:10 ]
+   │
+ 1 │ :put ($a == $b)
+   │          ─┬  
+   │           ╰── `==` is not an operator
+   │ 
+   │ Help: use `=` for equality, for example `($a = $b)`
+───╯
+[E0010] Error: a backslash outside a string must be the last character on its line
+   ╭─[ errors.pk:2:8 ]
+   │
+ 2 │ :put 1 \ 2
+   │        ┬  
+   │        ╰── a backslash outside a string must be the last character on its line
+   │ 
+   │ Help: a line ending in `\` continues on the next line, and cannot carry a comment
+───╯
+[E0013] Error: expected a variable name after `$`
+   ╭─[ errors.pk:3:6 ]
+   │
+ 3 │ :put $ x
+   │      ┬  
+   │      ╰── expected a variable name after `$`
+   │ 
+   │ Help: variables are read with `$name`
+───╯
+[E0012] Error: identifier `café` contains non-ASCII characters
+   ╭─[ errors.pk:4:6 ]
+   │
+ 4 │ :put café naïve
+   │      ──┬─  
+   │        ╰─── identifier `café` contains non-ASCII characters
+   │ 
+   │ Help: identifiers may only use ASCII letters, digits and `_`
+───╯
+[E0012] Error: identifier `naïve` contains non-ASCII characters
+   ╭─[ errors.pk:4:11 ]
+   │
+ 4 │ :put café naïve
+   │           ──┬──  
+   │             ╰──── identifier `naïve` contains non-ASCII characters
+   │ 
+   │ Help: identifiers may only use ASCII letters, digits and `_`
+───╯
+[E0001] Error: unexpected character `@`
+   ╭─[ errors.pk:5:6 ]
+   │
+ 5 │ :put @ ` 😀
+   │      ┬  
+   │      ╰── unexpected character `@`
+───╯
+[E0001] Error: unexpected character `` ` ``
+   ╭─[ errors.pk:5:8 ]
+   │
+ 5 │ :put @ ` 😀
+   │        ┬   
+   │        ╰─── unexpected character `` ` ``
+───╯
+[E0001] Error: unexpected character `😀` (U+1F600)
+   ╭─[ errors.pk:5:10 ]
+   │
+ 5 │ :put @ ` 😀
+   │          ┬─  
+   │          ╰─── unexpected character `😀` (U+1F600)
+───╯
+[E0001] Error: unexpected control character U+0001
+   ╭─[ errors.pk:6:9 ]
+   │
+ 6 │ :put "a"
+   │         ┬  
+   │         ╰── unexpected control character U+0001
+───╯
+[E0001] Error: unexpected control character U+007F
+   ╭─[ errors.pk:6:10 ]
+   │
+ 6 │ :put "a"
+   │          ┬  
+   │          ╰── unexpected control character U+007F
+───╯

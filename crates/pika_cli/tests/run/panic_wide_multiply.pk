@@ -1,0 +1,4 @@
+:fn main do={
+    :const big:u64 18446744073709551615
+    :put ($big * $big)
+}

@@ -1,0 +1,42 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_collections.pk
+---
+exit: 0
+--- stdout ---
+{3; 1; 2; 10} len=4 first=3 last=10 total=16
+{3; 7; 2} popped=[some 10]
+{99; 7; 2} removed=3 get=[some 7] missing=none has=true
+  0: 99
+  1: 7
+  2: 2
+doubled {198; 14; 4}, first even [some 198]
+true
+true
+{198; 14; 4; 1; 2}
+{"x"; "y"}
+  Ada 36 {"math"; "poetry"}
+  Alan 42 {}
+Ada Augusta false
+{{1; 2}; {3; 4}}
+{{1; 20}; {3; 4}}
+{"ada"=37; "alan"=41; "grace"=85} 41 none true
+none [some 1] [some 41] none
+{"ada"; "grace"; "bob"} {37; 85; 2} 3 false
+  ada=37
+  grace=85
+  bob=2
+{"ada"=38; "grace"=86; "bob"=3}
+{"a"={"ada"; "alan"}}
+true
+false
+true false true
+{Color->red; Color->custom{code=7}} true false true {Color->custom{code=7}}
+  b
+  a
+1 2 2
+{198; 14; 4} [some 4] {198; 14}
+{"one"; "two"}
+{} {} true
+--- stderr ---

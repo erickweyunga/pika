@@ -1,0 +1,58 @@
+# Errors of the built-in traits implemented by types: operators, `Drop`, `Default` and
+# `Display`.
+:struct P { x:i64 }
+:struct Q impl=Add { x:i64 }
+:fn f<T> a:T b:T -> T do={ :return ($a + $b) }
+:fn main1 do={
+    :const p P{x=1}
+    :put ($p + $p)
+    :put (-$p)
+    :put ($p . $p)
+    :put [:flip (1 as u8)]
+}
+:fn flip<T: Neg> x:T -> T do={ :return (-$x) }
+:struct Guard impl=Drop {
+    name:String
+    :fn drop mut self do={ :put "drop" }
+}
+:struct CopyDrop impl=Drop,Copy { n:i64
+    :fn drop mut self do={}
+}
+:struct W impl=Drop { x:i64 }
+:struct BadDrop impl=Drop {
+    :fn drop self do={}
+}
+:fn make -> Guard do={ :return Guard{name="x"} }
+:fn main2 do={
+    :local g [:make]
+    $g->drop
+}
+:struct NoDefault { x:i64 }
+:struct Holder impl=Default { inner:NoDefault; n:i64 }
+:enum Choice impl=Default { a; b }
+:struct BadDefault impl=Default {
+    x:i64
+    :fn default x:i64 -> Self do={ :return BadDefault{x=$x} }
+}
+:struct Gen<T> impl=Default { v:T }
+:fn fresh<T> -> T do={ :return [:default] }
+:fn main3 do={
+    :put [:default]
+    :const g:Gen<NoDefault> [:default]
+    :put [:default<i64, i64>]
+    :const d [:default 1]
+}
+:struct WrongFmt impl=Display {
+    :fn fmt self out:String do={}
+}
+:struct Plain { n:i64 }
+:struct Writes impl=Display {
+    :fn fmt self mut out:Formatter do={
+        $out->write Plain{n=1}
+        :put $out
+    }
+}
+:fn main4 do={
+    :local f:Formatter
+}
+:trait Add {}

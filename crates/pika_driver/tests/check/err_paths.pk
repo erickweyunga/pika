@@ -1,0 +1,17 @@
+# A single file is the root module of a package named `main`.
+:use /main/missing
+:use /nowhere/thing
+:use /main/area
+:use /main/area as=surface
+:const _limit 10
+:fn area w:i64 h:i64 -> i64 do={ :return ($w * $h) }
+:fn main do={
+    :put [/math/sqrt 2.0]
+    :put [/main/nothing]
+    :put [/main/area 2 3]
+    :put [:surface 2 3]
+    :put /main/_limit
+    :put /main
+    :use /main/area
+    :local p:/main/Missing
+}

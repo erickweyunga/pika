@@ -1,0 +1,10 @@
+put "hi"
+:put "a" :put "b"
+:put 1 }
+:put (1 + 2
+:put "next line still parses"
+:set $x 5
+:local $y 1
+:put ($a < $b < $c)
+:put (1, 2)
+:put x Point

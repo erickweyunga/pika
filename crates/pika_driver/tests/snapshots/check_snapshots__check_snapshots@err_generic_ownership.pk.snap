@@ -1,0 +1,41 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_generic_ownership.pk
+---
+fn twice<T>(x: T) -> List<T>
+fn twice_copy<T: Copy>(x: T) -> List<T>
+fn read_then_move<T>(x: T) -> T
+fn grow<T>(n: i64, x: T) -> i64
+fn main() -> nothing
+
+--- diagnostics ---
+[E0404] Error: `x` is used after its value was moved
+   ╭─[ err_generic_ownership.pk:2:53 ]
+   │
+ 2 │ :fn twice<T> owned x:T -> List<T> do={ :return {$x; $x} }
+   │                                                 ─┬  ─┬  
+   │                                                  │   ╰── `x` is used after its value was moved
+   │                                                  │      
+   │                                                  ╰────── the value is moved here
+   │ 
+   │ Help: copy the value before moving it: `[$x->clone]`
+───╯
+[E0408] Error: cannot move `x` out: it is a borrowed parameter
+   ╭─[ err_generic_ownership.pk:4:45 ]
+   │
+ 4 │ :fn read_then_move<T> x:T -> T do={ :return $x }
+   │                                             ─┬  
+   │                                              ╰── cannot move `x` out: it is a borrowed parameter
+   │ 
+   │ Help: pass a copy with `[$x->clone]`, or declare the parameter `owned`
+───╯
+[E0410] Error: this call needs a generic function instance with ever deeper types
+   ╭─[ err_generic_ownership.pk:9:14 ]
+   │
+ 9 │     :return [:grow ($n - 1) {$x}]
+   │              ─────────┬─────────  
+   │                       ╰─────────── this call needs a generic function instance with ever deeper types
+   │ 
+   │ Help: type arguments nested more than 32 deep come from a generic function that calls itself with larger and larger types
+───╯

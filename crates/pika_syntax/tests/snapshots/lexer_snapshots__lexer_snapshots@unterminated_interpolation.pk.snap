@@ -1,0 +1,30 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/unterminated_interpolation.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ StringStart 5..6 "\""
++StringText 6..8 "a "
++InterpParen 8..10 "$("
++Int 10..11 "1"
+ Whitespace 11..12 " "
+ Plus 12..13 "+"
+ Whitespace 13..14 " "
+ LBracket 14..15 "["
++Int 15..16 "2"
++Newline 16..17 "\n"
+ Eof 17..17 ""
+
+--- diagnostics ---
+[E0002] Error: unterminated string
+   ╭─[ unterminated_interpolation.pk:1:6 ]
+   │
+ 1 │ :put "a $(1 + [2
+   │      ┬  ─┬  
+   │      ╰────── string starts here
+   │          │  
+   │          ╰── this interpolation is never closed
+───╯

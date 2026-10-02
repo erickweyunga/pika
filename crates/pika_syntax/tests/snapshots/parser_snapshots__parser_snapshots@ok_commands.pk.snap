@@ -1,0 +1,751 @@
+---
+source: crates/pika_syntax/tests/parser_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_syntax/tests/parser/ok_commands.pk
+---
+SourceFile@0..842
+  Call@0..12
+    CommandName@0..4
+      Colon@0..1 ":"
+      Ident@1..4 "put"
+    Whitespace@4..5 " "
+    ArgList@5..12
+      StringLit@5..12
+        StringStart@5..6 "\""
+        StringText@6..11 "hello"
+        StringEnd@11..12 "\""
+  Newline@12..13 "\n"
+  Call@13..57
+    CommandName@13..17
+      Colon@13..14 ":"
+      Ident@14..17 "put"
+    Whitespace@17..18 " "
+    ArgList@18..57
+      Literal@18..19
+        Int@18..19 "1"
+      Whitespace@19..20 " "
+      Literal@20..22
+        Minus@20..21 "-"
+        Int@21..22 "2"
+      Whitespace@22..23 " "
+      Literal@23..26
+        Float@23..26 "1.5"
+      Whitespace@26..27 " "
+      Literal@27..30
+        Duration@27..30 "10s"
+      Whitespace@30..31 " "
+      Literal@31..34
+        Char@31..34 "'c'"
+      Whitespace@34..35 " "
+      Literal@35..39
+        KwTrue@35..39 "true"
+      Whitespace@39..40 " "
+      Literal@40..45
+        KwFalse@40..45 "false"
+      Whitespace@45..46 " "
+      Literal@46..50
+        KwNone@46..50 "none"
+      Whitespace@50..51 " "
+      Literal@51..57
+        RawString@51..57 "r\"raw\""
+  Newline@57..58 "\n"
+  Call@58..84
+    CommandName@58..64
+      Colon@58..59 ":"
+      Ident@59..64 "greet"
+    Whitespace@64..65 " "
+    ArgList@65..84
+      StringLit@65..70
+        StringStart@65..66 "\""
+        StringText@66..69 "Ada"
+        StringEnd@69..70 "\""
+      Whitespace@70..71 " "
+      NamedArg@71..84
+        NameRef@71..79
+          Ident@71..79 "greeting"
+        Eq@79..80 "="
+        StringLit@80..84
+          StringStart@80..81 "\""
+          StringText@81..83 "Hi"
+          StringEnd@83..84 "\""
+  Newline@84..85 "\n"
+  LocalDecl@85..113
+    Colon@85..86 ":"
+    Ident@86..91 "local"
+    Whitespace@91..92 " "
+    Name@92..93
+      Ident@92..93 "m"
+    Whitespace@93..94 " "
+    BracketExpr@94..113
+      LBracket@94..95 "["
+      Call@95..112
+        CommandName@95..104
+          Colon@95..96 ":"
+          Ident@96..99 "max"
+          GenericArgList@99..104
+            Lt@99..100 "<"
+            PathType@100..103
+              NameRef@100..103
+                Ident@100..103 "f64"
+            Gt@103..104 ">"
+        Whitespace@104..105 " "
+        ArgList@105..112
+          Literal@105..108
+            Float@105..108 "1.5"
+          Whitespace@108..109 " "
+          Literal@109..112
+            Float@109..112 "2.5"
+      RBracket@112..113 "]"
+  Newline@113..114 "\n"
+  Call@114..171
+    CommandName@114..118
+      Colon@114..115 ":"
+      Ident@115..118 "put"
+    Whitespace@118..119 " "
+    ArgList@119..171
+      BracketExpr@119..135
+        LBracket@119..120 "["
+        Call@120..134
+          PathExpr@120..130
+            PathType@120..130
+              Path@120..130
+                Slash@120..121 "/"
+                Ident@121..125 "math"
+                Slash@125..126 "/"
+                Ident@126..130 "sqrt"
+          Whitespace@130..131 " "
+          ArgList@131..134
+            Literal@131..134
+              Float@131..134 "2.0"
+        RBracket@134..135 "]"
+      Whitespace@135..136 " "
+      PathExpr@136..144
+        PathType@136..144
+          Path@136..144
+            Slash@136..137 "/"
+            Ident@137..141 "math"
+            Slash@141..142 "/"
+            Ident@142..144 "pi"
+      Whitespace@144..145 " "
+      BracketExpr@145..171
+        LBracket@145..146 "["
+        Call@146..170
+          PathExpr@146..165
+            PathType@146..165
+              Path@146..160
+                Slash@146..147 "/"
+                Ident@147..150 "std"
+                Slash@150..151 "/"
+                Ident@151..154 "num"
+                Slash@154..155 "/"
+                Ident@155..160 "parse"
+              GenericArgList@160..165
+                Lt@160..161 "<"
+                PathType@161..164
+                  NameRef@161..164
+                    Ident@161..164 "i64"
+                Gt@164..165 ">"
+          Whitespace@165..166 " "
+          ArgList@166..170
+            StringLit@166..170
+              StringStart@166..167 "\""
+              StringText@167..169 "42"
+              StringEnd@169..170 "\""
+        RBracket@170..171 "]"
+  Newline@171..172 "\n"
+  Call@172..185
+    MemberExpr@172..183
+      VarExpr@172..177
+        Variable@172..177 "$list"
+      Arrow@177..179 "->"
+      NameRef@179..183
+        Ident@179..183 "push"
+    Whitespace@183..184 " "
+    ArgList@184..185
+      Literal@184..185
+        Int@184..185 "5"
+  Newline@185..186 "\n"
+  Call@186..201
+    MemberExpr@186..194
+      VarExpr@186..188
+        Variable@186..188 "$p"
+      Arrow@188..190 "->"
+      NameRef@190..194
+        Ident@190..194 "move"
+    Whitespace@194..195 " "
+    ArgList@195..201
+      NamedArg@195..201
+        NameRef@195..197
+          Ident@195..197 "by"
+        Eq@197..198 "="
+        Literal@198..201
+          Float@198..201 "2.0"
+  Semi@201..202 ";"
+  Whitespace@202..203 " "
+  Call@203..209
+    VarExpr@203..205
+      Variable@203..205 "$f"
+    Whitespace@205..206 " "
+    ArgList@206..209
+      Literal@206..207
+        Int@206..207 "1"
+      Whitespace@207..208 " "
+      Literal@208..209
+        Int@208..209 "2"
+  Newline@209..210 "\n"
+  Call@210..265
+    CommandName@210..214
+      Colon@210..211 ":"
+      Ident@211..214 "put"
+    Whitespace@214..215 " "
+    ArgList@215..265
+      BracketExpr@215..230
+        LBracket@215..216 "["
+        Call@216..229
+          VarExpr@216..225
+            Variable@216..225 "$callback"
+          Whitespace@225..226 " "
+          ArgList@226..229
+            Literal@226..227
+              Int@226..227 "1"
+            Whitespace@227..228 " "
+            Literal@228..229
+              Int@228..229 "2"
+        RBracket@229..230 "]"
+      Whitespace@230..231 " "
+      BracketExpr@231..244
+        LBracket@231..232 "["
+        Call@232..243
+          MemberExpr@232..240
+            VarExpr@232..234
+              Variable@232..234 "$p"
+            Arrow@234..236 "->"
+            NameRef@236..240
+              Ident@236..240 "dist"
+          Whitespace@240..241 " "
+          ArgList@241..243
+            VarExpr@241..243
+              Variable@241..243 "$q"
+        RBracket@243..244 "]"
+      Whitespace@244..245 " "
+      BracketExpr@245..265
+        LBracket@245..246 "["
+        Call@246..264
+          MemberExpr@246..256
+            PathType@246..251
+              NameRef@246..251
+                Ident@246..251 "Point"
+            Arrow@251..253 "->"
+            NameRef@253..256
+              Ident@253..256 "new"
+          Whitespace@256..257 " "
+          ArgList@257..264
+            Literal@257..260
+              Float@257..260 "1.0"
+            Whitespace@260..261 " "
+            Literal@261..264
+              Float@261..264 "2.0"
+        RBracket@264..265 "]"
+  Newline@265..266 "\n"
+  Call@266..318
+    CommandName@266..270
+      Colon@266..267 ":"
+      Ident@267..270 "put"
+    Whitespace@270..271 " "
+    ArgList@271..318
+      MemberExpr@271..276
+        VarExpr@271..273
+          Variable@271..273 "$p"
+        Arrow@273..275 "->"
+        NameRef@275..276
+          Ident@275..276 "x"
+      Whitespace@276..277 " "
+      MemberExpr@277..292
+        VarExpr@277..282
+          Variable@277..282 "$grid"
+        Arrow@282..284 "->"
+        ParenExpr@284..292
+          LParen@284..285 "("
+          BinExpr@285..291
+            VarExpr@285..287
+              Variable@285..287 "$i"
+            Whitespace@287..288 " "
+            Plus@288..289 "+"
+            Whitespace@289..290 " "
+            Literal@290..291
+              Int@290..291 "1"
+          RParen@291..292 ")"
+      Whitespace@292..293 " "
+      MemberExpr@293..302
+        VarExpr@293..295
+          Variable@293..295 "$m"
+        Arrow@295..297 "->"
+        StringLit@297..302
+          StringStart@297..298 "\""
+          StringText@298..301 "key"
+          StringEnd@301..302 "\""
+      Whitespace@302..303 " "
+      MemberExpr@303..311
+        MemberExpr@303..308
+          VarExpr@303..305
+            Variable@303..305 "$l"
+          Arrow@305..307 "->"
+          Literal@307..308
+            Int@307..308 "0"
+        Arrow@308..310 "->"
+        Literal@310..311
+          Int@310..311 "1"
+      Whitespace@311..312 " "
+      MemberExpr@312..318
+        VarExpr@312..314
+          Variable@312..314 "$m"
+        Arrow@314..316 "->"
+        VarExpr@316..318
+          Variable@316..318 "$k"
+  Newline@318..319 "\n"
+  Call@319..374
+    CommandName@319..323
+      Colon@319..320 ":"
+      Ident@320..323 "put"
+    Whitespace@323..324 " "
+    ArgList@324..374
+      MemberExpr@324..334
+        PathType@324..329
+          NameRef@324..329
+            Ident@324..329 "Color"
+        Arrow@329..331 "->"
+        NameRef@331..334
+          Ident@331..334 "red"
+      Whitespace@334..335 " "
+      BracketExpr@335..361
+        LBracket@335..336 "["
+        Call@336..360
+          MemberExpr@336..349
+            PathType@336..341
+              NameRef@336..341
+                Ident@336..341 "Shape"
+            Arrow@341..343 "->"
+            NameRef@343..349
+              Ident@343..349 "circle"
+          Whitespace@349..350 " "
+          ArgList@350..360
+            NamedArg@350..360
+              NameRef@350..356
+                Ident@350..356 "radius"
+              Eq@356..357 "="
+              Literal@357..360
+                Float@357..360 "2.0"
+        RBracket@360..361 "]"
+      Whitespace@361..362 " "
+      MemberExpr@362..374
+        PathType@362..366
+          NameRef@362..366
+            KwSelfType@362..366 "Self"
+        Arrow@366..368 "->"
+        NameRef@368..374
+          Ident@368..374 "origin"
+  Newline@374..375 "\n"
+  Call@375..450
+    CommandName@375..379
+      Colon@375..376 ":"
+      Ident@376..379 "put"
+    Whitespace@379..380 " "
+    ArgList@380..450
+      BraceLit@380..399
+        PathType@380..385
+          NameRef@380..385
+            Ident@380..385 "Point"
+        LBrace@385..386 "{"
+        FieldInit@386..391
+          NameRef@386..387
+            Ident@386..387 "x"
+          Eq@387..388 "="
+          Literal@388..391
+            Float@388..391 "1.0"
+        Semi@391..392 ";"
+        Whitespace@392..393 " "
+        FieldInit@393..398
+          NameRef@393..394
+            Ident@393..394 "y"
+          Eq@394..395 "="
+          Literal@395..398
+            Float@395..398 "2.0"
+        RBrace@398..399 "}"
+      Whitespace@399..400 " "
+      BraceLit@400..438
+        PathType@400..417
+          NameRef@400..404
+            Ident@400..404 "Pair"
+          GenericArgList@404..417
+            Lt@404..405 "<"
+            PathType@405..408
+              NameRef@405..408
+                Ident@405..408 "i64"
+            Comma@408..409 ","
+            Whitespace@409..410 " "
+            PathType@410..416
+              NameRef@410..416
+                Ident@410..416 "String"
+            Gt@416..417 ">"
+        LBrace@417..418 "{"
+        FieldInit@418..425
+          NameRef@418..423
+            Ident@418..423 "first"
+          Eq@423..424 "="
+          Literal@424..425
+            Int@424..425 "1"
+        Semi@425..426 ";"
+        Whitespace@426..427 " "
+        FieldInit@427..437
+          NameRef@427..433
+            Ident@427..433 "second"
+          Eq@433..434 "="
+          StringLit@434..437
+            StringStart@434..435 "\""
+            StringText@435..436 "a"
+            StringEnd@436..437 "\""
+        RBrace@437..438 "}"
+      Whitespace@438..439 " "
+      BraceLit@439..450
+        PathType@439..448
+          NameRef@439..443
+            Ident@439..443 "List"
+          GenericArgList@443..448
+            Lt@443..444 "<"
+            PathType@444..447
+              NameRef@444..447
+                Ident@444..447 "i64"
+            Gt@447..448 ">"
+        LBrace@448..449 "{"
+        RBrace@449..450 "}"
+  Newline@450..451 "\n"
+  Call@451..483
+    CommandName@451..455
+      Colon@451..452 ":"
+      Ident@452..455 "put"
+    Whitespace@455..456 " "
+    ArgList@456..483
+      BraceLit@456..465
+        LBrace@456..457 "{"
+        Literal@457..458
+          Int@457..458 "1"
+        Semi@458..459 ";"
+        Whitespace@459..460 " "
+        Literal@460..461
+          Int@460..461 "2"
+        Semi@461..462 ";"
+        Whitespace@462..463 " "
+        Literal@463..464
+          Int@463..464 "3"
+        RBrace@464..465 "}"
+      Whitespace@465..466 " "
+      BraceLit@466..480
+        LBrace@466..467 "{"
+        MapEntry@467..472
+          StringLit@467..470
+            StringStart@467..468 "\""
+            StringText@468..469 "a"
+            StringEnd@469..470 "\""
+          Eq@470..471 "="
+          Literal@471..472
+            Int@471..472 "1"
+        Semi@472..473 ";"
+        Whitespace@473..474 " "
+        MapEntry@474..479
+          StringLit@474..477
+            StringStart@474..475 "\""
+            StringText@475..476 "b"
+            StringEnd@476..477 "\""
+          Eq@477..478 "="
+          Literal@478..479
+            Int@478..479 "2"
+        RBrace@479..480 "}"
+      Whitespace@480..481 " "
+      BraceLit@481..483
+        LBrace@481..482 "{"
+        RBrace@482..483 "}"
+  Newline@483..484 "\n"
+  LocalDecl@484..631
+    Colon@484..485 ":"
+    Ident@485..490 "local"
+    Whitespace@490..491 " "
+    Name@491..497
+      Ident@491..497 "shapes"
+    Whitespace@497..498 " "
+    BraceLit@498..631
+      LBrace@498..499 "{"
+      Newline@499..500 "\n"
+      Whitespace@500..504 "    "
+      BracketExpr@504..544
+        LBracket@504..505 "["
+        Call@505..543
+          MemberExpr@505..518
+            PathType@505..510
+              NameRef@505..510
+                Ident@505..510 "Shape"
+            Arrow@510..512 "->"
+            NameRef@512..518
+              Ident@512..518 "circle"
+          Whitespace@518..519 " "
+          ArgList@519..543
+            BracketExpr@519..539
+              LBracket@519..520 "["
+              Call@520..538
+                MemberExpr@520..530
+                  PathType@520..525
+                    NameRef@520..525
+                      Ident@520..525 "Point"
+                  Arrow@525..527 "->"
+                  NameRef@527..530
+                    Ident@527..530 "new"
+                Whitespace@530..531 " "
+                ArgList@531..538
+                  Literal@531..534
+                    Float@531..534 "0.0"
+                  Whitespace@534..535 " "
+                  Literal@535..538
+                    Float@535..538 "0.0"
+              RBracket@538..539 "]"
+            Whitespace@539..540 " "
+            Literal@540..543
+              Float@540..543 "2.0"
+        RBracket@543..544 "]"
+      Newline@544..545 "\n"
+      Whitespace@545..549 "    "
+      BracketExpr@549..629
+        LBracket@549..550 "["
+        Call@550..628
+          MemberExpr@550..561
+            PathType@550..555
+              NameRef@550..555
+                Ident@550..555 "Shape"
+            Arrow@555..557 "->"
+            NameRef@557..561
+              Ident@557..561 "rect"
+          Whitespace@561..562 " "
+          ArgList@562..628
+            NamedArg@562..586
+              NameRef@562..565
+                Ident@562..565 "min"
+              Eq@565..566 "="
+              BracketExpr@566..586
+                LBracket@566..567 "["
+                Call@567..585
+                  MemberExpr@567..577
+                    PathType@567..572
+                      NameRef@567..572
+                        Ident@567..572 "Point"
+                    Arrow@572..574 "->"
+                    NameRef@574..577
+                      Ident@574..577 "new"
+                  Whitespace@577..578 " "
+                  ArgList@578..585
+                    Literal@578..581
+                      Float@578..581 "0.0"
+                    Whitespace@581..582 " "
+                    Literal@582..585
+                      Float@582..585 "0.0"
+                RBracket@585..586 "]"
+            Newline@586..587 "\n"
+            Whitespace@587..604 "                 "
+            NamedArg@604..628
+              NameRef@604..607
+                Ident@604..607 "max"
+              Eq@607..608 "="
+              BracketExpr@608..628
+                LBracket@608..609 "["
+                Call@609..627
+                  MemberExpr@609..619
+                    PathType@609..614
+                      NameRef@609..614
+                        Ident@609..614 "Point"
+                    Arrow@614..616 "->"
+                    NameRef@616..619
+                      Ident@616..619 "new"
+                  Whitespace@619..620 " "
+                  ArgList@620..627
+                    Literal@620..623
+                      Float@620..623 "3.0"
+                    Whitespace@623..624 " "
+                    Literal@624..627
+                      Float@624..627 "4.0"
+                RBracket@627..628 "]"
+        RBracket@628..629 "]"
+      Newline@629..630 "\n"
+      RBrace@630..631 "}"
+  Newline@631..632 "\n"
+  Call@632..690
+    CommandName@632..636
+      Colon@632..633 ":"
+      Ident@633..636 "put"
+    Whitespace@636..637 " "
+    ArgList@637..690
+      StringLit@637..690
+        StringStart@637..638 "\""
+        StringText@638..644 "Hello "
+        InterpVar@644..649 "$name"
+        StringText@649..657 ", 5x6 = "
+        Interpolation@657..667
+          InterpParen@657..659 "$("
+          BinExpr@659..666
+            VarExpr@659..661
+              Variable@659..661 "$a"
+            Whitespace@661..662 " "
+            Star@662..663 "*"
+            Whitespace@663..664 " "
+            VarExpr@664..666
+              Variable@664..666 "$b"
+          RParen@666..667 ")"
+        StringText@667..675 ", len = "
+        Interpolation@675..689
+          InterpBracket@675..677 "$["
+          Call@677..688
+            CommandName@677..681
+              Colon@677..678 ":"
+              Ident@678..681 "len"
+            Whitespace@681..682 " "
+            ArgList@682..688
+              VarExpr@682..688
+                Variable@682..688 "$items"
+          RBracket@688..689 "]"
+        StringEnd@689..690 "\""
+  Newline@690..691 "\n"
+  Call@691..744
+    CommandName@691..695
+      Colon@691..692 ":"
+      Ident@692..695 "put"
+    Whitespace@695..696 " "
+    ArgList@696..744
+      StringLit@696..744
+        StringStart@696..697 "\""
+        StringText@697..704 "nested "
+        Interpolation@704..719
+          InterpParen@704..706 "$("
+          Whitespace@706..707 " "
+          StringLit@707..717
+            StringStart@707..708 "\""
+            StringText@708..714 "inner "
+            InterpVar@714..716 "$x"
+            StringEnd@716..717 "\""
+          Whitespace@717..718 " "
+          RParen@718..719 ")"
+        StringText@719..724 " and "
+        Interpolation@724..743
+          InterpBracket@724..726 "$["
+          Call@726..742
+            CommandName@726..728
+              Colon@726..727 ":"
+              Ident@727..728 "f"
+            Whitespace@728..729 " "
+            ArgList@729..742
+              StringLit@729..742
+                StringStart@729..730 "\""
+                StringText@730..731 "a"
+                Interpolation@731..740
+                  InterpBracket@731..733 "$["
+                  Call@733..739
+                    CommandName@733..735
+                      Colon@733..734 ":"
+                      Ident@734..735 "g"
+                    Whitespace@735..736 " "
+                    ArgList@736..739
+                      StringLit@736..739
+                        StringStart@736..737 "\""
+                        StringText@737..738 "b"
+                        StringEnd@738..739 "\""
+                  RBracket@739..740 "]"
+                StringText@740..741 "c"
+                StringEnd@741..742 "\""
+          RBracket@742..743 "]"
+        StringEnd@743..744 "\""
+  Newline@744..745 "\n"
+  Block@745..785
+    LBrace@745..746 "{"
+    Newline@746..747 "\n"
+    Whitespace@747..751 "    "
+    LocalDecl@751..766
+      Colon@751..752 ":"
+      Ident@752..757 "local"
+      Whitespace@757..758 " "
+      Name@758..764
+        Ident@758..764 "scoped"
+      Whitespace@764..765 " "
+      Literal@765..766
+        Int@765..766 "1"
+    Newline@766..767 "\n"
+    Whitespace@767..771 "    "
+    Call@771..783
+      CommandName@771..775
+        Colon@771..772 ":"
+        Ident@772..775 "put"
+      Whitespace@775..776 " "
+      ArgList@776..783
+        VarExpr@776..783
+          Variable@776..783 "$scoped"
+    Newline@783..784 "\n"
+    RBrace@784..785 "}"
+  Newline@785..786 "\n"
+  Call@786..833
+    CommandName@786..790
+      Colon@786..787 ":"
+      Ident@787..790 "put"
+    Whitespace@790..791 " "
+    ArgList@791..833
+      BracketExpr@791..833
+        LBracket@791..792 "["
+        FnDecl@792..832
+          Colon@792..793 ":"
+          Ident@793..795 "fn"
+          Whitespace@795..796 " "
+          ParamList@796..801
+            Param@796..801
+              Name@796..797
+                Ident@796..797 "x"
+              TypeAnnotation@797..801
+                Colon@797..798 ":"
+                PathType@798..801
+                  NameRef@798..801
+                    Ident@798..801 "i64"
+          Whitespace@801..802 " "
+          RetType@802..808
+            Arrow@802..804 "->"
+            Whitespace@804..805 " "
+            PathType@805..808
+              NameRef@805..808
+                Ident@805..808 "i64"
+          Whitespace@808..809 " "
+          NamedArg@809..832
+            NameRef@809..811
+              Ident@809..811 "do"
+            Eq@811..812 "="
+            Block@812..832
+              LBrace@812..813 "{"
+              Whitespace@813..814 " "
+              Call@814..830
+                CommandName@814..821
+                  Colon@814..815 ":"
+                  Ident@815..821 "return"
+                Whitespace@821..822 " "
+                ArgList@822..830
+                  ParenExpr@822..830
+                    LParen@822..823 "("
+                    BinExpr@823..829
+                      VarExpr@823..825
+                        Variable@823..825 "$x"
+                      Whitespace@825..826 " "
+                      Star@826..827 "*"
+                      Whitespace@827..828 " "
+                      Literal@828..829
+                        Int@828..829 "2"
+                    RParen@829..830 ")"
+              Whitespace@830..831 " "
+              RBrace@831..832 "}"
+        RBracket@832..833 "]"
+  Newline@833..834 "\n"
+  Call@834..841
+    CommandName@834..841
+      Colon@834..835 ":"
+      Ident@835..841 "return"
+    ArgList@841..841
+  Newline@841..842 "\n"

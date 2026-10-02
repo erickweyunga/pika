@@ -1,0 +1,7 @@
+:put $a + $b
+:for i from = 1 to=10 do={ :put $i }
+:put $a = $b
+: put 1
+:fn f a : i64 do={}
+:put [/std/ math]
+:put ($a->len<3)

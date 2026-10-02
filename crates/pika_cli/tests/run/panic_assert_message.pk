@@ -1,0 +1,2 @@
+:local x 5
+:assert ($x = 6) "x should be 6 but is $x"

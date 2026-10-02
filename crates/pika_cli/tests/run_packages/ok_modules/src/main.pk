@@ -1,0 +1,36 @@
+# A program of several modules and a library: imports, paths to items of other modules,
+# generic functions, traits, globals and destruction across modules.
+
+:use /stats
+:use /stats/Summary
+:use /stats/Shape
+:use /stats/calls
+:use /app/text/format/banner as=title
+
+:struct Square impl=Shape,Display {
+    side:i64
+    :fn area self -> i64 do={ :return ($self->side * $self->side) }
+}
+
+:fn main do={
+    :put [:title "modules"]
+    :local s [Summary->new]
+    $s->add 4
+    $s->add 6
+    :put $s
+    :put [$s->mean]
+    :put [/stats/largest {3; 9; 2}]
+    :put [/stats/largest {2.5; -1.0}]
+    :put [/stats/total_area {Square{side=2}; Square{side=3}}]
+    :const scale [/stats/scaler 10]
+    :put [$scale 7]
+    :put "calls: $(/stats/calls)"
+    :set calls 0
+    :put $calls
+    :put [/app/text/format/banner "end"]
+    {
+        :const t /stats/Tracked{name="scoped"}
+        :put $t
+    }
+    :put /stats/limit
+}

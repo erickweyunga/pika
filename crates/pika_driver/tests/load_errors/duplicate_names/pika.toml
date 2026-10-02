@@ -1,0 +1,6 @@
+[package]
+name = "app"
+
+[dependencies]
+a = { path = "a" }
+shared = { path = "x" }

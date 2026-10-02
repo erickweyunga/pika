@@ -1,0 +1,334 @@
+================================================================================
+Built-in command with arguments
+================================================================================
+
+:put 1 -2 1.5 10s 'c' true false none r"raw"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (integer)
+    (integer)
+    (float)
+    (duration)
+    (char)
+    (boolean)
+    (boolean)
+    (none)
+    (raw_string)))
+
+================================================================================
+Named arguments
+================================================================================
+
+:greet "Ada" greeting="Hi" in=$x as=1
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (string
+      (string_content))
+    (named_argument
+      (argument_name)
+      (string
+        (string_content)))
+    (named_argument
+      (argument_name)
+      (variable))
+    (named_argument
+      (argument_name)
+      (integer))))
+
+================================================================================
+Command with type arguments
+================================================================================
+
+:local m [:max<f64> 1.5 2.5]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (command_substitution
+      (call
+        (command_name)
+        (type_arguments
+          (type_identifier))
+        (float)
+        (float)))))
+
+================================================================================
+Path heads and path values
+================================================================================
+
+:put [/math/sqrt 2.0] /math/pi [/std/num/parse<i64> "42"]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (command_substitution
+      (call
+        (path
+          (identifier)
+          (identifier))
+        (float)))
+    (path
+      (identifier)
+      (identifier))
+    (command_substitution
+      (call
+        (generic_type
+          (path
+            (identifier)
+            (identifier)
+            (identifier))
+          (type_arguments
+            (type_identifier)))
+        (string
+          (string_content))))))
+
+================================================================================
+Method call statements
+================================================================================
+
+$list->push 5
+$p->move by=2.0; $f 1 2
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (member_expression
+      (variable)
+      (identifier))
+    (integer))
+  (call
+    (member_expression
+      (variable)
+      (identifier))
+    (named_argument
+      (argument_name)
+      (float)))
+  (call
+    (variable)
+    (integer)
+    (integer)))
+
+================================================================================
+Calls through types
+================================================================================
+
+:put [Point->new 1.0 2.0] Color->red [Shape->circle radius=2.0] Self->origin Tree<i64>->leaf
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (command_substitution
+      (call
+        (member_expression
+          (type_identifier)
+          (identifier))
+        (float)
+        (float)))
+    (member_expression
+      (type_identifier)
+      (identifier))
+    (command_substitution
+      (call
+        (member_expression
+          (type_identifier)
+          (identifier))
+        (named_argument
+          (argument_name)
+          (float))))
+    (member_expression
+      (self_type)
+      (identifier))
+    (member_expression
+      (generic_type
+        (type_identifier)
+        (type_arguments
+          (type_identifier)))
+      (identifier))))
+
+================================================================================
+Values as heads
+================================================================================
+
+"a,b"->split ","
+[$s->trim]->split " "
+-5->abs
+[{1; 2}->len]
+[some $x]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (member_expression
+      (string
+        (string_content))
+      (identifier))
+    (string
+      (string_content)))
+  (call
+    (member_expression
+      (command_substitution
+        (call
+          (member_expression
+            (variable)
+            (identifier))))
+      (identifier))
+    (string
+      (string_content)))
+  (call
+    (member_expression
+      (integer)
+      (identifier)))
+  (call
+    (command_substitution
+      (call
+        (member_expression
+          (collection_literal
+            (integer)
+            (integer))
+          (identifier)))))
+  (call
+    (command_substitution
+      (call
+        (some)
+        (variable)))))
+
+================================================================================
+Member access
+================================================================================
+
+:put $p->x $grid->($i + 1) $m->"key" $l->0->1 $m->$k $c->'a' $list->map<String>
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (member_expression
+      (variable)
+      (identifier))
+    (member_expression
+      (variable)
+      (parenthesized_expression
+        (binary_expression
+          (variable)
+          (integer))))
+    (member_expression
+      (variable)
+      (string
+        (string_content)))
+    (member_expression
+      (member_expression
+        (variable)
+        (integer))
+      (integer))
+    (member_expression
+      (variable)
+      (variable))
+    (member_expression
+      (variable)
+      (char))
+    (member_expression
+      (variable)
+      (identifier)
+      (type_arguments
+        (type_identifier)))))
+
+================================================================================
+Command substitution over several lines
+================================================================================
+
+:local shapes {
+    [Shape->circle [Point->new 0.0 0.0] 2.0]
+    [Shape->rect min=[Point->new 0.0 0.0]
+                 max=[Point->new 3.0 4.0]]
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (collection_literal
+      (command_substitution
+        (call
+          (member_expression
+            (type_identifier)
+            (identifier))
+          (command_substitution
+            (call
+              (member_expression
+                (type_identifier)
+                (identifier))
+              (float)
+              (float)))
+          (float)))
+      (command_substitution
+        (call
+          (member_expression
+            (type_identifier)
+            (identifier))
+          (named_argument
+            (argument_name)
+            (command_substitution
+              (call
+                (member_expression
+                  (type_identifier)
+                  (identifier))
+                (float)
+                (float))))
+          (named_argument
+            (argument_name)
+            (command_substitution
+              (call
+                (member_expression
+                  (type_identifier)
+                  (identifier))
+                (float)
+                (float)))))))))
+
+================================================================================
+Anonymous functions
+================================================================================
+
+:const double [:fn x:i64 -> i64 do={ :return ($x * 2) }]
+:const noop [:fn do={}]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (command_substitution
+      (function_declaration
+        (parameter
+          (identifier)
+          (type_identifier))
+        (type_identifier)
+        (block
+          (call
+            (command_name)
+            (parenthesized_expression
+              (binary_expression
+                (variable)
+                (integer))))))))
+  (variable_declaration
+    (identifier)
+    (command_substitution
+      (function_declaration
+        (block)))))

@@ -1,0 +1,23 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_ownership.pk
+---
+exit: 0
+--- stdout ---
+first
+second
+consumed 5
+end of maybe_consume
+end of maybe_consume
+outer/inner/1
+outer
+temp 1
+temp 3
+kept after 3
+reassigned after the move / value
+BA
+self
+11
+length of a temporary: 6
+--- stderr ---

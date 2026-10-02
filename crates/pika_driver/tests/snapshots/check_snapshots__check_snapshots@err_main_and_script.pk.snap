@@ -1,0 +1,23 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_main_and_script.pk
+---
+fn main() -> nothing
+
+--- diagnostics ---
+[E0210] Error: a file with `:fn main` cannot also have top-level statements
+   ╭─[ err_main_and_script.pk:2:1 ]
+   │
+ 2 │ :put "top level"
+   │ ────────┬───────  
+   │         ╰───────── a file with `:fn main` cannot also have top-level statements
+   │
+   ├─[ err_main_and_script.pk:2:1 ]
+   │
+ 1 │ :fn main do={}
+   │     ──┬─  
+   │       ╰─── `main` is declared here
+   │ 
+   │ Help: move the statements into `main`, or remove `:fn main`
+───╯

@@ -1,0 +1,219 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_builtin_traits.pk
+---
+fn drop(self: Guard) -> nothing
+fn drop(self: CopyDrop) -> nothing
+fn drop(self: BadDrop) -> nothing
+fn default(x: i64) -> BadDefault
+fn fmt(self: WrongFmt, out: String) -> nothing
+fn fmt(self: Writes, out: Formatter) -> nothing
+fn f<T>(a: T, b: T) -> T
+fn main1() -> nothing
+    p: P
+fn flip<T: Neg>(x: T) -> T
+fn make() -> Guard
+fn main2() -> nothing
+    g: Guard
+fn fresh<T>() -> T
+fn main3() -> nothing
+    g: Gen<NoDefault>
+    d: {error}
+fn main4() -> nothing
+    f: Formatter
+
+--- diagnostics ---
+[E0320] Error: `Q` does not define `add`, which the trait `Add` requires
+   ╭─[ err_builtin_traits.pk:4:16 ]
+   │
+ 4 │ :struct Q impl=Add { x:i64 }
+   │                ─┬─  
+   │                 ╰─── `Q` does not define `add`, which the trait `Add` requires
+   │ 
+   │ Help: add it to `Q`: `:fn add self other:Q -> Q do={ ... }`
+───╯
+[E0303] Error: operator `+` cannot be used with `T`
+   ╭─[ err_builtin_traits.pk:5:40 ]
+   │
+ 5 │ :fn f<T> a:T b:T -> T do={ :return ($a + $b) }
+   │                                        ┬  
+   │                                        ╰── operator `+` cannot be used with `T`
+   │ 
+   │ Help: add a bound to the type parameter: `<T: Add>`
+───╯
+[E0303] Error: operator `+` cannot be used with `P`
+   ╭─[ err_builtin_traits.pk:8:14 ]
+   │
+ 8 │     :put ($p + $p)
+   │              ┬  
+   │              ╰── operator `+` cannot be used with `P`
+   │ 
+   │ Help: add `Add` to the `impl=` of `P` and define `:fn add self other:Self -> Self` in it
+───╯
+[E0303] Error: operator `-` cannot be used with `P`
+   ╭─[ err_builtin_traits.pk:9:11 ]
+   │
+ 9 │     :put (-$p)
+   │           ─┬─  
+   │            ╰─── operator `-` cannot be used with `P`
+   │ 
+   │ Help: add `Neg` to the `impl=` of `P` and define `:fn neg self -> Self` in it
+───╯
+[E0303] Error: operator `.` cannot be used with `P`
+    ╭─[ err_builtin_traits.pk:10:14 ]
+    │
+ 10 │     :put ($p . $p)
+    │              ┬  
+    │              ╰── operator `.` cannot be used with `P`
+    │ 
+    │ Help: add `Concat` to the `impl=` of `P` and define `:fn concat self other:Self -> Self` in it
+────╯
+[E0319] Error: `u8` does not implement `Neg`, which `:flip` requires of `T`
+    ╭─[ err_builtin_traits.pk:11:11 ]
+    │
+ 11 │     :put [:flip (1 as u8)]
+    │           ───────┬───────  
+    │                  ╰───────── `u8` does not implement `Neg`, which `:flip` requires of `T`
+────╯
+[E0320] Error: `CopyDrop` cannot be both `Copy` and `Drop`
+    ╭─[ err_builtin_traits.pk:18:28 ]
+    │
+ 18 │ :struct CopyDrop impl=Drop,Copy { n:i64
+    │                            ──┬─  
+    │                              ╰─── `CopyDrop` cannot be both `Copy` and `Drop`
+    │ 
+    │ Help: a copied value would run `drop` once for each copy
+────╯
+[E0320] Error: `W` does not define `drop`, which the trait `Drop` requires
+    ╭─[ err_builtin_traits.pk:21:16 ]
+    │
+ 21 │ :struct W impl=Drop { x:i64 }
+    │                ──┬─  
+    │                  ╰─── `W` does not define `drop`, which the trait `Drop` requires
+    │ 
+    │ Help: add it to `W`: `:fn drop mut self do={ ... }`
+────╯
+[E0320] Error: `BadDrop->drop` does not match its declaration in the trait `Drop`: parameter 1 is passed by `read` instead of as `mut`
+    ╭─[ err_builtin_traits.pk:23:9 ]
+    │
+ 23 │     :fn drop self do={}
+    │         ──┬─  
+    │           ╰─── `BadDrop->drop` does not match its declaration in the trait `Drop`: parameter 1 is passed by `read` instead of as `mut`
+    │ 
+    │ Help: declare it as `:fn drop mut self`
+────╯
+[E0312] Error: `drop` runs when a value is destroyed; it cannot be called
+    ╭─[ err_builtin_traits.pk:28:5 ]
+    │
+ 28 │     $g->drop
+    │     ────┬───  
+    │         ╰───── `drop` runs when a value is destroyed; it cannot be called
+    │ 
+    │ Help: a value is destroyed when its variable goes out of scope, or when `:set` replaces it
+────╯
+[E0314] Error: `Holder` cannot implement `Default`: field `inner` of type `NoDefault` does not
+    ╭─[ err_builtin_traits.pk:31:21 ]
+    │
+ 31 │ :struct Holder impl=Default { inner:NoDefault; n:i64 }
+    │                     ───┬───         ────┬────  
+    │                        ╰─────────────────────── `Holder` cannot implement `Default`: field `inner` of type `NoDefault` does not
+    │                                         │      
+    │                                         ╰────── not `Default`
+────╯
+[E0314] Error: the enum `Choice` cannot derive `Default`: it has no default variant
+    ╭─[ err_builtin_traits.pk:32:19 ]
+    │
+ 32 │ :enum Choice impl=Default { a; b }
+    │                   ───┬───  
+    │                      ╰───── the enum `Choice` cannot derive `Default`: it has no default variant
+    │ 
+    │ Help: define it: `:fn default -> Self do={ :return Choice->... }`
+────╯
+[E0320] Error: `BadDefault->default` does not match the trait `Default`
+    ╭─[ err_builtin_traits.pk:35:9 ]
+    │
+ 35 │     :fn default x:i64 -> Self do={ :return BadDefault{x=$x} }
+    │         ───┬───  
+    │            ╰───── `BadDefault->default` does not match the trait `Default`
+    │ 
+    │ Help: declare it as `:fn default -> Self`
+────╯
+[E0303] Error: `T` has no default value
+    ╭─[ err_builtin_traits.pk:38:33 ]
+    │
+ 38 │ :fn fresh<T> -> T do={ :return [:default] }
+    │                                 ────┬───  
+    │                                     ╰───── `T` has no default value
+    │ 
+    │ Help: add a bound to the type parameter: `<T: Default>`
+────╯
+[E0302] Error: cannot infer the type of `[:default]`
+    ╭─[ err_builtin_traits.pk:40:11 ]
+    │
+ 40 │     :put [:default]
+    │           ────┬───  
+    │               ╰───── cannot infer the type of `[:default]`
+    │ 
+    │ Help: write the type: `[:default<Point>]`
+────╯
+[E0303] Error: `Gen<NoDefault>` has no default value
+    ╭─[ err_builtin_traits.pk:41:30 ]
+    │
+ 41 │     :const g:Gen<NoDefault> [:default]
+    │                              ────┬───  
+    │                                  ╰───── `Gen<NoDefault>` has no default value
+────╯
+[E0305] Error: `:default` takes one type argument, as in `[:default<i64>]`
+    ╭─[ err_builtin_traits.pk:42:19 ]
+    │
+ 42 │     :put [:default<i64, i64>]
+    │                   ─────┬────  
+    │                        ╰────── `:default` takes one type argument, as in `[:default<i64>]`
+────╯
+[E0302] Error: cannot infer the type of `d`
+    ╭─[ err_builtin_traits.pk:43:12 ]
+    │
+ 43 │     :const d [:default 1]
+    │            ┬  
+    │            ╰── cannot infer the type of `d`
+    │ 
+    │ Help: add a type annotation, as in `:local d:i64`
+────╯
+[E0305] Error: `:default` takes no arguments
+    ╭─[ err_builtin_traits.pk:43:15 ]
+    │
+ 43 │     :const d [:default 1]
+    │               ─────┬────  
+    │                    ╰────── `:default` takes no arguments
+────╯
+[E0320] Error: `WrongFmt->fmt` does not match the trait `Display`
+    ╭─[ err_builtin_traits.pk:46:9 ]
+    │
+ 46 │     :fn fmt self out:String do={}
+    │         ─┬─  
+    │          ╰─── `WrongFmt->fmt` does not match the trait `Display`
+    │ 
+    │ Help: declare it as `:fn fmt self mut out:Formatter`
+────╯
+[E0303] Error: `write` cannot be used with a value of type `Plain`
+    ╭─[ err_builtin_traits.pk:51:21 ]
+    │
+ 51 │         $out->write Plain{n=1}
+    │                     ─────┬────  
+    │                          ╰────── `write` cannot be used with a value of type `Plain`
+────╯
+[E0303] Error: `:put` cannot be used with a value of type `Formatter`
+    ╭─[ err_builtin_traits.pk:52:14 ]
+    │
+ 52 │         :put $out
+    │              ──┬─  
+    │                ╰─── `:put` cannot be used with a value of type `Formatter`
+────╯
+[E0204] Error: `Add` is a built-in trait and cannot be redeclared
+    ╭─[ err_builtin_traits.pk:58:8 ]
+    │
+ 58 │ :trait Add {}
+    │        ─┬─  
+    │         ╰─── `Add` is a built-in trait and cannot be redeclared
+────╯

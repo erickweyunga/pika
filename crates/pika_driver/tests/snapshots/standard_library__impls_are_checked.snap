@@ -1,0 +1,54 @@
+---
+source: crates/pika_driver/tests/standard_library.rs
+expression: "diagnostics_of(\":struct Point {\\n    x:i64\\n}\\n:impl Point {\\n    :fn origin -> Point do={ :return Point{x=0} }\\n}\\n:impl<T> String {\\n}\\n:impl<T> List<T> {\\n    :fn push mut self owned value:T do={}\\n    :fn clone self -> i64 do={ :return 0 }\\n    :fn twice self -> i64 do={ :return 2 }\\n}\\n:impl<T> List<T> {\\n    :fn twice self -> i64 do={ :return 2 }\\n}\\n:fn main do={\\n    :impl i64 {\\n    }\\n}\\n\",)"
+---
+[E0227] Error: `:impl` declares functions of built-in types, not of `Point`
+   ╭─[ std/lib.pk:4:7 ]
+   │
+ 4 │ :impl Point {
+   │       ──┬──  
+   │         ╰──── `:impl` declares functions of built-in types, not of `Point`
+   │ 
+   │ Help: declare the functions of `Point` in its body
+───╯
+[E0227] Error: the type parameter `T` is not used in `String`
+   ╭─[ std/lib.pk:7:7 ]
+   │
+ 7 │ :impl<T> String {
+   │       ┬  
+   │       ╰── the type parameter `T` is not used in `String`
+───╯
+[E0227] Error: `List<T>` already has a built-in method named `push`
+    ╭─[ std/lib.pk:10:9 ]
+    │
+ 10 │     :fn push mut self owned value:T do={}
+    │         ──┬─  
+    │           ╰─── `List<T>` already has a built-in method named `push`
+────╯
+[E0227] Error: `List<T>` already has a built-in method named `clone`
+    ╭─[ std/lib.pk:11:9 ]
+    │
+ 11 │     :fn clone self -> i64 do={ :return 0 }
+    │         ──┬──  
+    │           ╰──── `List<T>` already has a built-in method named `clone`
+────╯
+[E0204] Error: the function `twice` is declared more than once
+    ╭─[ std/lib.pk:15:9 ]
+    │
+ 15 │     :fn twice self -> i64 do={ :return 2 }
+    │         ──┬──  
+    │           ╰──── the function `twice` is declared more than once
+    │
+    ├─[ std/lib.pk:15:9 ]
+    │
+ 12 │     :fn twice self -> i64 do={ :return 2 }
+    │         ──┬──  
+    │           ╰──── first declared here
+────╯
+[E0212] Error: `:impl` can only be written at the top level of a file
+    ╭─[ std/lib.pk:18:5 ]
+    │
+ 18 │     :impl i64 {
+    │     ──┬──  
+    │       ╰──── `:impl` can only be written at the top level of a file
+────╯

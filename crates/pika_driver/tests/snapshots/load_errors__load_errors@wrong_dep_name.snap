@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/wrong_dep_name
+---
+the dependency `helpers` is the package `utils` in tests/load_errors/wrong_dep_name/lib: name the dependency after the package

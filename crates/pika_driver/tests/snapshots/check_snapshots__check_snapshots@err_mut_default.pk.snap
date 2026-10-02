@@ -1,0 +1,17 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_mut_default.pk
+---
+fn mut_default(text: String) -> nothing
+
+--- diagnostics ---
+[E0215] Error: a `mut` parameter cannot have a default value
+   ╭─[ err_mut_default.pk:1:33 ]
+   │
+ 1 │ :fn mut_default mut text:String="x" do={}
+   │                                 ─┬─  
+   │                                  ╰─── a `mut` parameter cannot have a default value
+   │ 
+   │ Help: the caller must pass a variable for the function to modify
+───╯

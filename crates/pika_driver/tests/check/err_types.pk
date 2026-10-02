@@ -1,0 +1,20 @@
+:fn main do={
+    :local x:i64 "hello"
+    :local f:f64 5
+    :local y:u8 300
+    :local z:u8 -1
+    :local big:i8 128
+    :put (1 + 2.5)
+    :put ("a" + "b")
+    :if (5) do={ :put "five" }
+    :local u:u32 7
+    :put (-$u)
+    :put (1.5 as bool)
+    :put [:nothing]
+    :put (true < false)
+    :put (1 << 1.5)
+    :put (~1.5)
+    :local unknown
+    :local mix (1 + $f)
+    :put "$x $y $z $big $u $mix"
+}

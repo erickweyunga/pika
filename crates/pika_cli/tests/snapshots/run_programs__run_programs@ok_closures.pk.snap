@@ -1,0 +1,47 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_closures.pk
+---
+exit: 0
+--- stdout ---
+42
+15
+49
+20
+hello dear ada
+hi bob
+20
+30
+100
+hello dear cy
+Button(ok) -> clicked 3
+15
+n=5
+{0.5; 1.0; 1.5}
+{1; 2}
+5
+caught 50 is over 10
+made
+drop tagger
+<tagger:x>
+drop tagger
+<tagger:y>
+end
+drop tagger
+created
+replaced f: 0 1
+double: 42
+negate: -21
+end of lifetimes
+drop noisy 1
+--- stderr ---
+[W0001] Warning: variable `g` is never modified
+     ╭─[ ok_closures.pk:103:12 ]
+     │
+ 103 │     :local g [$f->clone]
+     │            ┬  
+     │            ╰── variable `g` is never modified
+     │ 
+     │ Help: declare it with `:const g`
+─────╯

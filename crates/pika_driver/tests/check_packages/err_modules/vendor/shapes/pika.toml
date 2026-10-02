@@ -1,0 +1,5 @@
+[package]
+name = "shapes"
+
+[dependencies]
+colors = { path = "../colors" }

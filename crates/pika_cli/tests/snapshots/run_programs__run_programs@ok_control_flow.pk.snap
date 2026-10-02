@@ -1,0 +1,47 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_control_flow.pk
+---
+exit: 0
+--- stdout ---
+fib(30) = 832040
+even(10) = true, odd(7) = true
+scale: 6.0 7.0 5.0
+signs: -1 0 1
+first multiple of 7 from 50: 56
+order: 1 2 2
+short-circuit: false true calls=2
+sum 1..100 = 5050
+down 10
+down 7
+down 4
+down 1
+u8 250
+u8 251
+u8 252
+u8 253
+u8 254
+u8 255
+i8 -128
+i8 -127
+i8 -126
+big step 127
+big step 27
+big step -73
+u8 step 0
+u8 step 100
+u8 step 200
+variable step 0
+variable step 4
+variable step 8
+odd 1
+odd 3
+odd 5
+odd 7
+do-while 6
+do-while 3
+do-while 0
+nested pairs = 6
+later = 1
+--- stderr ---

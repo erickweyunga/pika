@@ -1,0 +1,21 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: "run_both(dir, \".\", &name)"
+input_file: crates/pika_cli/tests/run_packages/ok_modules/pika.toml
+---
+exit: 0
+--- stdout ---
+== modules ==
+n=2 total=10
+5.0
+9
+2.5
+13
+70
+calls: 2
+0
+== end ==
+Tracked{name="scoped"}
+dropped scoped
+100
+--- stderr ---

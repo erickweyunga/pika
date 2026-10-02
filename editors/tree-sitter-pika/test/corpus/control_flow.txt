@@ -1,0 +1,188 @@
+================================================================================
+If, else and else-if
+================================================================================
+
+:if ($x < 0) do={
+    :put "negative"
+} else=:if ($x = 0) do={
+    :put "zero"
+} else={
+    :put "positive"
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (if_statement
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (integer)))
+    (block
+      (call
+        (command_name)
+        (string
+          (string_content))))
+    (if_statement
+      (parenthesized_expression
+        (binary_expression
+          (variable)
+          (integer)))
+      (block
+        (call
+          (command_name)
+          (string
+            (string_content))))
+      (block
+        (call
+          (command_name)
+          (string
+            (string_content)))))))
+
+================================================================================
+Loops
+================================================================================
+
+:while ($n > 0) do={ :set n ($n - 1) }
+:do {
+    :set n ($n + 1)
+} while=($n < 10)
+:for i from=0 to=10 do={ :put $i }
+:for i from=10 until=0 step=-2 do={ :break }
+:foreach x in=$list do={ :continue }
+:foreach i,x in=$list do={ :put "$i: $x" }
+:foreach mut k,v in=$map do={ :set v 0 }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (while_statement
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (integer)))
+    (block
+      (set_statement
+        (identifier)
+        (parenthesized_expression
+          (binary_expression
+            (variable)
+            (integer))))))
+  (do_while_statement
+    (block
+      (set_statement
+        (identifier)
+        (parenthesized_expression
+          (binary_expression
+            (variable)
+            (integer)))))
+    (parenthesized_expression
+      (binary_expression
+        (variable)
+        (integer))))
+  (for_statement
+    (identifier)
+    (integer)
+    (integer)
+    (block
+      (call
+        (command_name)
+        (variable))))
+  (for_statement
+    (identifier)
+    (integer)
+    (integer)
+    (integer)
+    (block
+      (call
+        (command_name))))
+  (foreach_statement
+    (identifier)
+    (variable)
+    (block
+      (call
+        (command_name))))
+  (foreach_statement
+    (identifier)
+    (identifier)
+    (variable)
+    (block
+      (call
+        (command_name)
+        (string
+          (interpolation
+            (variable))
+          (string_content)
+          (interpolation
+            (variable))))))
+  (foreach_statement
+    (identifier)
+    (identifier)
+    (variable)
+    (block
+      (set_statement
+        (identifier)
+        (integer)))))
+
+================================================================================
+Errors
+================================================================================
+
+:onerror e in={
+    :const cfg [:read_config "app.toml"]
+} do={
+    :error "could not load" source=$e
+}
+:unsafe {
+    :put 1
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (onerror_statement
+    (identifier)
+    (block
+      (variable_declaration
+        (identifier)
+        (command_substitution
+          (call
+            (command_name)
+            (string
+              (string_content))))))
+    (block
+      (call
+        (command_name)
+        (string
+          (string_content))
+        (named_argument
+          (argument_name)
+          (variable)))))
+  (unsafe_block
+    (block
+      (call
+        (command_name)
+        (integer)))))
+
+================================================================================
+Blocks
+================================================================================
+
+{
+    :local scoped 1
+    {
+        :put $scoped
+    }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (block
+    (variable_declaration
+      (identifier)
+      (integer))
+    (block
+      (call
+        (command_name)
+        (variable)))))

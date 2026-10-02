@@ -1,0 +1,11 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_explicit.pk
+---
+exit: 101
+--- stdout ---
+start
+--- stderr ---
+panic: failed with code 7 at 3.0
+  at panic_explicit.pk:1:33

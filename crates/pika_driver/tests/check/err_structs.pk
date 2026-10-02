@@ -1,0 +1,51 @@
+# Name resolution and type errors of structs.
+
+:struct Point impl=Copy,Eq {
+    x:f64
+    y:f64=0.0
+
+    :fn norm self -> f64 do={ :return ($self->x + $self->y) }
+    :fn origin -> Self do={ :return Self{x=0.0} }
+}
+
+:struct Named impl=Copy {
+    name:String
+}
+
+:struct Loop {
+    next:Loop
+}
+
+:struct Twice {
+    a:i64
+    a:i64
+}
+
+:struct Unordered {
+    p:Point
+}
+
+:fn misplaced self do={}
+
+:fn read p:Point do={
+    :set ($p->x) 1.0
+}
+
+:fn main do={
+    :local p Point{x=1.0}
+    :local a0 Point{y=2.0}
+    :local a1 Point{x=1.0; z=3.0}
+    :local a2 Point{x=1.0; x=2.0}
+    :local a3 Point{x="one"}
+    :put $p->z
+    :put $p
+    :put [$p->missing]
+    :put [Point->norm]
+    :put [Point->nothing]
+    :put [$p->norm 1]
+    :local q Unordered{p=$p}
+    :put ($q = $q)
+    :put ($p < $p)
+    :set ($p->x) "two"
+    :put Nowhere{a=1}
+}

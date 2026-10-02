@@ -1,0 +1,26 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_traits.pk
+---
+exit: 0
+--- stdout ---
+square with area 4.0
+3.0
+a blob
+10.0
+2.5
+1.0
+Square{side=1.0}
+2
+<Tally{n=2}>
+tally <Tally{n=2}>
+Tally{n=3}
+Tally{n=2}
+{"x"; "x"}
+Stack{items={"a"; "a"}} 2
+{2}
+Stack{items={}}
+{Tally{n=1}; Tally{n=6}}
+42
+--- stderr ---

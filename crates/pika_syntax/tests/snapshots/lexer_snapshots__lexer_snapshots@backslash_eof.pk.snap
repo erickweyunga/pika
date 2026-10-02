@@ -1,0 +1,23 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/backslash_eof.pk
+---
+ Colon 0..1 ":"
++Ident 1..4 "put"
+ Whitespace 4..5 " "
+ Int 5..6 "1"
+ Whitespace 6..7 " "
+ Error 7..8 "\\"
+ Eof 8..8 ""
+
+--- diagnostics ---
+[E0010] Error: backslash at end of file
+   ╭─[ backslash_eof.pk:1:8 ]
+   │
+ 1 │ :put 1 \
+   │        ┬  
+   │        ╰── backslash at end of file
+   │ 
+   │ Help: a line ending in `\` continues on the next line, and cannot carry a comment
+───╯

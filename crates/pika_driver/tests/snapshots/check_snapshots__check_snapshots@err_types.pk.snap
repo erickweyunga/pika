@@ -1,0 +1,148 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_types.pk
+---
+fn main() -> nothing
+    x: i64
+    f: f64
+    y: u8
+    z: u8
+    big: i8
+    u: u32
+    unknown: {error}
+    mix: {error}
+
+--- diagnostics ---
+[E0301] Error: mismatched types: expected `i64`, found `String`
+   ╭─[ err_types.pk:2:18 ]
+   │
+ 2 │     :local x:i64 "hello"
+   │                  ───┬───  
+   │                     ╰───── expected `i64`
+───╯
+[E0301] Error: mismatched types: expected `f64`, found `{integer}`
+   ╭─[ err_types.pk:3:18 ]
+   │
+ 3 │     :local f:f64 5
+   │                  ┬  
+   │                  ╰── expected `f64`
+   │ 
+   │ Help: write the number with a decimal point, as in `5.0`
+───╯
+[E0304] Error: the literal `300` does not fit in `u8`
+   ╭─[ err_types.pk:4:17 ]
+   │
+ 4 │     :local y:u8 300
+   │                 ─┬─  
+   │                  ╰─── the literal `300` does not fit in `u8`
+   │ 
+   │ Help: the range of `u8` is 0 to 255
+───╯
+[E0304] Error: the literal `-1` does not fit in `u8`
+   ╭─[ err_types.pk:5:17 ]
+   │
+ 5 │     :local z:u8 -1
+   │                 ─┬  
+   │                  ╰── the literal `-1` does not fit in `u8`
+   │ 
+   │ Help: the range of `u8` is 0 to 255
+───╯
+[E0304] Error: the literal `128` does not fit in `i8`
+   ╭─[ err_types.pk:6:19 ]
+   │
+ 6 │     :local big:i8 128
+   │                   ─┬─  
+   │                    ╰─── the literal `128` does not fit in `i8`
+   │ 
+   │ Help: the range of `i8` is -128 to 127
+───╯
+[E0301] Error: mismatched types: expected `{integer}`, found `{float}`
+   ╭─[ err_types.pk:7:15 ]
+   │
+ 7 │     :put (1 + 2.5)
+   │               ─┬─  
+   │                ╰─── expected `{integer}`
+   │ 
+   │ Help: integers and floats cannot be mixed; write integer literals with a decimal point, as in `1.0`, or convert with `as`
+───╯
+[E0303] Error: operator `+` cannot be used with `String`
+   ╭─[ err_types.pk:8:15 ]
+   │
+ 8 │     :put ("a" + "b")
+   │               ┬  
+   │               ╰── operator `+` cannot be used with `String`
+   │ 
+   │ Help: strings are joined with `.`, as in `($a . $b)`
+───╯
+[E0301] Error: mismatched types: expected `bool`, found `{integer}`
+   ╭─[ err_types.pk:9:10 ]
+   │
+ 9 │     :if (5) do={ :put "five" }
+   │          ┬  
+   │          ╰── expected `bool`
+───╯
+[E0303] Error: operator `-` cannot be used with `u32`
+    ╭─[ err_types.pk:11:11 ]
+    │
+ 11 │     :put (-$u)
+    │           ─┬─  
+    │            ╰─── operator `-` cannot be used with `u32`
+    │ 
+    │ Help: unsigned integers cannot be negative; convert to a signed type first
+────╯
+[E0307] Error: cannot convert `{float}` to `bool` with `as`
+    ╭─[ err_types.pk:12:11 ]
+    │
+ 12 │     :put (1.5 as bool)
+    │           ─────┬─────  
+    │                ╰─────── cannot convert `{float}` to `bool` with `as`
+    │ 
+    │ Help: `as` converts between numeric types, and from `char` to `u32`
+────╯
+[E0303] Error: `:put` cannot be used with a value of type `nothing`
+    ╭─[ err_types.pk:13:11 ]
+    │
+ 13 │     :put [:nothing]
+    │           ────┬───  
+    │               ╰───── `:put` cannot be used with a value of type `nothing`
+────╯
+[E0303] Error: operator `<` cannot be used with `bool`
+    ╭─[ err_types.pk:14:16 ]
+    │
+ 14 │     :put (true < false)
+    │                ┬  
+    │                ╰── operator `<` cannot be used with `bool`
+────╯
+[E0303] Error: operator `<<` cannot be used with `{float}`
+    ╭─[ err_types.pk:15:16 ]
+    │
+ 15 │     :put (1 << 1.5)
+    │                ─┬─  
+    │                 ╰─── operator `<<` cannot be used with `{float}`
+────╯
+[E0303] Error: operator `~` cannot be used with `{float}`
+    ╭─[ err_types.pk:16:11 ]
+    │
+ 16 │     :put (~1.5)
+    │           ──┬─  
+    │             ╰─── operator `~` cannot be used with `{float}`
+────╯
+[E0302] Error: cannot infer the type of `unknown`
+    ╭─[ err_types.pk:17:12 ]
+    │
+ 17 │     :local unknown
+    │            ───┬───  
+    │               ╰───── cannot infer the type of `unknown`
+    │ 
+    │ Help: add a type annotation, as in `:local unknown:i64`
+────╯
+[E0301] Error: mismatched types: expected `{integer}`, found `f64`
+    ╭─[ err_types.pk:18:21 ]
+    │
+ 18 │     :local mix (1 + $f)
+    │                     ─┬  
+    │                      ╰── expected `{integer}`
+    │ 
+    │ Help: integers and floats cannot be mixed; write integer literals with a decimal point, as in `1.0`, or convert with `as`
+────╯

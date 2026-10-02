@@ -1,0 +1,11 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_drop.pk
+---
+exit: 101
+--- stdout ---
+before
+--- stderr ---
+panic: drop failed
+  at panic_drop.pk:3:28

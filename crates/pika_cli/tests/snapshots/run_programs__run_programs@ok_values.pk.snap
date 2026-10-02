@@ -1,0 +1,24 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/ok_values.pk
+---
+exit: 0
+--- stdout ---
+Hello, Pika!
+42
+-7
+18446744073709551615
+-9223372036854775808
+floats: 0.30000000000000004 3.0 0.6666666666666666 1.0 -0.0 1e301 1e20 0.00001234
+f32: 0.33333334 16777216.0 0.3
+durations: 1m30s500ms -2h 23h59m59s999ms999us999ns 0s true
+chars: A é 65 true
+bools: true true false true
+division: 3 -3 1 -1 0
+bits: 48 255 240 -1 255 4611686018427387904 -4 15
+shifts by other types: 8 128 -1
+casts: 3 -3 0 255 2147483647 65.0 200 -1
+comparisons: true true false true true true
+typeof: f64 char Duration u16 tostr: 42 2.5
+--- stderr ---

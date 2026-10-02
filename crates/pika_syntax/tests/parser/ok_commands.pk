@@ -1,0 +1,25 @@
+:put "hello"
+:put 1 -2 1.5 10s 'c' true false none r"raw"
+:greet "Ada" greeting="Hi"
+:local m [:max<f64> 1.5 2.5]
+:put [/math/sqrt 2.0] /math/pi [/std/num/parse<i64> "42"]
+$list->push 5
+$p->move by=2.0; $f 1 2
+:put [$callback 1 2] [$p->dist $q] [Point->new 1.0 2.0]
+:put $p->x $grid->($i + 1) $m->"key" $l->0->1 $m->$k
+:put Color->red [Shape->circle radius=2.0] Self->origin
+:put Point{x=1.0; y=2.0} Pair<i64, String>{first=1; second="a"} List<i64>{}
+:put {1; 2; 3} {"a"=1; "b"=2} {}
+:local shapes {
+    [Shape->circle [Point->new 0.0 0.0] 2.0]
+    [Shape->rect min=[Point->new 0.0 0.0]
+                 max=[Point->new 3.0 4.0]]
+}
+:put "Hello $name, 5x6 = $($a * $b), len = $[:len $items]"
+:put "nested $( "inner $x" ) and $[:f "a$[:g "b"]c"]"
+{
+    :local scoped 1
+    :put $scoped
+}
+:put [:fn x:i64 -> i64 do={ :return ($x * 2) }]
+:return

@@ -1,0 +1,62 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: "run_both(dir, &name, &name)"
+input_file: crates/pika_cli/tests/run/ok_std.pk
+---
+exit: 0
+--- stdout ---
+1.4142135623730951
+2.0 3.0 -3.0 -2.0
+1024.0
+true
+5.0
+5 2.5 3 7
+10
+81
+true
+1.0 6.283185307179586
+[Hello, wörld!] [Hello, wörld!  ] [  Hello, wörld!]
+{"a"; "b"; ""; "c"}
+x-y-z
+one 2 2
+[some 2]
+none
+[some 4]
+true false
+hé
+{'h'; 'é'; 'l'; 'l'; 'o'}
+6 5
+{"the"; "quick"; "brown"; "fox"}
+{"one"; "two"; "three"}
+STRASSE àb
+ababab
+-41
+2500.0
+error: not an integer: "4x"
+error: not a number: ""
+é
+true true true
+ß Q q
+[some 7] none [some 'λ']
+3
+{1; 3; 3; 5; 7; 9}
+{"apple"; "fig"; "pear"}
+{"pear"; "apple"; "fig"}
+{"fig"; "apple"; "pear"}
+{Score{points=1; name="a"}; Score{points=2; name="a"}; Score{points=2; name="b"}}
+[some 4] none
+[some 1] [some "pear"] 4.0
+{2; 3; 4; 5}
+none
+no line break, then one
+none
+{}
+none
+true
+true
+true
+{"first line"; "second line"}
+false
+caught: true
+--- stderr ---
+to standard error

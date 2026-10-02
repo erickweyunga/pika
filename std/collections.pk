@@ -1,0 +1,632 @@
+# Lists and maps: sorting, searching, transforming and summarizing them, and two more data
+# structures: `Deque`, a double-ended queue, and `Heap`, a priority queue.
+#
+# Functions that return elements of a list return copies, so they need `Clone` elements.
+
+# Two values, as the elements of `zip` and `entries`.
+:struct Pair<A, B> impl=Clone,Eq,Display {
+    first:A
+    second:B
+}
+
+# ----- Reordering --------------------------------------------------------------------------
+
+# Removes the last element of a non-empty list and returns it.
+:fn _take_last<T> mut items:List<T> -> T do={
+    :return [$items->remove ([$items->len] - 1)]
+}
+
+# Reverses the order of the elements of a list.
+:fn reverse<T> mut items:List<T> do={
+    :local i 0
+    :local j ([$items->len] - 1)
+    :while ($i < $j) do={
+        $items->swap $i $j
+        :set i ($i + 1)
+        :set j ($j - 1)
+    }
+}
+
+# Sorts a list with `less`, which tells whether its first argument goes before its second.
+# The sort is stable: elements that neither goes before keep their order. It takes time
+# proportional to n log n for n elements.
+:fn sort_by<T> mut items:List<T> less:fn(T, T) -> bool do={
+    :const count [$items->len]
+    :if ($count < 2) do={ :return }
+    # The second half, moved out in order.
+    :local second:List<T> {}
+    :while ([$items->len] > ($count / 2)) do={ $second->push [:_take_last $items] }
+    :reverse $second
+    :sort_by $items $less
+    :sort_by $second $less
+    # Merges from the last elements down; of two that neither goes before, the one from the
+    # second half goes last.
+    :local merged:List<T> {}
+    :while ((![$items->is_empty]) and (![$second->is_empty])) do={
+        :const last_first ([$items->len] - 1)
+        :const last_second ([$second->len] - 1)
+        :if ([$less $second->$last_second $items->$last_first]) do={
+            $merged->push [:_take_last $items]
+        } else={
+            $merged->push [:_take_last $second]
+        }
+    }
+    :while (![$items->is_empty]) do={ $merged->push [:_take_last $items] }
+    :while (![$second->is_empty]) do={ $merged->push [:_take_last $second] }
+    :reverse $merged
+    :set items $merged
+}
+
+# Sorts a list from the smallest element to the largest, stably, in time proportional to
+# n log n.
+:fn sort<T: Ord> mut items:List<T> do={
+    :sort_by $items [:fn a:T b:T -> bool do={ :return ($a < $b) }]
+}
+
+# Sorts a list by a key computed for each element, from the smallest key to the largest,
+# stably. The key is computed again for each comparison.
+:fn sort_by_key<T, K: Ord> mut items:List<T> key:fn(T) -> K do={
+    :const get_key [$key->clone]
+    :sort_by $items [:fn a:T b:T -> bool do={ :return ([$get_key $a] < [$get_key $b]) }]
+}
+
+# A sorted copy of a list.
+:fn sorted<T: Ord + Clone> items:List<T> -> List<T> do={
+    :local copy [$items->clone]
+    :sort $copy
+    :return $copy
+}
+
+# Returns true if the elements of a list are in order, from the smallest to the largest.
+:fn is_sorted<T: Ord> items:List<T> -> bool do={
+    :for i from=1 to=([$items->len] - 1) do={
+        :if ($items->$i < $items->($i - 1)) do={ :return false }
+    }
+    :return true
+}
+
+# Removes the elements equal to the one before them, keeping the first of each run.
+:fn dedup<T: Eq> mut items:List<T> do={
+    :if ([$items->len] < 2) do={ :return }
+    :local kept 1
+    :for i from=1 to=([$items->len] - 1) do={
+        :if ($items->$i != $items->($kept - 1)) do={
+            $items->swap $i $kept
+            :set kept ($kept + 1)
+        }
+    }
+    :truncate $items $kept
+}
+
+# Removes the elements after the first `length`; does nothing to a shorter list.
+:fn truncate<T> mut items:List<T> length:i64 do={
+    :while ([$items->len] > $length) do={ $items->pop }
+}
+
+# Moves the elements of `other` to the end of `items`, in order.
+:fn append<T> mut items:List<T> owned other:List<T> do={
+    :local rest $other
+    :reverse $rest
+    :while (![$rest->is_empty]) do={ $items->push [:_take_last $rest] }
+}
+
+# ----- Searching ---------------------------------------------------------------------------
+
+# The position of the first element equal to `value`, or none.
+:fn index_of<T: Eq> items:List<T> value:T -> i64? do={
+    :foreach i,item in=$items do={
+        :if ($item = $value) do={ :return $i }
+    }
+    :return none
+}
+
+# The position of the first element for which `test` is true, or none.
+:fn position<T> items:List<T> test:fn(T) -> bool -> i64? do={
+    :foreach i,item in=$items do={
+        :if ([$test $item]) do={ :return $i }
+    }
+    :return none
+}
+
+# A copy of the first element for which `test` is true, or none.
+:fn find_first<T: Clone> items:List<T> test:fn(T) -> bool -> T? do={
+    :foreach item in=$items do={
+        :if ([$test $item]) do={ :return [$item->clone] }
+    }
+    :return none
+}
+
+# In a sorted list: the position of the first element not less than `value`, where it would
+# be inserted to keep the list sorted.
+:fn lower_bound<T: Ord> items:List<T> value:T -> i64 do={
+    :local low 0
+    :local high [$items->len]
+    :while ($low < $high) do={
+        :const middle ($low + (($high - $low) / 2))
+        :if ($items->$middle < $value) do={ :set low ($middle + 1) } else={ :set high $middle }
+    }
+    :return $low
+}
+
+# In a sorted list: the position of the first element greater than `value`.
+:fn upper_bound<T: Ord> items:List<T> value:T -> i64 do={
+    :local low 0
+    :local high [$items->len]
+    :while ($low < $high) do={
+        :const middle ($low + (($high - $low) / 2))
+        :if ($value < $items->$middle) do={ :set high $middle } else={ :set low ($middle + 1) }
+    }
+    :return $low
+}
+
+# In a sorted list: the position of an element equal to `value`, or none, in time
+# proportional to log n.
+:fn binary_search<T: Ord> items:List<T> value:T -> i64? do={
+    :const found [:lower_bound $items $value]
+    :if (($found < [$items->len]) and ($items->$found = $value)) do={ :return $found }
+    :return none
+}
+
+# ----- Summarizing -------------------------------------------------------------------------
+
+# Returns true if `test` is true for some element.
+:fn any<T> items:List<T> test:fn(T) -> bool -> bool do={
+    :foreach item in=$items do={
+        :if ([$test $item]) do={ :return true }
+    }
+    :return false
+}
+
+# Returns true if `test` is true for every element (and for an empty list).
+:fn all<T> items:List<T> test:fn(T) -> bool -> bool do={
+    :foreach item in=$items do={
+        :if (![$test $item]) do={ :return false }
+    }
+    :return true
+}
+
+# The number of elements for which `test` is true.
+:fn count_if<T> items:List<T> test:fn(T) -> bool -> i64 do={
+    :local result 0
+    :foreach item in=$items do={
+        :if ([$test $item]) do={ :set result ($result + 1) }
+    }
+    :return $result
+}
+
+# A copy of the smallest element, or none for an empty list; the first of equal ones.
+:fn min_of<T: Ord + Clone> items:List<T> -> T? do={
+    :if ([$items->is_empty]) do={ :return none }
+    :local best 0
+    :foreach i,item in=$items do={
+        :if ($item < $items->$best) do={ :set best $i }
+    }
+    :return [$items->$best->clone]
+}
+
+# A copy of the largest element, or none for an empty list; the first of equal ones.
+:fn max_of<T: Ord + Clone> items:List<T> -> T? do={
+    :if ([$items->is_empty]) do={ :return none }
+    :local best 0
+    :foreach i,item in=$items do={
+        :if ($item > $items->$best) do={ :set best $i }
+    }
+    :return [$items->$best->clone]
+}
+
+# The sum of the elements, starting from the default value of their type (0 for numbers).
+:fn sum<T: Add + Default + Copy> items:List<T> -> T do={
+    :local total:T [:default<T>]
+    :foreach item in=$items do={ :set total ($total + $item) }
+    :return $total
+}
+
+# Combines the elements from first to last: `f` takes the result so far, starting with
+# `initial`, and an element, and gives the next result.
+:fn fold<T, A> items:List<T> owned initial:A f:fn(A, T) -> A -> A do={
+    :local result $initial
+    :foreach item in=$items do={ :set result [$f $result $item] }
+    :return $result
+}
+
+# ----- Transforming ------------------------------------------------------------------------
+
+# The results of `f` for each element, in order.
+:fn map<T, U> items:List<T> f:fn(T) -> U -> List<U> do={
+    :local result:List<U> {}
+    :foreach item in=$items do={ $result->push [$f $item] }
+    :return $result
+}
+
+# Copies of the elements for which `keep` is true, in order.
+:fn filter<T: Clone> items:List<T> keep:fn(T) -> bool -> List<T> do={
+    :local result:List<T> {}
+    :foreach item in=$items do={
+        :if ([$keep $item]) do={ $result->push [$item->clone] }
+    }
+    :return $result
+}
+
+# Copies of the elements, without the ones equal to an earlier one, in order.
+:fn unique<T: Eq + Hash + Clone> items:List<T> -> List<T> do={
+    :local seen:Set<T> {}
+    :local result:List<T> {}
+    :foreach item in=$items do={
+        :if ([$seen->insert [$item->clone]]) do={ $result->push [$item->clone] }
+    }
+    :return $result
+}
+
+# Copies of the elements of each list, in order.
+:fn flatten<T: Clone> lists:List<List<T>> -> List<T> do={
+    :local result:List<T> {}
+    :foreach list in=$lists do={
+        :foreach item in=$list do={ $result->push [$item->clone] }
+    }
+    :return $result
+}
+
+# Copies of the elements from position `start` to `end`, not included. Panics unless
+# 0 <= `start` <= `end` <= the length.
+:fn slice<T: Clone> items:List<T> start:i64 end:i64 -> List<T> do={
+    :assert ((0 <= $start) and ($start <= $end) and ($end <= [$items->len])) "slice: the range is outside the list"
+    :local result:List<T> {}
+    :for i from=$start to=($end - 1) do={ $result->push [$items->$i->clone] }
+    :return $result
+}
+
+# A copy of the first element, or none for an empty list.
+:fn first<T: Clone> items:List<T> -> T? do={ :return [$items->get 0] }
+
+# A copy of the last element, or none for an empty list.
+:fn last<T: Clone> items:List<T> -> T? do={ :return [$items->get ([$items->len] - 1)] }
+
+# Copies of the elements in lists of `size`, in order; the last can be shorter. Panics unless
+# `size` is positive.
+:fn chunks<T: Clone> items:List<T> size:i64 -> List<List<T>> do={
+    :assert ($size > 0) "chunks: the size is not positive"
+    :local result:List<List<T>> {}
+    :local start 0
+    :while ($start < [$items->len]) do={
+        $result->push [:slice $items $start [/std/math/min ($start + $size) [$items->len]]]
+        :set start ($start + $size)
+    }
+    :return $result
+}
+
+# Copies of every run of `size` consecutive elements, in order. Panics unless `size` is
+# positive.
+:fn windows<T: Clone> items:List<T> size:i64 -> List<List<T>> do={
+    :assert ($size > 0) "windows: the size is not positive"
+    :local result:List<List<T>> {}
+    :for start from=0 to=([$items->len] - $size) do={
+        $result->push [:slice $items $start ($start + $size)]
+    }
+    :return $result
+}
+
+# Pairs of copies of the elements of two lists at the same positions, as long as the
+# shorter list.
+:fn zip<A: Clone, B: Clone> a:List<A> b:List<B> -> List<Pair<A, B>> do={
+    :local result:List<Pair<A, B>> {}
+    :for i from=0 to=([/std/math/min [$a->len] [$b->len]] - 1) do={
+        $result->push Pair{first=[$a->$i->clone]; second=[$b->$i->clone]}
+    }
+    :return $result
+}
+
+# A list of `count` copies of `value`.
+:fn repeat<T: Clone> value:T count:i64 -> List<T> do={
+    :assert ($count >= 0) "repeat: the count is negative"
+    :local result:List<T> {}
+    :for i from=1 to=$count do={ $result->push [$value->clone] }
+    :return $result
+}
+
+# The integers from `start` to `end`, not included, in order.
+:fn range start:i64 end:i64 -> List<i64> do={
+    :local result:List<i64> {}
+    :local i $start
+    :while ($i < $end) do={
+        $result->push $i
+        :set i ($i + 1)
+    }
+    :return $result
+}
+
+# ----- Maps --------------------------------------------------------------------------------
+
+# A copy of the value of `key`, or `default` if the map does not have the key.
+:fn get_or<K: Hash + Eq, V: Clone> map:Map<K, V> key:K owned default:V -> V do={
+    :const found [$map->get $key]
+    :return [$found->unwrap_or $default]
+}
+
+# The number of times each distinct element occurs, in order of first occurrence.
+:fn frequencies<T: Hash + Eq + Clone> items:List<T> -> Map<T, i64> do={
+    :local result:Map<T, i64> {}
+    :foreach item in=$items do={
+        :const seen [$result->get $item]
+        :set ($result->([$item->clone])) ([$seen->unwrap_or 0] + 1)
+    }
+    :return $result
+}
+
+# Copies of the elements, grouped by a key computed for each, in order of first occurrence.
+:fn group_by<T: Clone, K: Hash + Eq + Clone> items:List<T> key:fn(T) -> K -> Map<K, List<T>> do={
+    :local result:Map<K, List<T>> {}
+    :foreach item in=$items do={
+        :const k [$key $item]
+        :if (!($k in $result)) do={ :set ($result->([$k->clone])) {} }
+        $result->$k->push [$item->clone]
+    }
+    :return $result
+}
+
+# Copies of the keys and values of a map, in order.
+:fn entries<K: Hash + Eq + Clone, V: Clone> map:Map<K, V> -> List<Pair<K, V>> do={
+    :local result:List<Pair<K, V>> {}
+    :foreach k,v in=$map do={ $result->push Pair{first=[$k->clone]; second=[$v->clone]} }
+    :return $result
+}
+
+# ----- Heap --------------------------------------------------------------------------------
+
+# A priority queue: `pop` takes the smallest element first. Pushing and popping take time
+# proportional to log n for n elements.
+:struct Heap<T: Ord> {
+    # The elements, in binary heap order: each one is not greater than its children.
+    _items:List<T>
+
+    # An empty heap.
+    :fn new -> Self do={ :return Self{_items={}} }
+
+    # The number of elements.
+    :fn len self -> i64 do={ :return [$self->_items->len] }
+
+    # Returns true if the heap has no elements.
+    :fn is_empty self -> bool do={ :return [$self->_items->is_empty] }
+
+    # Adds an element.
+    :fn push mut self owned value:T do={
+        $self->_items->push $value
+        :local child ([$self->_items->len] - 1)
+        :while ($child > 0) do={
+            :const parent (($child - 1) / 2)
+            :if (!($self->_items->$child < $self->_items->$parent)) do={ :return }
+            $self->_items->swap $child $parent
+            :set child $parent
+        }
+    }
+
+    # Removes the smallest element and returns it, or none if the heap is empty.
+    :fn pop mut self -> T? do={
+        :const count [$self->_items->len]
+        :if ($count = 0) do={ :return none }
+        $self->_items->swap 0 ($count - 1)
+        :const smallest [$self->_items->remove ($count - 1)]
+        :local parent 0
+        :local done false
+        :while (!$done) do={
+            :local least $parent
+            :const left ((2 * $parent) + 1)
+            :const right ($left + 1)
+            :if (($left < [$self->_items->len]) and ($self->_items->$left < $self->_items->$least)) do={
+                :set least $left
+            }
+            :if (($right < [$self->_items->len]) and ($self->_items->$right < $self->_items->$least)) do={
+                :set least $right
+            }
+            :if ($least = $parent) do={
+                :set done true
+            } else={
+                $self->_items->swap $parent $least
+                :set parent $least
+            }
+        }
+        :return $smallest
+    }
+
+    # Removes every element.
+    :fn clear mut self do={ $self->_items->clear }
+
+    # Removes every element and returns them from the smallest to the largest.
+    :fn drain_sorted mut self -> List<T> do={
+        :local result:List<T> {}
+        :local next [$self->pop]
+        :while ([$next->is_some]) do={
+            $result->push [$next->unwrap]
+            :set next [$self->pop]
+        }
+        :return $result
+    }
+}
+
+# A copy of the smallest element of a heap, or none if it is empty.
+:fn peek<T: Ord + Clone> heap:Heap<T> -> T? do={ :return [$heap->_items->get 0] }
+
+# ----- Deque -------------------------------------------------------------------------------
+
+# A double-ended queue: elements are added and removed at both ends in constant time
+# (amortized), as in a growable ring buffer.
+:struct Deque<T> {
+    # The slots of the ring; the elements are the `_len` slots from `_head` on, wrapping
+    # around at the end.
+    _slots:List<T?>
+    _head:i64
+    _len:i64
+
+    # An empty deque.
+    :fn new -> Self do={ :return Self{_slots={}; _head=0; _len=0} }
+
+    # The number of elements.
+    :fn len self -> i64 do={ :return $self->_len }
+
+    # Returns true if the deque has no elements.
+    :fn is_empty self -> bool do={ :return ($self->_len = 0) }
+
+    # The slot of the element at position `offset` from the front.
+    :fn _slot self offset:i64 -> i64 do={
+        :return (($self->_head + $offset) % [$self->_slots->len])
+    }
+
+    # Makes room for more elements, keeping their order.
+    :fn _grow mut self do={
+        :local slots:List<T?> {}
+        :for i from=0 to=($self->_len - 1) do={
+            :const at [$self->_slot $i]
+            $slots->push [$self->_slots->$at->take]
+        }
+        :const capacity [/std/math/max 4 (2 * [$self->_slots->len])]
+        :while ([$slots->len] < $capacity) do={ $slots->push none }
+        :set ($self->_slots) $slots
+        :set ($self->_head) 0
+    }
+
+    # Adds an element at the back.
+    :fn push_back mut self owned value:T do={
+        :if ($self->_len = [$self->_slots->len]) do={ $self->_grow }
+        :const at [$self->_slot $self->_len]
+        :set ($self->_slots->$at) $value
+        :set ($self->_len) ($self->_len + 1)
+    }
+
+    # Adds an element at the front.
+    :fn push_front mut self owned value:T do={
+        :if ($self->_len = [$self->_slots->len]) do={ $self->_grow }
+        :const capacity [$self->_slots->len]
+        :set ($self->_head) ((($self->_head - 1) + $capacity) % $capacity)
+        :const at $self->_head
+        :set ($self->_slots->$at) $value
+        :set ($self->_len) ($self->_len + 1)
+    }
+
+    # Removes the element at the front and returns it, or none if the deque is empty.
+    :fn pop_front mut self -> T? do={
+        :if ($self->_len = 0) do={ :return none }
+        :const at $self->_head
+        :const value [$self->_slots->$at->take]
+        :set ($self->_head) [$self->_slot 1]
+        :set ($self->_len) ($self->_len - 1)
+        :return $value
+    }
+
+    # Removes the element at the back and returns it, or none if the deque is empty.
+    :fn pop_back mut self -> T? do={
+        :if ($self->_len = 0) do={ :return none }
+        :const at [$self->_slot ($self->_len - 1)]
+        :const value [$self->_slots->$at->take]
+        :set ($self->_len) ($self->_len - 1)
+        :return $value
+    }
+
+    # Removes every element.
+    :fn clear mut self do={
+        $self->_slots->clear
+        :set ($self->_head) 0
+        :set ($self->_len) 0
+    }
+}
+
+# A copy of the element at the front of a deque, or none if it is empty.
+:fn front<T: Clone> deque:Deque<T> -> T? do={ :return [:deque_get $deque 0] }
+
+# A copy of the element at the back of a deque, or none if it is empty.
+:fn back<T: Clone> deque:Deque<T> -> T? do={ :return [:deque_get $deque ($deque->_len - 1)] }
+
+# A copy of the element at position `index` from the front of a deque, or none if there is
+# no such element.
+:fn deque_get<T: Clone> deque:Deque<T> index:i64 -> T? do={
+    :if (($index < 0) or ($index >= $deque->_len)) do={ :return none }
+    :const at [$deque->_slot $index]
+    :return [$deque->_slots->$at->clone]
+}
+
+# Copies of the elements of a deque, from front to back.
+:fn deque_to_list<T: Clone> deque:Deque<T> -> List<T> do={
+    :local result:List<T> {}
+    :for i from=0 to=($deque->_len - 1) do={
+        :const at [$deque->_slot $i]
+        :const slot [$deque->_slots->$at->clone]
+        $result->push [$slot->unwrap]
+    }
+    :return $result
+}
+
+# ----- Methods -----------------------------------------------------------------------------
+
+# The functions of this module as methods of lists, as in `[$items->sort]`.
+:impl<T> List<T> {
+    :fn reverse mut self do={ /std/collections/reverse $self }
+    :fn truncate mut self length:i64 do={ /std/collections/truncate $self $length }
+    :fn append mut self owned other:List<T> do={ /std/collections/append $self $other }
+    :fn sort_by mut self less:fn(T, T) -> bool do={ /std/collections/sort_by $self $less }
+    :fn sort_by_key<K: Ord> mut self key:fn(T) -> K do={ /std/collections/sort_by_key $self $key }
+    :fn position self test:fn(T) -> bool -> i64? do={ :return [/std/collections/position $self $test] }
+    :fn any self test:fn(T) -> bool -> bool do={ :return [/std/collections/any $self $test] }
+    :fn all self test:fn(T) -> bool -> bool do={ :return [/std/collections/all $self $test] }
+    :fn count_if self test:fn(T) -> bool -> i64 do={ :return [/std/collections/count_if $self $test] }
+    :fn map<U> self f:fn(T) -> U -> List<U> do={ :return [/std/collections/map $self $f] }
+    :fn fold<A> self owned initial:A f:fn(A, T) -> A -> A do={ :return [/std/collections/fold $self $initial $f] }
+}
+
+:impl<T: Ord> List<T> {
+    :fn sort mut self do={ /std/collections/sort $self }
+    :fn is_sorted self -> bool do={ :return [/std/collections/is_sorted $self] }
+    :fn binary_search self value:T -> i64? do={ :return [/std/collections/binary_search $self $value] }
+    :fn lower_bound self value:T -> i64 do={ :return [/std/collections/lower_bound $self $value] }
+    :fn upper_bound self value:T -> i64 do={ :return [/std/collections/upper_bound $self $value] }
+}
+
+:impl<T: Eq> List<T> {
+    :fn index_of self value:T -> i64? do={ :return [/std/collections/index_of $self $value] }
+    :fn dedup mut self do={ /std/collections/dedup $self }
+}
+
+:impl<T: Clone> List<T> {
+    :fn filter self keep:fn(T) -> bool -> List<T> do={ :return [/std/collections/filter $self $keep] }
+    :fn find_first self test:fn(T) -> bool -> T? do={ :return [/std/collections/find_first $self $test] }
+    :fn slice self start:i64 end:i64 -> List<T> do={ :return [/std/collections/slice $self $start $end] }
+    :fn first self -> T? do={ :return [$self->get 0] }
+    :fn last self -> T? do={ :return [$self->get ([$self->len] - 1)] }
+    :fn chunks self size:i64 -> List<List<T>> do={ :return [/std/collections/chunks $self $size] }
+    :fn windows self size:i64 -> List<List<T>> do={ :return [/std/collections/windows $self $size] }
+    :fn zip<B: Clone> self other:List<B> -> List<Pair<T, B>> do={ :return [/std/collections/zip $self $other] }
+    # A list of `count` copies of `value`.
+    :fn repeat value:T count:i64 -> List<T> do={ :return [/std/collections/repeat $value $count] }
+}
+
+:impl<T: Ord + Clone> List<T> {
+    :fn sorted self -> List<T> do={ :return [/std/collections/sorted $self] }
+    # A copy of the smallest element, or none for an empty list.
+    :fn min self -> T? do={ :return [/std/collections/min_of $self] }
+    # A copy of the largest element, or none for an empty list.
+    :fn max self -> T? do={ :return [/std/collections/max_of $self] }
+}
+
+:impl<T: Add + Default + Copy> List<T> {
+    :fn sum self -> T do={ :return [/std/collections/sum $self] }
+}
+
+:impl<T: Eq + Hash + Clone> List<T> {
+    :fn unique self -> List<T> do={ :return [/std/collections/unique $self] }
+    :fn frequencies self -> Map<T, i64> do={ :return [/std/collections/frequencies $self] }
+}
+
+:impl<T: Clone> List<List<T>> {
+    :fn flatten self -> List<T> do={ :return [/std/collections/flatten $self] }
+}
+
+:impl List<i64> {
+    # The integers from `start` to `end`, not included, in order.
+    :fn range start:i64 end:i64 -> List<i64> do={ :return [/std/collections/range $start $end] }
+}
+
+# The functions of this module as methods of maps.
+:impl<K: Hash + Eq, V: Clone> Map<K, V> {
+    :fn get_or self key:K owned default:V -> V do={ :return [/std/collections/get_or $self $key $default] }
+}
+
+:impl<K: Hash + Eq + Clone, V: Clone> Map<K, V> {
+    :fn entries self -> List<Pair<K, V>> do={ :return [/std/collections/entries $self] }
+}

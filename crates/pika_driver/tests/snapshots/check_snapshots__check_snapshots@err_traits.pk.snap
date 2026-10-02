@@ -1,0 +1,215 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_traits.pk
+---
+fn area<Self: Shape>(self: Self) -> f64
+fn scale<Self: Shape>(self: Self, by: f64) -> nothing
+fn id<Self: Shape>(x: i64) -> i64
+fn name<Self: Named>(self: Self) -> String
+fn name<Self: Other>(self: Self) -> String
+fn area(self: Bad) -> i64
+fn area(self: Bad2) -> f64
+fn scale(self: Bad2, by: f64) -> nothing
+fn area(self: Ok) -> f64
+fn scale(self: Ok, by: f64) -> nothing
+fn needs<T: Shape>(x: T) -> f64
+fn unbounded<T>(x: T) -> f64
+fn amb<T: Named + Other>(x: T) -> String
+fn eq<T: Named>(a: T, b: T) -> bool
+fn main() -> nothing
+    x: {error}
+
+--- diagnostics ---
+[E0215] Error: the parameters of a trait's functions cannot have default values
+   ╭─[ err_traits.pk:4:18 ]
+   │
+ 4 │     :fn id x:i64=3 -> i64 do={ :return $x }
+   │                  ┬  
+   │                  ╰── the parameters of a trait's functions cannot have default values
+   │ 
+   │ Help: callers through the trait could not know the default
+───╯
+[E0320] Error: the trait `Loop1` requires itself, through `Loop2`
+   ╭─[ err_traits.pk:9:19 ]
+   │
+ 9 │ :trait Loop1 impl=Loop2 {}
+   │                   ──┬──  
+   │                     ╰──── the trait `Loop1` requires itself, through `Loop2`
+───╯
+[E0320] Error: the trait `Loop2` requires itself, through `Loop1`
+    ╭─[ err_traits.pk:10:19 ]
+    │
+ 10 │ :trait Loop2 impl=Loop1 {}
+    │                   ──┬──  
+    │                     ╰──── the trait `Loop2` requires itself, through `Loop1`
+────╯
+[E0320] Error: `Bad` does not define `scale`, which the trait `Shape` requires
+    ╭─[ err_traits.pk:15:18 ]
+    │
+ 15 │ :struct Bad impl=Shape {
+    │                  ──┬──  
+    │                    ╰──── `Bad` does not define `scale`, which the trait `Shape` requires
+    │
+    ├─[ err_traits.pk:15:18 ]
+    │
+  3 │     :fn scale mut self by:f64
+    │         ──┬──  
+    │           ╰──── required here
+    │ 
+    │ Help: add it to `Bad`: `:fn scale mut self by:f64 do={ ... }`
+────╯
+[E0320] Error: `Bad->area` does not match its declaration in the trait `Shape`: it returns `i64` instead of `f64`
+    ╭─[ err_traits.pk:17:9 ]
+    │
+ 17 │     :fn area self -> i64 do={ :return 1 }
+    │         ──┬─  
+    │           ╰─── `Bad->area` does not match its declaration in the trait `Shape`: it returns `i64` instead of `f64`
+    │
+    ├─[ err_traits.pk:17:9 ]
+    │
+  2 │     :fn area self -> f64
+    │         ──┬─  
+    │           ╰─── declared here
+    │ 
+    │ Help: declare it as `:fn area self -> f64`
+────╯
+[E0320] Error: `Bad2` implements `Named`, which requires `Shape`
+    ╭─[ err_traits.pk:19:19 ]
+    │
+ 19 │ :struct Bad2 impl=Named,Other {
+    │                   ──┬──  
+    │                     ╰──── `Bad2` implements `Named`, which requires `Shape`
+    │ 
+    │ Help: add `Shape` to the `impl=` of `Bad2`
+────╯
+[E0320] Error: `Bad2` implements `Named`, which requires `Eq`
+    ╭─[ err_traits.pk:19:19 ]
+    │
+ 19 │ :struct Bad2 impl=Named,Other {
+    │                   ──┬──  
+    │                     ╰──── `Bad2` implements `Named`, which requires `Eq`
+    │ 
+    │ Help: add `Eq` to the `impl=` of `Bad2`
+────╯
+[E0320] Error: `Bad2` does not define `name`, which the trait `Other` requires
+    ╭─[ err_traits.pk:19:25 ]
+    │
+ 19 │ :struct Bad2 impl=Named,Other {
+    │                         ──┬──  
+    │                           ╰──── `Bad2` does not define `name`, which the trait `Other` requires
+    │
+    ├─[ err_traits.pk:19:25 ]
+    │
+ 12 │     :fn name self -> String
+    │         ──┬─  
+    │           ╰─── required here
+    │ 
+    │ Help: add it to `Bad2`: `:fn name self -> String do={ ... }`
+────╯
+[E0320] Error: the traits `Named` and `Other` of `Bad2` both have a function named `name`
+    ╭─[ err_traits.pk:19:25 ]
+    │
+ 19 │ :struct Bad2 impl=Named,Other {
+    │                         ──┬──  
+    │                           ╰──── the traits `Named` and `Other` of `Bad2` both have a function named `name`
+    │ 
+    │ Help: define `name` in `Bad2` itself, matching both traits
+────╯
+[E0320] Error: `Bad3` does not define `area`, which the trait `Shape` requires
+    ╭─[ err_traits.pk:24:19 ]
+    │
+ 24 │ :struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    │                   ──┬──  
+    │                     ╰──── `Bad3` does not define `area`, which the trait `Shape` requires
+    │
+    ├─[ err_traits.pk:24:19 ]
+    │
+  2 │     :fn area self -> f64
+    │         ──┬─  
+    │           ╰─── required here
+    │ 
+    │ Help: add it to `Bad3`: `:fn area self -> f64 do={ ... }`
+────╯
+[E0320] Error: `Bad3` does not define `scale`, which the trait `Shape` requires
+    ╭─[ err_traits.pk:24:19 ]
+    │
+ 24 │ :struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    │                   ──┬──  
+    │                     ╰──── `Bad3` does not define `scale`, which the trait `Shape` requires
+    │
+    ├─[ err_traits.pk:24:19 ]
+    │
+  3 │     :fn scale mut self by:f64
+    │         ──┬──  
+    │           ╰──── required here
+    │ 
+    │ Help: add it to `Bad3`: `:fn scale mut self by:f64 do={ ... }`
+────╯
+[E0204] Error: this trait is listed more than once
+    ╭─[ err_traits.pk:24:25 ]
+    │
+ 24 │ :struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    │                         ──┬──  
+    │                           ╰──── this trait is listed more than once
+────╯
+[E0221] Error: unknown trait `Nope`
+    ╭─[ err_traits.pk:24:34 ]
+    │
+ 24 │ :struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    │                                  ──┬─  
+    │                                    ╰─── unknown trait `Nope`
+────╯
+[E0221] Error: `i64` is a type, not a trait
+    ╭─[ err_traits.pk:24:39 ]
+    │
+ 24 │ :struct Bad3 impl=Shape,Shape,Eq,Nope,i64 {
+    │                                       ─┬─  
+    │                                        ╰─── `i64` is a type, not a trait
+────╯
+[E0312] Error: `T` has no method named `area`
+    ╭─[ err_traits.pk:34:47 ]
+    │
+ 34 │ :fn unbounded<T> x:T -> f64 do={ :return [$x->area] }
+    │                                               ──┬─  
+    │                                                 ╰─── `T` has no method named `area`
+    │ 
+    │ Help: a value of type parameter `T` has only the methods of the traits it is bound by
+────╯
+[E0312] Error: the method `name` of `T` is ambiguous: it is in the traits `Named` and `Other`
+    ╭─[ err_traits.pk:35:59 ]
+    │
+ 35 │ :fn amb<T: Named + Other> x:T -> String do={ :return [$x->name] }
+    │                                                           ──┬─  
+    │                                                             ╰─── the method `name` of `T` is ambiguous: it is in the traits `Named` and `Other`
+────╯
+[E0204] Error: `Eq` is a built-in trait and cannot be redeclared
+    ╭─[ err_traits.pk:37:8 ]
+    │
+ 37 │ :trait Eq {}
+    │        ─┬  
+    │         ╰── `Eq` is a built-in trait and cannot be redeclared
+────╯
+[E0319] Error: `i64` does not implement `Shape`, which `:needs` requires of `T`
+    ╭─[ err_traits.pk:40:11 ]
+    │
+ 40 │     :put [:needs 5]
+    │           ────┬───  
+    │               ╰───── `i64` does not implement `Shape`, which `:needs` requires of `T`
+────╯
+[E0203] Error: `Shape` is a trait, not a type
+    ╭─[ err_traits.pk:42:14 ]
+    │
+ 42 │     :local x:Shape Ok{side=1.0}
+    │              ──┬──  
+    │                ╰──── `Shape` is a trait, not a type
+    │ 
+    │ Help: use a type parameter bounded by it, as in `:fn f<T: Shape> x:T`; trait objects are planned for v1
+────╯
+[E0212] Error: traits can only be declared at the top level of a file
+    ╭─[ err_traits.pk:43:5 ]
+    │
+ 43 │     :trait Inner {}
+    │     ───┬──  
+    │        ╰──── traits can only be declared at the top level of a file
+────╯

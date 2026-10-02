@@ -1,0 +1,19 @@
+# Ownership errors involving lists, maps and sets.
+
+:fn main do={
+    :const fixed {1; 2}
+    $fixed->push 3
+    :local names {"ada"; "alan"}
+    :const first $names->0
+    :foreach n in=$names do={
+        $names->push "grace"
+        :set names {}
+    }
+    :foreach mut n in=$names do={
+        :const taken $n
+    }
+    :const copy $names
+    :put $names
+    :const word "twice"
+    :const pair {$word; $word}
+}

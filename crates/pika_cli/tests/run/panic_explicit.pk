@@ -1,0 +1,3 @@
+:fn fail code:i64 -> never do={ :panic "failed with code $code at $(1.5 * 2.0)" }
+:put "start"
+:fail 7

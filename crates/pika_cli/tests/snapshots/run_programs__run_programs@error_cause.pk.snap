@@ -1,0 +1,12 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/error_cause.pk
+---
+exit: 1
+--- stdout ---
+--- stderr ---
+error: could not load x
+  at error_cause.pk:5:9
+caused by: not a number: x
+  at error_cause.pk:2:39

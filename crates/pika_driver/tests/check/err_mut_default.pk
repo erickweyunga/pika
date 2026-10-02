@@ -1,0 +1,1 @@
+:fn mut_default mut text:String="x" do={}

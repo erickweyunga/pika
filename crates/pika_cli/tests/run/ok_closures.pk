@@ -1,0 +1,117 @@
+# Function values: closures capturing by value, named functions as values, function values in
+# fields, collections and generic code, raising closures, and when captured values are destroyed.
+
+:fn apply f:fn(i64) -> i64 x:i64 -> i64 do={ :return [$f $x] }
+:fn twice f:fn(i64) -> i64 -> fn(i64) -> i64 do={
+    :const g [$f->clone]
+    :return [:fn x:i64 -> i64 do={ :return [$g [$g $x]] }]
+}
+:fn square x:i64 -> i64 do={ :return ($x * $x) }
+:fn greet name:String -> String do={ :return "hi $name" }
+:fn basics do={
+    :const double [:fn x:i64 -> i64 do={ :return ($x * 2) }]
+    :put [$double 21]
+    :const factor 3
+    :const scale [:fn x:i64 -> i64 do={ :return ($x * $factor) }]
+    :put [:apply $scale 5]
+    :put [:apply $square 7]
+    :const quad [:twice $double]
+    :put [$quad 5]
+    :const prefix "dear "
+    :const hello [:fn name:String -> String do={ :return "hello $prefix$name" }]
+    :put [$hello "ada"]
+    :const g $greet
+    :put [$g "bob"]
+    :const fs {$double; $scale; $square}
+    :foreach f in=$fs do={ :put [$f 10] }
+    :const copy [$hello->clone]
+    :put [$copy "cy"]
+}
+
+:struct Tag impl=Drop,Clone,Display {
+    name:String
+    :fn drop mut self do={ :put "drop $($self->name)" }
+}
+:struct Button impl=Display {
+    label:String
+    on_click:fn(i64) -> String
+    :fn click self n:i64 -> String do={ :return [$self->on_click $n] }
+    :fn fmt self mut out:Formatter do={ $out->write "Button($($self->label))" }
+}
+:struct Counter {
+    step:i64
+    :fn adder self -> fn(i64) -> i64 do={
+        :const step $self->step
+        :return [:fn x:i64 -> i64 do={ :return ($x + $step) }]
+    }
+}
+:fn compose<A: Copy, B: Copy, C> f:fn(A) -> B g:fn(B) -> C -> fn(A) -> C do={
+    :const f2 [$f->clone]
+    :const g2 [$g->clone]
+    :return [:fn x:A -> C do={ :return [$g2 [$f2 $x]] }]
+}
+:fn map_all<T, U> items:List<T> f:fn(T) -> U -> List<U> do={
+    :local out:List<U> {}
+    :foreach item in=$items do={ $out->push [$f $item] }
+    :return $out
+}
+:fn checked limit:i64 -> fn(i64) -> i64 raises do={
+    :return [:fn x:i64 -> i64 raises do={
+        :if ($x > $limit) do={ :error "$x is over $limit" }
+        :return $x
+    }]
+}
+:fn make_tagger -> fn(String) -> String do={
+    :const tag Tag{name="tagger"}
+    :const outer [:fn s:String -> String do={
+        :const inner [:fn t:String -> String do={ :return "<$($tag->name):$t>" }]
+        :return [$inner $s]
+    }]
+    :put "made"
+    :return $outer
+}
+:fn advanced do={
+    :const b Button{label="ok"; on_click=[:fn n:i64 -> String do={ :return "clicked $n" }]}
+    :put "$b -> $([$b->click 3])"
+    :const c Counter{step=10}
+    :const add [$c->adder]
+    :put [$add 5]
+    :const len_then_double [:compose [:fn s:i64 -> i64 do={ :return ($s + 1) }] [:fn n:i64 -> String do={ :return "n=$n" }]]
+    :put [$len_then_double 4]
+    :put [:map_all {1; 2; 3} [:fn x:i64 -> f64 do={ :return (($x as f64) / 2.0) }]]
+    :put [:map_all {"a"; "bb"} [:fn s:String -> i64 do={ :return [:len $s] }]]
+    :const limit [:checked 10]
+    :onerror e in={
+        :put [$limit 5]
+        :put [$limit 50]
+    } do={ :put "caught $e" }
+    :const tagger [:make_tagger]
+    :put [$tagger "x"]
+    :const more [$tagger->clone]
+    :put [$more "y"]
+    :put "end"
+}
+
+:struct Noisy impl=Drop {
+    id:i64
+    :fn drop mut self do={ :put "drop noisy $($self->id)" }
+}
+:fn lifetimes do={
+    :const n Noisy{id=1}
+    :local f [:fn -> i64 do={ :return $n->id }]
+    :put "created"
+    :local g [$f->clone]
+    :set f [:fn -> i64 do={ :return 0 }]
+    :put "replaced f: $([$f]) $([$g])"
+    :local table:Map<String, fn(i64) -> i64> {}
+    :set ($table->"double") [:fn x:i64 -> i64 do={ :return ($x * 2) }]
+    :set ($table->"negate") [:fn x:i64 -> i64 do={ :return (-$x) }]
+    :foreach name,op in=$table do={ :put "$name: $([$op 21])" }
+    :put "end of lifetimes"
+}
+
+:fn main do={
+    :basics
+    :advanced
+    :lifetimes
+}

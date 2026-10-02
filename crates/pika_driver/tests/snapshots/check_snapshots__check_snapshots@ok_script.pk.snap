@@ -1,0 +1,19 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/ok_script.pk
+---
+const LIMIT: i64
+const RATIO: f64
+const GREETING: String
+const MASK: u8
+global COUNT: i64
+fn add(a: i64, b: i64) -> i64
+fn greet(name: String, greeting: String) -> nothing
+fn classify(n: i64) -> String
+fn fib(n: u64) -> u64
+fn forever() -> nothing
+fn fail(message: String) -> never
+script main() -> nothing
+    total: i64
+    i: i64

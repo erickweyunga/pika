@@ -1,0 +1,16 @@
+# Methods of built-in types: only the standard library declares them, and they apply to the
+# types and element types they are declared for.
+:impl String {
+    :fn shout self -> String do={ :return [$self->to_upper] }
+}
+:fn main do={
+    :const words {"b"; "a"}
+    :put [$words->join ","]
+    :put [{1; 2}->join ","]
+    :local adders {[:fn -> i64 do={ :return 1 }]}
+    $adders->sort
+    :put [String->nope]
+    :put [$words->nope]
+    "just a literal"
+    :put [7->abs]
+}

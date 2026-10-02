@@ -1,0 +1,149 @@
+# Generic functions, structs and enums: inference, explicit arguments, bounds and instances.
+
+:fn max<T: Ord + Copy> a:T b:T -> T do={
+    :if ($a > $b) do={ :return $a }
+    :return $b
+}
+
+:fn largest<T: Ord + Clone> items:List<T> -> T? do={
+    :local best:T? none
+    :foreach item in=$items do={
+        :match $best {
+            some b if=($b >= $item) do={}
+            _ do={ :set best [some [$item->clone]] }
+        }
+    }
+    :return $best
+}
+
+:fn identity<T> owned x:T -> T do={ :return $x }
+
+:fn describe<T: Display> x:T -> String do={ :return "<$x>" }
+
+:fn count<K: Hash + Eq, V> m:Map<K, V> -> i64 do={ :return [:len $m] }
+
+:struct Pair<A: Clone, B: Clone> impl=Clone,Eq,Display {
+    first:A
+    second:B
+
+    :fn new owned first:A owned second:B -> Self do={
+        :return Self{first=$first; second=$second}
+    }
+
+    :fn swap self -> Pair<B, A> do={
+        :return Pair{first=[$self->second->clone]; second=[$self->first->clone]}
+    }
+
+    :fn with_first<C: Clone> self owned first:C -> Pair<C, B> do={
+        :return Pair{first=$first; second=[$self->second->clone]}
+    }
+}
+
+:struct Wrapper<T> impl=Copy,Display {
+    value:T
+}
+
+:enum Tree<T> impl=Clone,Display {
+    leaf
+    node left:Box<Tree<T>> value:T right:Box<Tree<T>>
+}
+
+:fn insert<T: Ord + Clone> tree:Tree<T> owned value:T -> Tree<T> do={
+    :match $tree {
+        Tree->leaf do={
+            :return [Tree->node [Box->new Tree->leaf] $value [Box->new Tree->leaf]]
+        }
+        Tree->node l v r do={
+            :if ($value < $v) do={
+                :return [Tree->node [Box->new [:insert $l->value $value]] [$v->clone] [$r->clone]]
+            }
+            :return [Tree->node [$l->clone] [$v->clone] [Box->new [:insert $r->value $value]]]
+        }
+    }
+}
+
+:fn walk<T: Display> tree:Tree<T> owned out:List<String> -> List<String> do={
+    :local result $out
+    :match $tree {
+        Tree->leaf do={}
+        Tree->node l v r do={
+            :set result [:walk $l->value $result]
+            $result->push "$v"
+            :set result [:walk $r->value $result]
+        }
+    }
+    :return $result
+}
+
+:enum Maybe<T> impl=Display {
+    nothing
+    just value:T
+
+    :fn or_else self owned fallback:T -> T do={
+        :match $self {
+            Maybe->just v do={ :return $fallback }
+            Maybe->nothing do={ :return $fallback }
+        }
+    }
+
+    :fn is_just self -> bool do={
+        :match $self {
+            Maybe->just _ do={ :return true }
+            Maybe->nothing do={ :return false }
+        }
+    }
+}
+
+:fn depth<T> n:i64 x:T -> i64 do={
+    :if ($n = 0) do={ :return 0 }
+    :return (1 + [:depth<T> ($n - 1) $x])
+}
+
+:fn main do={
+    :put [:max 3 7]
+    :put [:max<f64> 2.5 1.5]
+    :put [:max 'p' 'a']
+    :put [:largest {3; 9; 4}]
+    :put [:largest {"b"; "c"; "a"}]
+    :const empty:List<i64> {}
+    :put [:largest $empty]
+    :put [:identity "moved"]
+    :put [:describe 42]
+    :put [:describe [some 'c']]
+    :put [:count {"a"=1; "b"=2}]
+
+    :const p [Pair->new "one" 1]
+    :put $p
+    :const q [$p->clone]
+    :put ($p = $q)
+    :put [$q->swap]
+    :put [$p->with_first 2.5]
+    :put [$p->with_first<i8> 7]
+    :put [Pair<String, String>->new "x" "y"]
+    :const nested [Pair->new [Pair->new 1 2] {"x"; "y"}]
+    :put $nested
+
+    :const w Wrapper{value=5}
+    :const w2 $w
+    :put "$w $w2"
+    :const ws Wrapper<String>{value="text"}
+    :put $ws
+
+    :local tree:Tree<i64> Tree->leaf
+    :foreach n in={5; 2; 8; 1; 9; 3} do={
+        :set tree [:insert $tree $n]
+    }
+    :put [:walk $tree {}]
+    :const words [:insert [:insert Tree->leaf "m"] "a"]
+    :put $words
+    :put [:depth 3 "x"]
+    :const m Maybe<String>->nothing
+    :put "$m $[$m->is_just]"
+    :put [$m->or_else "fallback"]
+    :const j [Maybe->just 2.5]
+    :put "$j $[$j->is_just] $[:typeof $j]"
+    :match [Maybe->just {1; 2}] {
+        Maybe->just items do={ :put "items $items" }
+        Maybe->nothing do={}
+    }
+}

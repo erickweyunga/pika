@@ -1,0 +1,13 @@
+# Capturing moves values into a function value, which can only read them.
+:fn borrowed s:String -> fn() -> String do={
+    :return [:fn -> String do={ :return [$s->clone] }]
+}
+:fn main do={
+    :const s ("te" . "xt")
+    :const f [:fn -> i64 do={ :return [:len $s] }]
+    :put $s
+    :local list {1}
+    :const push [:fn do={ $list->push 2 }]
+    :const steal [:fn -> List<i64> do={ :return $list }]
+    :put [$f]
+}

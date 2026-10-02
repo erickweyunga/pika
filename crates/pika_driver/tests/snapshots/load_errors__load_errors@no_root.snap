@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/no_root
+---
+the package in tests/load_errors/no_root has neither src/main.pk nor src/lib.pk

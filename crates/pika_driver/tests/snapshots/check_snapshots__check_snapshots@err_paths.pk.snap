@@ -1,0 +1,80 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_paths.pk
+---
+const _limit: i64
+fn area(w: i64, h: i64) -> i64
+fn main() -> nothing
+    p: {error}
+
+--- diagnostics ---
+[E0222] Error: the module `/main` has no item or module named `missing`
+   ╭─[ err_paths.pk:2:12 ]
+   │
+ 2 │ :use /main/missing
+   │            ───┬───  
+   │               ╰───── the module `/main` has no item or module named `missing`
+───╯
+[E0222] Error: unknown package `nowhere`
+   ╭─[ err_paths.pk:3:7 ]
+   │
+ 3 │ :use /nowhere/thing
+   │       ───┬───  
+   │          ╰───── unknown package `nowhere`
+   │ 
+   │ Help: the path of a `:use` starts with the name of this package or of a package it depends on
+───╯
+[E0204] Error: `area` is already declared or imported in this module
+   ╭─[ err_paths.pk:4:12 ]
+   │
+ 4 │ :use /main/area
+   │            ──┬─  
+   │              ╰─── `area` is already declared or imported in this module
+   │ 
+ 7 │ :fn area w:i64 h:i64 -> i64 do={ :return ($w * $h) }
+   │     ──┬─  
+   │       ╰─── the other item
+   │ 
+   │ Help: rename the import with `as=`, as in `as=other_area`
+───╯
+[E0222] Error: unknown module or package `math`
+   ╭─[ err_paths.pk:9:12 ]
+   │
+ 9 │     :put [/math/sqrt 2.0]
+   │            ──┬─  
+   │              ╰─── unknown module or package `math`
+   │ 
+   │ Help: paths start with a package name or a module imported with `:use`, as in `:use /std/math`
+───╯
+[E0222] Error: the module `/main` has no function named `nothing`
+    ╭─[ err_paths.pk:10:17 ]
+    │
+ 10 │     :put [/main/nothing]
+    │                 ───┬───  
+    │                    ╰───── the module `/main` has no function named `nothing`
+────╯
+[E0222] Error: `/main` names a module, not a value
+    ╭─[ err_paths.pk:14:11 ]
+    │
+ 14 │     :put /main
+    │           ──┬─  
+    │             ╰─── `/main` names a module, not a value
+    │ 
+    │ Help: name an item of the module, as in `/main/item`
+────╯
+[E0212] Error: `:use` can only be written at the top level of a file
+    ╭─[ err_paths.pk:15:5 ]
+    │
+ 15 │     :use /main/area
+    │     ──┬─  
+    │       ╰─── `:use` can only be written at the top level of a file
+────╯
+[E0222] Error: the module `/main` has no type named `Missing`
+    ╭─[ err_paths.pk:16:20 ]
+    │
+ 16 │     :local p:/main/Missing
+    │                    ───┬───  
+    │                       ╰───── the module `/main` has no type named `Missing`
+────╯

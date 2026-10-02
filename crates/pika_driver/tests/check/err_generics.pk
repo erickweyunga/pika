@@ -1,0 +1,43 @@
+:fn needs_ord<T: Ord> a:T b:T -> bool do={ :return ($a < $b) }
+:fn no_bound<T> a:T b:T -> bool do={ :return ($a < $b) }
+:fn no_display<T> x:T do={ :put $x }
+:fn no_clone<T> x:T -> T do={ :return [$x->clone] }
+:fn twice_copy<T: Copy> x:T -> List<T> do={ :return {$x; $x} }
+:fn keys<K> m:Map<K, i64> -> i64 do={ :return [:len $m] }
+:fn with_default<T> x:T y:T=0 do={}
+
+:struct Holder<T> {
+    value:T
+    count:T=1
+}
+
+:struct Sorted<T: Ord> {
+    items:List<T>
+}
+
+:fn no_method<T> x:T -> i64 do={ :return [$x->len] }
+
+:enum Opt<T> {
+    nothing
+    just value:T
+}
+
+:struct Cell<T> {
+    value:T
+    :fn get self -> i64 do={ :return 0 }
+}
+
+:fn main<T> do={
+    :put [:needs_ord {1=1} {2=2}]
+    :put [:needs_ord<i64, i64> 1 2]
+    :put [:twice_copy "s"]
+    :const h Holder<i64>{value=1; count=2}
+    :const s:Map<f64, i64> {}
+    :const bad:Sorted<bool> Sorted{items={true}}
+    :const list {1; 2}
+    :put [$list->len<i64>]
+    :put [Opt->just<i64> 1]
+    :const c Cell{value=1}
+    :put ($c->value<i64>)
+    :put [$c->get<i64>]
+}

@@ -1,0 +1,6 @@
+---
+source: crates/pika_driver/tests/load_errors.rs
+expression: error
+input_file: crates/pika_driver/tests/load_errors/bad_module
+---
+the module file tests/load_errors/bad_module/src/my-module.pk has a name that is not an identifier: `my-module`; use letters, digits and `_`

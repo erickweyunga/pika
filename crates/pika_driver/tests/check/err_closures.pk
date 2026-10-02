@@ -1,0 +1,31 @@
+# Invalid function values and calls of values.
+:fn generic<T> x:T -> T do={ :return $x }
+:fn changes mut x:i64 do={}
+:fn borrowed s:String -> fn() -> String do={
+    :return [:fn -> String do={ :return $s }]
+}
+:fn main do={
+    :const s "text"
+    :const f [:fn -> i64 do={ :return [:len $s] }]
+    :put $s
+    :local n 1
+    :const inc [:fn -> i64 do={
+        :set n ($n + 1)
+        :return $n
+    }]
+    :local list {1}
+    :const push [:fn do={ $list->push 2 }]
+    :const g $generic
+    :const h $changes
+    :put [$f]
+    :put [$f 1 2]
+    :const five 5
+    :put [$five 1]
+    :put $f
+    :const bad [:fn mut x:i64 y:i64=2 do={}]
+    :const named [:fn name x:i64 do={}]
+    :const r [:fn -> i64 raises do={ :error "x" }]
+    :put [$r]
+    :const m [:fn x:i64 -> String do={ :return $s }]
+}
+:const C [:fn do={}]

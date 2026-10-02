@@ -1,0 +1,5 @@
+:const limit 10
+
+:fn double x:i64 -> i64 do={ :return [:_times $x 2] }
+
+:fn _times x:i64 n:i64 -> i64 do={ :return ($x * $n) }

@@ -1,0 +1,166 @@
+================================================================================
+Numbers
+================================================================================
+
+:put 42 1_000_000 0xFF 0o755 0b1010 3.14 1e9 2.5e-3 1_000.5 -7
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (integer)
+    (integer)
+    (integer)
+    (integer)
+    (integer)
+    (float)
+    (float)
+    (float)
+    (float)
+    (integer)))
+
+================================================================================
+Durations
+================================================================================
+
+:put 500ms 10s 1m30s 2h 1d12h 1w -2h
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (duration)
+    (duration)
+    (duration)
+    (duration)
+    (duration)
+    (duration)
+    (duration)))
+
+================================================================================
+Characters
+================================================================================
+
+:put 'a' '\n' '\u{1F600}' '\x41' '\''
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (char)
+    (char)
+    (char)
+    (char)
+    (char)))
+
+================================================================================
+Strings with escapes
+================================================================================
+
+:put "tab\t quote\" dollar\$ unicode\u{41} hex\x41 # not a comment"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (string_content))))
+
+================================================================================
+String interpolation
+================================================================================
+
+:put "Hello $name, 5x6 = $($a * $b), len = $[:len $items]"
+:put "nested $( "inner $x" ) and $[:f "a$[:g "b"]c"]"
+:put "costs $5 and $"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (string
+      (string_content)
+      (interpolation
+        (variable))
+      (string_content)
+      (interpolation
+        (binary_expression
+          (variable)
+          (variable)))
+      (string_content)
+      (interpolation
+        (call
+          (command_name)
+          (variable)))))
+  (call
+    (command_name)
+    (string
+      (string_content)
+      (interpolation
+        (string
+          (string_content)
+          (interpolation
+            (variable))))
+      (string_content)
+      (interpolation
+        (call
+          (command_name)
+          (string
+            (string_content)
+            (interpolation
+              (call
+                (command_name)
+                (string
+                  (string_content))))
+            (string_content))))))
+  (call
+    (command_name)
+    (string
+      (string_content))))
+
+================================================================================
+Multi-line strings
+================================================================================
+
+:put "line one
+line two \
+    continued"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content))))
+
+================================================================================
+Raw strings
+================================================================================
+
+:put r"no \escapes $here" r#"has "quotes""#
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (raw_string)
+    (raw_string)))

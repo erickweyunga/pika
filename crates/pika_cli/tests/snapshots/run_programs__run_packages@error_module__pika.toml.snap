@@ -1,0 +1,13 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: "run_both(dir, \".\", &name)"
+input_file: crates/pika_cli/tests/run_packages/error_module/pika.toml
+---
+exit: 1
+--- stdout ---
+8080
+--- stderr ---
+error: cannot start
+  at src/main.pk:9:9
+caused by: unknown setting `colour`
+  at src/config.pk:3:5

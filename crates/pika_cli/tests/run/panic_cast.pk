@@ -1,0 +1,2 @@
+:local big 300
+:put ($big as u8)

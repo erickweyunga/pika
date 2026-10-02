@@ -1,0 +1,163 @@
+---
+source: crates/pika_syntax/tests/lexer_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/lexer/number_errors.pk
+---
+ Int 0..20 "18446744073709551616"
++Newline 20..21 "\n"
+ Int 21..23 "0x"
+ Whitespace 23..24 " "
+ Int 24..28 "0xFG"
+ Whitespace 28..29 " "
+ Int 29..34 "0b102"
+ Whitespace 34..35 " "
+ Int 35..37 "1_"
++Newline 37..38 "\n"
+ Float 38..43 "1e999"
+ Whitespace 43..44 " "
+ Float 44..48 "1_.5"
++Newline 48..49 "\n"
+ Int 49..54 "10i32"
+ Whitespace 54..55 " "
+ Float 55..59 "1.5s"
+ Whitespace 59..60 " "
+ Float 60..66 "2.5f32"
++Newline 66..67 "\n"
+ Duration 67..72 "30m1h"
+ Whitespace 72..73 " "
+ Duration 73..77 "1s1s"
+ Whitespace 77..78 " "
+ Duration 78..82 "1h30"
+ Whitespace 82..83 " "
+ Duration 83..88 "1h30x"
+ Whitespace 88..89 " "
+ Duration 89..101 "99999999999w"
++Newline 101..102 "\n"
+ Eof 102..102 ""
+
+--- diagnostics ---
+[E0006] Error: integer literal is too large
+   ╭─[ number_errors.pk:1:1 ]
+   │
+ 1 │ 18446744073709551616
+   │ ──────────┬─────────  
+   │           ╰─────────── integer literal is too large
+   │ 
+   │ Help: the largest integer literal is 18446744073709551615
+───╯
+[E0005] Error: missing digits after `0x`
+   ╭─[ number_errors.pk:2:1 ]
+   │
+ 2 │ 0x 0xFG 0b102 1_
+   │ ─┬  
+   │  ╰── missing digits after `0x`
+───╯
+[E0005] Error: invalid digit `G` in hexadecimal literal
+   ╭─[ number_errors.pk:2:7 ]
+   │
+ 2 │ 0x 0xFG 0b102 1_
+   │       ┬  
+   │       ╰── invalid digit `G` in hexadecimal literal
+───╯
+[E0005] Error: invalid digit `2` in binary literal
+   ╭─[ number_errors.pk:2:13 ]
+   │
+ 2 │ 0x 0xFG 0b102 1_
+   │             ┬  
+   │             ╰── invalid digit `2` in binary literal
+───╯
+[E0005] Error: number literals cannot end with `_`
+   ╭─[ number_errors.pk:2:16 ]
+   │
+ 2 │ 0x 0xFG 0b102 1_
+   │                ┬  
+   │                ╰── number literals cannot end with `_`
+───╯
+[E0007] Error: float literal is out of range
+   ╭─[ number_errors.pk:3:1 ]
+   │
+ 3 │ 1e999 1_.5
+   │ ──┬──  
+   │   ╰──── float literal is out of range
+   │ 
+   │ Help: the largest float is 1.7976931348623157e308
+───╯
+[E0007] Error: `_` must be followed by a digit
+   ╭─[ number_errors.pk:3:8 ]
+   │
+ 3 │ 1e999 1_.5
+   │        ┬  
+   │        ╰── `_` must be followed by a digit
+───╯
+[E0008] Error: invalid suffix `i32` on number literal
+   ╭─[ number_errors.pk:4:3 ]
+   │
+ 4 │ 10i32 1.5s 2.5f32
+   │   ─┬─  
+   │    ╰─── invalid suffix `i32` on number literal
+   │ 
+   │ Help: number literals have no type suffixes; convert with `as`, for example `(10 as i32)`. Duration units are `w d h m s ms us ns`
+───╯
+[E0008] Error: invalid suffix `s` on float literal
+   ╭─[ number_errors.pk:4:10 ]
+   │
+ 4 │ 10i32 1.5s 2.5f32
+   │          ┬  
+   │          ╰── invalid suffix `s` on float literal
+   │ 
+   │ Help: duration literals must be whole numbers, for example `1500ms` instead of `1.5s`
+───╯
+[E0008] Error: invalid suffix `f32` on float literal
+   ╭─[ number_errors.pk:4:15 ]
+   │
+ 4 │ 10i32 1.5s 2.5f32
+   │               ─┬─  
+   │                ╰─── invalid suffix `f32` on float literal
+   │ 
+   │ Help: number literals have no type suffixes; convert with `as`, for example `(1.5 as f32)`
+───╯
+[E0009] Error: duration units must be in descending order and appear at most once
+   ╭─[ number_errors.pk:5:5 ]
+   │
+ 5 │ 30m1h 1s1s 1h30 1h30x 99999999999w
+   │     ┬  
+   │     ╰── duration units must be in descending order and appear at most once
+   │ 
+   │ Help: for example `1h30m`, not `30m1h`
+───╯
+[E0009] Error: duration units must be in descending order and appear at most once
+   ╭─[ number_errors.pk:5:10 ]
+   │
+ 5 │ 30m1h 1s1s 1h30 1h30x 99999999999w
+   │          ┬  
+   │          ╰── duration units must be in descending order and appear at most once
+   │ 
+   │ Help: for example `1h30m`, not `30m1h`
+───╯
+[E0009] Error: missing unit after `30` in duration literal
+   ╭─[ number_errors.pk:5:14 ]
+   │
+ 5 │ 30m1h 1s1s 1h30 1h30x 99999999999w
+   │              ─┬  
+   │               ╰── missing unit after `30` in duration literal
+   │ 
+   │ Help: every number in a duration needs a unit, for example `1m30s`
+───╯
+[E0009] Error: unknown duration unit `x`
+   ╭─[ number_errors.pk:5:21 ]
+   │
+ 5 │ 30m1h 1s1s 1h30 1h30x 99999999999w
+   │                     ┬  
+   │                     ╰── unknown duration unit `x`
+   │ 
+   │ Help: duration units are `w d h m s ms us ns`
+───╯
+[E0009] Error: duration literal is too large
+   ╭─[ number_errors.pk:5:23 ]
+   │
+ 5 │ 30m1h 1s1s 1h30 1h30x 99999999999w
+   │                       ──────┬─────  
+   │                             ╰─────── duration literal is too large
+   │ 
+   │ Help: durations are limited to about 292 years
+───╯

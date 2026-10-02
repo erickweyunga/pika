@@ -1,0 +1,129 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_match_ownership.pk
+---
+fn take(t: Token) -> nothing
+fn grow(t: Token) -> nothing
+fn main() -> nothing
+    t: Token
+    w: String
+    stolen: String
+    n: f64
+    fixed: String?
+    first: String?
+    b: Box<String>
+    inner: String
+    o: String?
+    value: String
+
+--- diagnostics ---
+[E0409] Error: cannot change or move this value while a `:match` arm borrows it
+    ╭─[ err_match_ownership.pk:15:13 ]
+    │
+ 15 │             :set t [Token->number 1.0]
+    │             ─────────────┬────────────  
+    │                          ╰────────────── cannot change or move this value while a `:match` arm borrows it
+    │
+    ├─[ err_match_ownership.pk:15:13 ]
+    │
+ 13 │     :match $t {
+    │            ─┬  
+    │             ╰── the value matched, borrowed by the arm's names
+    │ 
+    │ Help: copy what the arm needs with `->clone` before changing the value
+────╯
+[E0409] Error: cannot change or move this value while a `:match` arm borrows it
+    ╭─[ err_match_ownership.pk:16:19 ]
+    │
+ 16 │             :take $t
+    │                   ─┬  
+    │                    ╰── cannot change or move this value while a `:match` arm borrows it
+    │
+    ├─[ err_match_ownership.pk:16:19 ]
+    │
+ 13 │     :match $t {
+    │            ─┬  
+    │             ╰── the value matched, borrowed by the arm's names
+    │ 
+    │ Help: copy what the arm needs with `->clone` before changing the value
+────╯
+[E0409] Error: cannot change or move this value while a `:match` arm borrows it
+    ╭─[ err_match_ownership.pk:17:19 ]
+    │
+ 17 │             :grow $t
+    │                   ─┬  
+    │                    ╰── cannot change or move this value while a `:match` arm borrows it
+    │
+    ├─[ err_match_ownership.pk:17:19 ]
+    │
+ 13 │     :match $t {
+    │            ─┬  
+    │             ╰── the value matched, borrowed by the arm's names
+    │ 
+    │ Help: copy what the arm needs with `->clone` before changing the value
+────╯
+[E0404] Error: `t` is used after its value was moved
+    ╭─[ err_match_ownership.pk:17:19 ]
+    │
+ 17 │             :grow $t
+    │                   ─┬  
+    │                    ╰── `t` is used after its value was moved
+    │
+    ├─[ err_match_ownership.pk:17:19 ]
+    │
+ 16 │             :take $t
+    │                   ─┬  
+    │                    ╰── the value is moved here
+    │ 
+    │ Help: copy the value before moving it: `[$t->clone]`
+────╯
+[E0408] Error: cannot move `w` out: it borrows part of the value matched
+    ╭─[ err_match_ownership.pk:18:27 ]
+    │
+ 18 │             :const stolen $w
+    │                           ─┬  
+    │                            ╰── cannot move `w` out: it borrows part of the value matched
+    │ 
+    │ Help: use a copy: `[$w->clone]`; names bound by matching a temporary value own their parts
+────╯
+[E0406] Error: cannot call `take` on `fixed`: it cannot be modified
+    ╭─[ err_match_ownership.pk:27:19 ]
+    │
+ 27 │     :const first [$fixed->take]
+    │                   ───┬──  
+    │                      ╰──── cannot call `take` on `fixed`: it cannot be modified
+    │
+    ├─[ err_match_ownership.pk:27:19 ]
+    │
+ 26 │     :const fixed:String? [some "x"]
+    │            ──┬──  
+    │              ╰──── declared here
+    │ 
+    │ Help: declare it with `:local`, or as a `mut` parameter
+────╯
+[E0408] Error: cannot move the value out of its box
+    ╭─[ err_match_ownership.pk:30:18 ]
+    │
+ 30 │     :const inner $b->value
+    │                  ────┬────  
+    │                      ╰────── cannot move the value out of its box
+    │ 
+    │ Help: take it out with `[$b->unbox]`, or use a copy: `[$b->value->clone]`
+────╯
+[E0404] Error: `o` is used after its value was moved
+    ╭─[ err_match_ownership.pk:34:10 ]
+    │
+ 34 │     :put $o
+    │          ─┬  
+    │           ╰── `o` is used after its value was moved
+    │
+    ├─[ err_match_ownership.pk:34:10 ]
+    │
+ 33 │     :const value [$o->unwrap]
+    │                   ─┬  
+    │                    ╰── the value is moved here
+    │ 
+    │ Help: copy the value before moving it: `[$o->clone]`
+────╯

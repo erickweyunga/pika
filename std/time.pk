@@ -1,0 +1,17 @@
+# Clocks and waiting.
+
+:extern lib="pika" {
+    :fn _monotonic -> Duration
+    :fn _unix_time -> Duration
+    :fn _sleep length:Duration
+}
+
+# The time since the program started, from a clock that never goes backwards: for measuring
+# how long something takes.
+:fn monotonic -> Duration do={ :return [:_monotonic] }
+
+# The time since 1970-01-01 00:00:00 UTC, from the system clock, which can be changed.
+:fn unix_time -> Duration do={ :return [:_unix_time] }
+
+# Waits for a length of time; a length that is not positive returns at once.
+:fn sleep length:Duration do={ :_sleep $length }

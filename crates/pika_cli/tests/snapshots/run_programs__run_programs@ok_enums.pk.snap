@@ -1,0 +1,41 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+assertion_line: 61
+expression: native
+input_file: crates/pika_cli/tests/run/ok_enums.pk
+---
+exit: 0
+--- stdout ---
+[some Shape->rect{width=2.0; height=3.0}]
+Shape->circle{radius=1.5}
+Shape->dot
+6.75
+false
+true
+true
+negative
+number 4.0
+greeting
+word pika
+plus
+42
+Expr->add{left=Expr->num{value=40}; right=Expr->neg{inner=Expr->num{value=-2}}}
+true
+zero
+minus one
+many
+[some 'x'] true true
+x
+z
+short Ada
+[some "Ada"] none
+Ada
+kept owned
+current 1.0
+boxed
+changed
+changed
+true
+true
+[some [some "x"]]
+--- stderr ---

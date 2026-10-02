@@ -1,0 +1,11 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_fmt.pk
+---
+exit: 101
+--- stdout ---
+1
+x --- stderr ---
+panic: cannot show zero
+  at panic_fmt.pk:5:33

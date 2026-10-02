@@ -1,0 +1,112 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_calls.pk
+---
+fn add(a: i64, b: i64) -> i64
+fn main() -> nothing
+    add: i64
+
+--- diagnostics ---
+[E0305] Error: missing argument `b` in call to `:add`
+   ╭─[ err_calls.pk:3:11 ]
+   │
+ 3 │     :put [:add 1]
+   │           ───┬──  
+   │              ╰──── missing argument `b` in call to `:add`
+───╯
+[E0305] Error: `:add` takes 2 arguments, but 3 were given
+   ╭─[ err_calls.pk:4:20 ]
+   │
+ 4 │     :put [:add 1 2 3]
+   │                    ┬  
+   │                    ╰── `:add` takes 2 arguments, but 3 were given
+───╯
+[E0305] Error: missing argument `b` in call to `:add`
+   ╭─[ err_calls.pk:5:11 ]
+   │
+ 5 │     :put [:add a=1 c=2]
+   │           ──────┬─────  
+   │                 ╰─────── missing argument `b` in call to `:add`
+───╯
+[E0305] Error: `:add` has no parameter named `c`
+   ╭─[ err_calls.pk:5:20 ]
+   │
+ 5 │     :put [:add a=1 c=2]
+   │                    ┬  
+   │                    ╰── `:add` has no parameter named `c`
+   │ 
+   │ Help: the parameters of `:add` are `a`, `b`
+───╯
+[E0305] Error: missing argument `b` in call to `:add`
+   ╭─[ err_calls.pk:6:11 ]
+   │
+ 6 │     :put [:add 1 a=2]
+   │           ─────┬────  
+   │                ╰────── missing argument `b` in call to `:add`
+───╯
+[E0305] Error: argument `a` is given more than once
+   ╭─[ err_calls.pk:6:20 ]
+   │
+ 6 │     :put [:add 1 a=2]
+   │                    ┬  
+   │                    ╰── argument `a` is given more than once
+───╯
+[E0305] Error: positional arguments must come before named arguments
+   ╭─[ err_calls.pk:7:20 ]
+   │
+ 7 │     :put [:add b=1 2]
+   │                    ┬  
+   │                    ╰── positional arguments must come before named arguments
+───╯
+[E0301] Error: mismatched types: expected `i64`, found `String`
+   ╭─[ err_calls.pk:8:16 ]
+   │
+ 8 │     :put [:add "one" 2]
+   │                ──┬──  
+   │                  ╰──── expected `i64`
+───╯
+[E0305] Error: `:put` takes 1 argument, but 2 were given
+   ╭─[ err_calls.pk:9:5 ]
+   │
+ 9 │     :put 1 2
+   │     ────┬───  
+   │         ╰───── `:put` takes 1 argument, but 2 were given
+───╯
+[E0305] Error: `:put` takes 1 argument, but 0 were given
+    ╭─[ err_calls.pk:10:5 ]
+    │
+ 10 │     :put value=1
+    │     ──────┬─────  
+    │           ╰─────── `:put` takes 1 argument, but 0 were given
+────╯
+[E0305] Error: `:put` does not take named arguments
+    ╭─[ err_calls.pk:10:10 ]
+    │
+ 10 │     :put value=1
+    │          ──┬──  
+    │            ╰──── `:put` does not take named arguments
+────╯
+[E0303] Error: `:len` cannot be used with a value of type `{integer}`
+    ╭─[ err_calls.pk:11:10 ]
+    │
+ 11 │     :len 5
+    │          ┬  
+    │          ╰── `:len` cannot be used with a value of type `{integer}`
+    │ 
+    │ Help: `:len` measures strings, lists, maps and sets
+────╯
+[E0202] Error: unknown command `:nope`
+    ╭─[ err_calls.pk:12:5 ]
+    │
+ 12 │     :nope 1
+    │     ──┬──  
+    │       ╰──── unknown command `:nope`
+────╯
+[E0305] Error: missing arguments `a`, `b` in call to `:add`
+    ╭─[ err_calls.pk:14:5 ]
+    │
+ 14 │     :add
+    │     ──┬─  
+    │       ╰─── missing arguments `a`, `b` in call to `:add`
+────╯

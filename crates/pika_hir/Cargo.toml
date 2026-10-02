@@ -1,0 +1,16 @@
+[package]
+name = "pika_hir"
+description = "High-level intermediate representation of Pika programs, with name resolution"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+pika_ty.workspace = true
+la-arena.workspace = true
+pika_diagnostics.workspace = true
+pika_syntax.workspace = true
+
+[lints]
+workspace = true

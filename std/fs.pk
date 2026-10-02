@@ -1,0 +1,37 @@
+# Files: reading and writing whole files. Paths are relative to the working directory.
+
+:extern lib="pika" {
+    :fn _fs_read path:String -> String
+    :fn _fs_write path:String text:String
+    :fn _fs_exists path:String -> bool
+    :fn _fs_remove path:String
+    :fn _fs_error -> String
+}
+
+# Raises an error describing the failure of the last file operation, if it failed.
+:fn _check what:String raises do={
+    :const failure [:_fs_error]
+    :if ([:len $failure] > 0) do={ :error "$what: $failure" }
+}
+
+# The text of a file; raises an error if it cannot be read or is not UTF-8.
+:fn read path:String -> String raises do={
+    :const text [:_fs_read $path]
+    :_check "cannot read $path"
+    :return $text
+}
+
+# Writes text to a file, creating it or replacing its contents; raises an error on failure.
+:fn write path:String text:String raises do={
+    :_fs_write $path $text
+    :_check "cannot write $path"
+}
+
+# Returns true if a file or directory exists at `path`.
+:fn exists path:String -> bool do={ :return [:_fs_exists $path] }
+
+# Removes a file; raises an error on failure.
+:fn remove path:String raises do={
+    :_fs_remove $path
+    :_check "cannot remove $path"
+}

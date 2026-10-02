@@ -1,0 +1,109 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+assertion_line: 42
+expression: snapshot
+input_file: crates/pika_driver/tests/check/err_struct_ownership.pk
+---
+fn rename(self: Person, name: String) -> nothing
+fn take(p: Person) -> nothing
+fn grow(age: u8) -> nothing
+fn both(a: Person, b: String) -> nothing
+fn read(p: Person) -> nothing
+    stolen: String
+fn main() -> nothing
+    fixed: Person
+    alice: Person
+    name: String
+    bob: Person
+
+--- diagnostics ---
+[W0001] Warning: variable `stolen` is never modified
+    ╭─[ err_struct_ownership.pk:14:12 ]
+    │
+ 14 │     :local stolen $p->name
+    │            ───┬──  
+    │               ╰──── variable `stolen` is never modified
+    │ 
+    │ Help: declare it with `:const stolen`
+────╯
+[E0408] Error: cannot move the field `name` out of its struct
+    ╭─[ err_struct_ownership.pk:14:19 ]
+    │
+ 14 │     :local stolen $p->name
+    │                   ────┬───  
+    │                       ╰───── cannot move the field `name` out of its struct
+    │ 
+    │ Help: use a copy: `[$p->name->clone]`
+────╯
+[E0406] Error: cannot pass `fixed` to a `mut` parameter: it cannot be modified
+    ╭─[ err_struct_ownership.pk:19:11 ]
+    │
+ 19 │     :grow $fixed->age
+    │           ─────┬─────  
+    │                ╰─────── cannot pass `fixed` to a `mut` parameter: it cannot be modified
+    │
+    ├─[ err_struct_ownership.pk:19:11 ]
+    │
+ 18 │     :const fixed Person{name="a"; age=1}
+    │            ──┬──  
+    │              ╰──── declared here
+    │ 
+    │ Help: declare it with `:local`, or as a `mut` parameter
+────╯
+[E0406] Error: cannot pass `fixed` to a `mut` parameter: it cannot be modified
+    ╭─[ err_struct_ownership.pk:20:5 ]
+    │
+ 20 │     $fixed->rename "b"
+    │     ───┬──  
+    │        ╰──── cannot pass `fixed` to a `mut` parameter: it cannot be modified
+    │
+    ├─[ err_struct_ownership.pk:20:5 ]
+    │
+ 18 │     :const fixed Person{name="a"; age=1}
+    │            ──┬──  
+    │              ╰──── declared here
+    │ 
+    │ Help: declare it with `:local`, or as a `mut` parameter
+────╯
+[W0001] Warning: variable `name` is never modified
+    ╭─[ err_struct_ownership.pk:23:12 ]
+    │
+ 23 │     :local name $alice->name
+    │            ──┬─  
+    │              ╰─── variable `name` is never modified
+    │ 
+    │ Help: declare it with `:const name`
+────╯
+[E0408] Error: cannot move the field `name` out of its struct
+    ╭─[ err_struct_ownership.pk:23:17 ]
+    │
+ 23 │     :local name $alice->name
+    │                 ──────┬─────  
+    │                       ╰─────── cannot move the field `name` out of its struct
+    │ 
+    │ Help: use a copy: `[$alice->name->clone]`
+────╯
+[E0405] Error: a variable passed to a `mut` parameter cannot be used by another argument of the same call
+    ╭─[ err_struct_ownership.pk:24:11 ]
+    │
+ 24 │     :both $alice $alice->name
+    │           ───┬── ──────┬─────  
+    │              ╰───────────────── a variable passed to a `mut` parameter cannot be used by another argument of the same call
+    │                        │       
+    │                        ╰─────── also used here
+────╯
+[E0404] Error: `bob` is used after its value was moved
+    ╭─[ err_struct_ownership.pk:28:10 ]
+    │
+ 28 │     :put $bob->age
+    │          ────┬────  
+    │              ╰────── `bob` is used after its value was moved
+    │
+    ├─[ err_struct_ownership.pk:28:10 ]
+    │
+ 27 │     :take $bob
+    │           ──┬─  
+    │             ╰─── the value is moved here
+    │ 
+    │ Help: copy the value before moving it: `[$bob->clone]`
+────╯

@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_assert_message.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `x` is never modified
+   ╭─[ panic_assert_message.pk:1:8 ]
+   │
+ 1 │ :local x 5
+   │        ┬  
+   │        ╰── variable `x` is never modified
+   │ 
+   │ Help: declare it with `:const x`
+───╯
+panic: assertion failed: x should be 6 but is 5
+  at panic_assert_message.pk:2:1

@@ -1,0 +1,3 @@
+:fn _times x:i64 n:i64 -> i64 do={ :return ($x * $n) }
+
+:put "modules other than the entry module only declare items"

@@ -1,0 +1,5 @@
+:use /colors/Color
+
+:fn area side:f64 -> f64 do={ :return ($side * $side) }
+
+:fn favorite -> Color do={ :return Color->red }

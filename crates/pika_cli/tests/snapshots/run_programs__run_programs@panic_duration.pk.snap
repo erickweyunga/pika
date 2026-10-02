@@ -1,0 +1,19 @@
+---
+source: crates/pika_cli/tests/run_programs.rs
+expression: native
+input_file: crates/pika_cli/tests/run/panic_duration.pk
+---
+exit: 101
+--- stdout ---
+--- stderr ---
+[W0001] Warning: variable `d` is never modified
+   ╭─[ panic_duration.pk:1:8 ]
+   │
+ 1 │ :local d 9223372036854775807ns
+   │        ┬  
+   │        ╰── variable `d` is never modified
+   │ 
+   │ Help: declare it with `:const d`
+───╯
+panic: integer overflow
+  at panic_duration.pk:2:7

@@ -1,0 +1,17 @@
+# A trait that requires built-in traits holds for the type arguments that have them.
+:trait Pretty impl=Display {
+    :fn pretty self -> String do={ :return "<$self>" }
+}
+:struct Plain { n:i64 }
+:struct Wrap<T> impl=Display,Pretty { value:T }
+:fn show<T: Pretty> x:T -> String do={ :return [$x->pretty] }
+:fn main do={
+    :const good Wrap{value=1}
+    :put [$good->pretty]
+    :const bad Wrap{value=Plain{n=1}}
+    :put [$bad->pretty]
+    :put [:show $bad]
+}
+:trait Convert<T> {
+    :fn convert self -> T
+}
