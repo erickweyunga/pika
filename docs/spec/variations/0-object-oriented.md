@@ -336,7 +336,7 @@ This keeps memory safety without a garbage collector, at a small runtime cost on
 
 - An interface can be used **as a type**: `items:List<Speaker>`. Calls go through dynamic dispatch.
 - Interfaces cannot declare fields.
-- Interfaces with generic methods or methods that take or return `Self` can only be used as generic bounds, not as types (same rule as Rust's object safety and Swift's existential limits).
+- Interfaces with generic methods or methods that take or return `Self` can only be used as generic bounds, not as types.
 - Built-in interfaces (`Copy`, `Clone`, `Eq`, `Ord`, `Hash`, `Display`, `Default`, operator interfaces) are unchanged. Classes cannot implement `Copy`; `Clone` on a class creates a new object (shallow by default when derived).
 
 ---

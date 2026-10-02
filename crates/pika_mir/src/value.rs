@@ -600,7 +600,7 @@ pub fn unary(op: UnaryOp, operand: &Value) -> Result<Value, PanicKind> {
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
-    reason = "float conversions follow Rust's `as`, which saturates and rounds"
+    reason = "float-to-integer casts saturate and integer-to-float casts round, as the language defines"
 )]
 pub fn cast(kind: CastKind, operand: &Value, to: Ty) -> Result<Value, PanicKind> {
     match (operand, to) {
@@ -622,7 +622,7 @@ pub fn cast(kind: CastKind, operand: &Value, to: Ty) -> Result<Value, PanicKind>
             ty: target,
         }),
         (Value::Float { value, .. }, Ty::Int(target)) => {
-            // Saturating, with NaN converting to 0, like Rust's `as`.
+            // Saturating at the bounds of the target type, with NaN converting to 0.
             let value = match target {
                 IntTy::I8 => i128::from(*value as i8),
                 IntTy::I16 => i128::from(*value as i16),

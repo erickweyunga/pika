@@ -216,7 +216,7 @@ With pipes there are no methods. A type's functions live in its module: `/user/n
 :put [$double 21]
 ```
 
-The shorthand reuses RouterOS's `$1`, `$2` positional argument names. Closures capture by sharing (all values are immutable).
+The shorthand names positional arguments `$1`, `$2`. Closures capture by sharing (all values are immutable).
 
 ### 5.4 Tail calls
 
@@ -453,7 +453,7 @@ The runtime is the hardest part. The BEAM virtual machine has had more than thir
 **What Elixir-style Pika gives you**
 
 - **The simplest model for users.** No ownership, no borrowing, no mutation surprises, and no cycles to leak.
-- **Best-in-class concurrency and fault tolerance.** Millions of processes, no data races by construction, and supervision trees. This makes it excellent for servers, network services, chat and real-time systems, and IoT gateways. That's very close to RouterOS's own world of long-running, event-driven automation.
+- **Best-in-class concurrency and fault tolerance.** Millions of processes, no data races by construction, and supervision trees. This makes it excellent for servers, network services, chat and real-time systems, and IoT gateways, and for long-running, event-driven automation.
 - **Expressive code.** Pipes, multi-clause functions, `:with` and comprehensions make data transformation concise.
 - **Static types on top**, where Elixir itself is only now adding them.
 

@@ -234,8 +234,8 @@ pub unsafe extern "C" fn pika_uncaught(error: *const u8, layout: *const ErrorLay
     std::process::exit(crate::ERROR_EXIT_CODE);
 }
 
-/// Floating-point remainder, which Cranelift has no instruction for. Same semantics as Rust's
-/// `%` on `f64`: the result has the sign of the dividend.
+/// Floating-point remainder, which Cranelift has no instruction for: the result has the sign
+/// of the dividend.
 pub extern "C" fn pika_rem_f64(a: f64, b: f64) -> f64 {
     a % b
 }

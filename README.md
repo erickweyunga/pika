@@ -1,8 +1,8 @@
 # Pika
 
 Pika is a general-purpose, statically typed, compiled programming language. Its syntax is
-inspired by RouterOS scripting (`:commands`, `$variables`, `[command substitution]`,
-`key=value` arguments, `do={}` blocks), paired with the semantics of a modern systems language:
+command-oriented (`:commands`, `$variables`, `[command substitution]`, `key=value` arguments,
+`do={}` blocks), paired with the semantics of a modern systems language:
 value types, ownership without a garbage collector, structs and traits, generics, and native code
 generation.
 
@@ -50,11 +50,11 @@ M6 is in progress:
   arithmetic that does not trap, bits), random numbers, strings (searching, splitting,
   padding, number formatting and parsing), characters, collections (sorting, searching,
   `map`/`filter`/`fold` with closures, a heap and a deque), standard input and output,
-  program arguments and environment variables, clocks, and files.
+  program arguments and environment variables, clocks, and files. Its few primitives are
+  implemented once in the runtime, for both compiled and interpreted programs.
 - Methods of built-in types, which the standard library declares with `:impl`:
   `[$text->trim]`, `[[$line->split ","]->map $f]`, `[$items->sort]`, `[$x->sqrt]`,
-  `[$n->checked_add 1]`, `[$option->expect "msg"]`. Its few primitives are implemented once in the runtime, for
-  both compiled and interpreted programs.
+  `[$n->checked_add 1]`, `[$option->expect "msg"]`.
 
 Features of later milestones (foreign functions, tests, `pika fmt`) are reported as "not
 supported yet". See the milestones in section 17 of the spec.
