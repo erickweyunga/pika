@@ -1,3 +1,5 @@
+<p align="center"><img src="../../docs/assets/pika-logo.png" alt="Pika" width="160"></p>
+
 # Pika for Zed
 
 Pika language support for the [Zed](https://zed.dev) editor, for `.pk` files:

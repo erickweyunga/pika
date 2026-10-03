@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/pika-logo.png" alt="Pika" width="160"></p>
+
 # Pika
 
 Pika is a general-purpose, statically typed, compiled programming language. Its syntax is
