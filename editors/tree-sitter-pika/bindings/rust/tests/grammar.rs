@@ -76,7 +76,9 @@ fn pika_files() -> Vec<PathBuf> {
         }
     }
     let mut files = Vec::new();
-    for dir in ["crates", "std", "editors"] {
+    // Not all of `editors`: Zed keeps a clone of this repository in `editors/zed/grammars`
+    // when the extension is installed as a dev extension.
+    for dir in ["crates", "std", "editors/tree-sitter-pika"] {
         walk(&repo_root().join(dir), &mut files);
     }
     files.sort();
