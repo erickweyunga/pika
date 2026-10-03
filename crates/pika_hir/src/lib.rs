@@ -111,9 +111,13 @@ impl Module {
     /// Returns true if the function `id` is in the package being compiled, rather than in a
     /// dependency or the prelude.
     pub fn is_local(&self, id: FnId) -> bool {
+        self.in_root_package(self.functions[id].module)
+    }
+
+    /// Returns true if the module `id` is in the package being compiled.
+    pub fn in_root_package(&self, id: ModuleId) -> bool {
         let package = |module: ModuleId| self.modules[module].path.first();
-        self.root
-            .is_some_and(|root| package(self.functions[id].module) == package(root))
+        self.root.is_some_and(|root| package(id) == package(root))
     }
 
     /// The function `name` that an `:impl` gives the built-in types with head `head`.
@@ -628,6 +632,8 @@ impl PreludeTrait {
 pub struct TraitDef {
     /// The trait's name.
     pub name: Spanned<String>,
+    /// The module that declares it.
+    pub module: ModuleId,
     /// For a prelude trait, which one; it has no source location.
     pub prelude: Option<PreludeTrait>,
     /// The traits listed in `impl=`: a type implementing this trait must implement them too.

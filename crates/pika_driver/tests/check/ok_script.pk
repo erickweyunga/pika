@@ -1,9 +1,9 @@
 # A script: top-level statements form an implicit `main`.
-:const LIMIT 100
-:const RATIO (1.5 * 2.0)
-:const GREETING "hello"
-:const MASK (0xFF as u8)
-:global COUNT:i64 0
+:const limit 100
+:const ratio (1.5 * 2.0)
+:const welcome "hello"
+:const mask (0xFF as u8)
+:global count:i64 0
 
 :fn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
 
@@ -33,11 +33,11 @@
 :fn fail message:String -> never do={ :panic $message }
 
 :local total 0
-:for i from=1 to=$LIMIT do={
+:for i from=1 to=$limit do={
     :set total ($total + $i)
 }
 :put "sum = $total, $[:classify -5], fib = $[:fib 10]"
 :greet "Ada"
 :greet name="Bob" greeting="Hi"
-:set COUNT ($COUNT + 1)
+:set count ($count + 1)
 :put [:add 1 2]

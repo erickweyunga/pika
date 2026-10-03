@@ -1,10 +1,9 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 15
 expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_closures.pk
 ---
-const C: {error}
+const c: {error}
 fn generic<T>(x: T) -> T
 fn changes(x: i64) -> nothing
 fn borrowed(s: String) -> fn() -> String
@@ -120,7 +119,7 @@ closure closure(x: i64) -> String
 [E0214] Error: module-level initializers must be constant, and cannot create functions
     ╭─[ err_closures.pk:31:11 ]
     │
- 31 │ :const C [:fn do={}]
+ 31 │ :const c [:fn do={}]
     │           ─┬─  
     │            ╰─── module-level initializers must be constant, and cannot create functions
 ────╯

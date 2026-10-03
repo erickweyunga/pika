@@ -1,10 +1,10 @@
 # Printing every kind of value, and arithmetic on each.
-:const GREETING "Hello"
-:put "$GREETING, Pika!"
+:const greeting "Hello"
+:put "$greeting, Pika!"
 :put 42
 :put -7
-:const MAX:u64 18446744073709551615
-:put $MAX
+:const max:u64 18446744073709551615
+:put $max
 :put (-9223372036854775807 - 1)
 :put "floats: $(0.1 + 0.2) $(1.5 * 2.0) $(2.0 / 3.0) $(10.0 % 3.0) $(-0.0) $(1e300 * 10.0) $(1e20) $(0.00001234)"
 :put "f32: $((1.0 / 3.0) as f32) $((16777217 as f32)) $((0.1 as f32) + (0.2 as f32))"

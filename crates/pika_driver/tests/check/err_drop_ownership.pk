@@ -7,7 +7,7 @@
     one g:String
     :fn drop mut self do={}
 }
-:const N G{name="x"}->name
+:const n G{name="x"}->name
 :fn mk -> E do={ :return [E->one "a"] }
 :fn main do={
     :match [:mk] {

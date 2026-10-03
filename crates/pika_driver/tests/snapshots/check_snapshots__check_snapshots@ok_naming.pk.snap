@@ -1,0 +1,171 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/ok_naming.pk
+---
+const MAX_SIZE: i64
+const _Hidden: i64
+const _limit: i64
+global Counter: i64
+fn showIt<Self: printable>(self: Self) -> String
+fn bestScore(myList: List<i64>) -> nothing
+    Total: i64
+    Item: i64
+    Twice: fn(i64) -> i64
+    Problem: Error
+    Radius: f64
+fn pick() -> shape
+fn _Helper() -> nothing
+fn _helper2() -> nothing
+fn main() -> nothing
+    s: student<i64>
+closure closure(N: i64) -> i64
+
+--- diagnostics ---
+[W0201] Warning: constant `MAX_SIZE` should be written in snake_case
+   ╭─[ ok_naming.pk:2:8 ]
+   │
+ 2 │ :const MAX_SIZE 10
+   │        ────┬───  
+   │            ╰───── should be `max_size`
+───╯
+[W0201] Warning: global `Counter` should be written in snake_case
+   ╭─[ ok_naming.pk:3:9 ]
+   │
+ 3 │ :global Counter:i64 0
+   │         ───┬───  
+   │            ╰───── should be `counter`
+───╯
+[W0201] Warning: constant `_Hidden` should be written in snake_case
+   ╭─[ ok_naming.pk:4:8 ]
+   │
+ 4 │ :const _Hidden 1
+   │        ───┬───  
+   │           ╰───── should be `_hidden`
+───╯
+[W0201] Warning: trait `printable` should be written in PascalCase
+   ╭─[ ok_naming.pk:6:8 ]
+   │
+ 6 │ :trait printable {
+   │        ────┬────  
+   │            ╰────── should be `Printable`
+───╯
+[W0201] Warning: method `showIt` should be written in snake_case
+   ╭─[ ok_naming.pk:7:9 ]
+   │
+ 7 │     :fn showIt self -> String
+   │         ───┬──  
+   │            ╰──── should be `show_it`
+───╯
+[W0201] Warning: type `student` should be written in PascalCase
+    ╭─[ ok_naming.pk:10:9 ]
+    │
+ 10 │ :struct student<item> impl=Display {
+    │         ───┬───  
+    │            ╰───── should be `Student`
+────╯
+[W0201] Warning: type parameter `item` should be written in PascalCase
+    ╭─[ ok_naming.pk:10:17 ]
+    │
+ 10 │ :struct student<item> impl=Display {
+    │                 ──┬─  
+    │                   ╰─── should be `Item`
+────╯
+[W0201] Warning: field `fullName` should be written in snake_case
+    ╭─[ ok_naming.pk:11:5 ]
+    │
+ 11 │     fullName:String
+    │     ────┬───  
+    │         ╰───── should be `full_name`
+────╯
+[W0201] Warning: type `_private_point` should be written in PascalCase
+    ╭─[ ok_naming.pk:14:9 ]
+    │
+ 14 │ :struct _private_point {
+    │         ───────┬──────  
+    │                ╰──────── should be `_PrivatePoint`
+────╯
+[W0201] Warning: type `shape` should be written in PascalCase
+    ╭─[ ok_naming.pk:17:7 ]
+    │
+ 17 │ :enum shape {
+    │       ──┬──  
+    │         ╰──── should be `Shape`
+────╯
+[W0201] Warning: variant `Circle` should be written in snake_case
+    ╭─[ ok_naming.pk:18:5 ]
+    │
+ 18 │     Circle r:f64
+    │     ───┬──  
+    │        ╰──── should be `circle`
+────╯
+[W0201] Warning: field `Height` should be written in snake_case
+    ╭─[ ok_naming.pk:20:23 ]
+    │
+ 20 │     triangle base:f64 Height:f64
+    │                       ───┬──  
+    │                          ╰──── should be `height`
+────╯
+[W0201] Warning: function `bestScore` should be written in snake_case
+    ╭─[ ok_naming.pk:22:5 ]
+    │
+ 22 │ :fn bestScore myList:List<i64> do={
+    │     ────┬────  
+    │         ╰────── should be `best_score`
+────╯
+[W0201] Warning: parameter `myList` should be written in snake_case
+    ╭─[ ok_naming.pk:22:15 ]
+    │
+ 22 │ :fn bestScore myList:List<i64> do={
+    │               ───┬──  
+    │                  ╰──── should be `my_list`
+────╯
+[W0201] Warning: variable `Total` should be written in snake_case
+    ╭─[ ok_naming.pk:23:12 ]
+    │
+ 23 │     :local Total 0
+    │            ──┬──  
+    │              ╰──── should be `total`
+────╯
+[W0201] Warning: variable `Item` should be written in snake_case
+    ╭─[ ok_naming.pk:24:14 ]
+    │
+ 24 │     :foreach Item in=$myList do={ :set Total ($Total + $Item) }
+    │              ──┬─  
+    │                ╰─── should be `item`
+────╯
+[W0201] Warning: variable `Twice` should be written in snake_case
+    ╭─[ ok_naming.pk:25:12 ]
+    │
+ 25 │     :const Twice [:fn N:i64 -> i64 do={ :return ($N * 2) }]
+    │            ──┬──  
+    │              ╰──── should be `twice`
+────╯
+[W0201] Warning: parameter `N` should be written in snake_case
+    ╭─[ ok_naming.pk:25:23 ]
+    │
+ 25 │     :const Twice [:fn N:i64 -> i64 do={ :return ($N * 2) }]
+    │                       ┬  
+    │                       ╰── should be `n`
+────╯
+[W0201] Warning: variable `Problem` should be written in snake_case
+    ╭─[ ok_naming.pk:26:14 ]
+    │
+ 26 │     :onerror Problem in={ :error "x" } do={ :put $Problem->message }
+    │              ───┬───  
+    │                 ╰───── should be `problem`
+────╯
+[W0201] Warning: variable `Radius` should be written in snake_case
+    ╭─[ ok_naming.pk:28:23 ]
+    │
+ 28 │         shape->Circle Radius do={ :put $Radius }
+    │                       ───┬──  
+    │                          ╰──── should be `radius`
+────╯
+[W0201] Warning: function `_Helper` should be written in snake_case
+    ╭─[ ok_naming.pk:34:5 ]
+    │
+ 34 │ :fn _Helper do={}
+    │     ───┬───  
+    │        ╰───── should be `_helper`
+────╯

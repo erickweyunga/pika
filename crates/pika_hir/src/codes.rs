@@ -56,3 +56,6 @@ pub const STATEMENTS_OUTSIDE_ENTRY: &str = "E0225";
 pub const INVALID_RUNTIME_FUNCTION: &str = "E0226";
 /// An `:impl` outside the standard library, or not of a built-in type.
 pub const INVALID_IMPL: &str = "E0227";
+
+/// A name that does not follow the naming conventions (spec section 3.5).
+pub const NAMING_CONVENTION: &str = "W0201";

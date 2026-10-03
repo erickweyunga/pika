@@ -1,6 +1,7 @@
 //! Lowering from the AST to the HIR, with name resolution.
 
 mod modules;
+mod naming;
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -130,6 +131,7 @@ pub fn lower_program(packages: &[SourcePackage], root: Root) -> (Module, Vec<Dia
         });
     }
 
+    diagnostics.extend(naming::check(&module));
     diagnostics.sort_by_key(|d| d.primary.span.start);
     (module, diagnostics)
 }
@@ -901,6 +903,7 @@ impl Collected {
         let generic = decl.generic_params().is_some();
         let id = module.traits.alloc(TraitDef {
             name: name.clone(),
+            module: self.module,
             prelude: None,
             supertraits: Vec::new(),
             functions: Vec::new(),
@@ -1031,6 +1034,7 @@ fn add_prelude(module: &mut Module, shared: &mut Shared) -> Items {
                 value: which.name().to_owned(),
                 span,
             },
+            module: prelude,
             prelude: Some(which),
             supertraits: Vec::new(),
             functions: Vec::new(),

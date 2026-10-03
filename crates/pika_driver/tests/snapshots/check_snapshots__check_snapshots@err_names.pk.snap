@@ -1,9 +1,9 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_names.pk
 ---
-const VALUE: i64
+const value: i64
 fn uses_script() -> nothing
 fn dup() -> nothing
 fn names(p: i64) -> nothing
@@ -46,16 +46,16 @@ script main() -> nothing
    │     ─┬─  
    │      ╰─── first declared here
 ───╯
-[E0204] Error: the value `VALUE` is declared more than once
+[E0204] Error: the value `value` is declared more than once
    ╭─[ err_names.pk:7:9 ]
    │
- 7 │ :global VALUE:i64 2
+ 7 │ :global value:i64 2
    │         ──┬──  
-   │           ╰──── the value `VALUE` is declared more than once
+   │           ╰──── the value `value` is declared more than once
    │
    ├─[ err_names.pk:7:9 ]
    │
- 6 │ :const VALUE 1
+ 6 │ :const value 1
    │        ──┬──  
    │          ╰──── first declared here
 ───╯
@@ -111,12 +111,12 @@ script main() -> nothing
     │ 
     │ Help: declare the parameter as `mut p` to modify it
 ────╯
-[E0207] Error: cannot assign to the constant `VALUE`
+[E0207] Error: cannot assign to the constant `value`
     ╭─[ err_names.pk:15:10 ]
     │
- 15 │     :set VALUE 4
+ 15 │     :set value 4
     │          ──┬──  
-    │            ╰──── cannot assign to the constant `VALUE`
+    │            ╰──── cannot assign to the constant `value`
     │ 
     │ Help: use `:global` for a module-level variable that changes
 ────╯

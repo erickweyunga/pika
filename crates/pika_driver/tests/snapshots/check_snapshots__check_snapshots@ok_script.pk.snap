@@ -1,13 +1,13 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/ok_script.pk
 ---
-const LIMIT: i64
-const RATIO: f64
-const GREETING: String
-const MASK: u8
-global COUNT: i64
+const limit: i64
+const ratio: f64
+const welcome: String
+const mask: u8
+global count: i64
 fn add(a: i64, b: i64) -> i64
 fn greet(name: String, greeting: String) -> nothing
 fn classify(n: i64) -> String

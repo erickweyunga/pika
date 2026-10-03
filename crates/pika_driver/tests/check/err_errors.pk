@@ -16,7 +16,7 @@
 :struct Show impl=Display {
     :fn fmt self mut out:Formatter raises do={}
 }
-:const C [:risky?]
+:const c [:risky?]
 :fn main do={
     :onerror e in={ :put [:risky?] } do={
         :set e Error{message="y"}

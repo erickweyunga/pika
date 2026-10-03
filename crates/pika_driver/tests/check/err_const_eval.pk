@@ -1,8 +1,8 @@
-:const BIG (9223372036854775807 + 1)
-:const ZERO 0
-:const RATIO (10 / $ZERO)
-:const NARROW (300 as u8)
-:const SHIFT (1 << 64)
-:global G:u8 ((200 as u8) + (100 as u8))
+:const big (9223372036854775807 + 1)
+:const zero 0
+:const ratio (10 / $zero)
+:const narrow (300 as u8)
+:const shift (1 << 64)
+:global g:u8 ((200 as u8) + (100 as u8))
 :fn f x:i64=(1 - 9223372036854775807 - 3) do={ :put $x }
 :fn main do={ :f }

@@ -1,0 +1,41 @@
+## Names that break the naming conventions are warned about at their declarations only.
+:const MAX_SIZE 10
+:global Counter:i64 0
+:const _Hidden 1
+:const _limit 2
+:trait printable {
+    :fn showIt self -> String
+}
+:trait _Cache {}
+:struct student<item> impl=Display {
+    fullName:String
+    good_name:String
+}
+:struct _private_point {
+    x:i64
+}
+:enum shape {
+    Circle r:f64
+    _square
+    triangle base:f64 Height:f64
+}
+:fn bestScore myList:List<i64> do={
+    :local Total 0
+    :foreach Item in=$myList do={ :set Total ($Total + $Item) }
+    :const Twice [:fn N:i64 -> i64 do={ :return ($N * 2) }]
+    :onerror Problem in={ :error "x" } do={ :put $Problem->message }
+    :match [:pick] {
+        shape->Circle Radius do={ :put $Radius }
+        _ do={}
+    }
+    :put [$Twice $Total]
+}
+:fn pick -> shape do={ :return shape->_square }
+:fn _Helper do={}
+:fn _helper2 do={}
+:fn main do={
+    :const s student<i64>{fullName="Ada"; good_name="Ada"}
+    :put $s
+    :bestScore {1; 2}
+    :put "$MAX_SIZE $Counter $_Hidden $_limit"
+}

@@ -45,7 +45,7 @@
 
 :struct Empty impl=Copy,Eq,Display {}
 
-:const ORIGIN Point{x=0.0; y=0.0}
+:const origin Point{x=0.0; y=0.0}
 :global counter:Person Person{name="global"; age=1}
 
 :fn older p:Person -> u8 do={
@@ -59,7 +59,7 @@
 :fn main do={
     :local p [Point->new 3.0 4.0]
     :put $p
-    :put [$p->dist $ORIGIN]
+    :put [$p->dist $origin]
     $p->shift 1.5
     :put $p->x
     :local q $p
@@ -67,7 +67,7 @@
     :put "p=$p q=$q"
     :put ($p = $q)
     :put ($p < $q)
-    :put ($ORIGIN <= $p)
+    :put ($origin <= $p)
 
     :local alice Person{name="Alice"}
     :put $alice

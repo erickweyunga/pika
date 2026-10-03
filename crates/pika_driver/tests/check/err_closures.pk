@@ -28,4 +28,4 @@
     :put [$r?]
     :const m [:fn x:i64 -> String do={ :return $s }]
 }
-:const C [:fn do={}]
+:const c [:fn do={}]

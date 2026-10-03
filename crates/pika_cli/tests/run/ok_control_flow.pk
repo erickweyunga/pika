@@ -1,9 +1,9 @@
 # Control flow, functions, globals and loops at the edges of their ranges.
-:global CALLS:i64 0
+:global calls:i64 0
 
 :fn count -> i64 do={
-    :set CALLS ($CALLS + 1)
-    :return $CALLS
+    :set calls ($calls + 1)
+    :return $calls
 }
 
 :fn fib n:u64 -> u64 do={
@@ -50,8 +50,8 @@
 :put "first multiple of 7 from 50: $[:first_multiple 50 7]"
 
 # Evaluation order and short-circuiting.
-:put "order: $[:count] $[:count] $CALLS"
-:put "short-circuit: $(false and ([:count] > 0)) $(true or ([:count] > 0)) calls=$CALLS"
+:put "order: $[:count] $[:count] $calls"
+:put "short-circuit: $(false and ([:count] > 0)) $(true or ([:count] > 0)) calls=$calls"
 
 # Loops.
 :local total 0

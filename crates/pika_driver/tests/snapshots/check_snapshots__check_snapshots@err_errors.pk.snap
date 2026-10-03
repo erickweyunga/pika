@@ -1,10 +1,9 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 15
 expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_errors.pk
 ---
-const C: i64
+const c: i64
 fn load<Self: Loader>(self: Self) -> String
 fn load(self: Disk) -> String
 fn fmt(self: Show, out: Formatter) -> nothing
@@ -79,7 +78,7 @@ fn main() -> nothing
 [E0214] Error: module-level initializers must be constant, and cannot use calls
     ╭─[ err_errors.pk:19:11 ]
     │
- 19 │ :const C [:risky?]
+ 19 │ :const c [:risky?]
     │           ───┬───  
     │              ╰───── module-level initializers must be constant, and cannot use calls
     │ 

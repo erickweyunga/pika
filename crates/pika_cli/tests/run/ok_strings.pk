@@ -1,6 +1,6 @@
 # Strings as values: literals, interpolation, concatenation, comparisons and conventions.
-:global LOG:String "start"
-:const PREFIX "> "
+:global history:String "start"
+:const prefix "> "
 
 :fn greet name:String greeting:String="Hello" -> String do={
     :return "$greeting, $name!"
@@ -25,7 +25,7 @@
 }
 
 :fn log message:String do={
-    :set LOG "$LOG | $message"
+    :set history "$history | $message"
 }
 
 :fn main do={
@@ -43,8 +43,8 @@
     :put [:longest "short" "much longer"]
     :log "first"
     :log [:greet "log"]
-    :put $LOG
-    :put "$PREFIX$[:typeof $name] $[:typeof [:len $name]]"
+    :put $history
+    :put "$prefix$[:typeof $name] $[:typeof [:len $name]]"
     :local built ""
     :for i from=1 to=5 do={
         :set built ($built . [:tostr $i])
