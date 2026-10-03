@@ -30,7 +30,9 @@ closure closure() -> i64
     │
  11 │     $adders->sort
     │     ──────┬──────  
-    │           ╰──────── `fn() -> i64` does not implement `Ord`, which `List<T>->sort` requires of `T`
+    │           ╰──────── `fn() -> i64` has no order
+    │ 
+    │ Help: function values can only be called and cloned
 ────╯
 [E0219] Error: `String` has no function named `nope`
     ╭─[ err_builtin_methods.pk:12:19 ]

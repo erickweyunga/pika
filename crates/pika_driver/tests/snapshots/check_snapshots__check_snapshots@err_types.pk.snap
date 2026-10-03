@@ -1,6 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_types.pk
 ---
 fn main() -> nothing
@@ -100,19 +100,21 @@ fn main() -> nothing
     │ 
     │ Help: `as` converts between numeric types, and from `char` to `u32`
 ────╯
-[E0303] Error: `:put` cannot be used with a value of type `nothing`
+[E0303] Error: `:put` cannot be used with a value of type `nothing`, which does not implement `Display`
     ╭─[ err_types.pk:13:11 ]
     │
  13 │     :put [:nothing]
     │           ────┬───  
-    │               ╰───── `:put` cannot be used with a value of type `nothing`
+    │               ╰───── `nothing` cannot be displayed
+    │ 
+    │ Help: `nothing` has no text: the expression does not produce a value
 ────╯
-[E0303] Error: operator `<` cannot be used with `bool`
+[E0303] Error: operator `<` cannot be used with `bool`, which does not implement `Ord`
     ╭─[ err_types.pk:14:16 ]
     │
  14 │     :put (true < false)
     │                ┬  
-    │                ╰── operator `<` cannot be used with `bool`
+    │                ╰── `bool` has no order
 ────╯
 [E0303] Error: operator `<<` cannot be used with `{float}`
     ╭─[ err_types.pk:15:16 ]

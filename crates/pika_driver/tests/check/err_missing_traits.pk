@@ -1,0 +1,55 @@
+# A value whose type lacks a built-in trait an operation needs: the error names the trait and
+# says where and how to add it.
+:struct Box2 {
+    w:i64
+}
+:struct Listed<T: Display> impl=Eq,Clone {
+    v:T
+}
+:struct Pair<T> impl=Display {
+    value:T
+}
+:enum Color {
+    red
+    green
+}
+# A type parameter without the bound
+:fn show<T> x:T do={ :put $x }
+:fn nothing_at_all do={}
+
+:fn main do={
+    :const b Box2{w=3}
+    # Display
+    :put $b
+    :put "b is $b"
+    :const s [:tostr $b]
+    # Eq, and Eq of the elements of a list
+    :put ($b = $b)
+    :const boxes {$b}
+    :put [$boxes->contains $b]
+    :put ($boxes = $boxes)
+    # Ord
+    :put ($b < $b)
+    # Clone
+    :put [$b->clone]->w
+    # Hash and Eq of keys and set elements
+    :const by_box:Map<Box2, i64> {}
+    :const floats:Set<f64> {}
+    # Added to an existing `impl=` list, with the type parameters as written
+    :const listed Listed<i64>{v=1}
+    :put $listed
+    # A listed trait that a field's type keeps the type from having
+    :const pair Pair<Box2>{value=$b}
+    :put $pair
+    # An option of a type without the trait
+    :const maybe:Box2? none
+    :put $maybe
+    # Built-in types that can never have the trait
+    :const m:Map<String, i64> {}
+    :put ($m < $m)
+    :const g [:fn do={}]
+    :put ($g = $g)
+    :put [:nothing_at_all]
+    # An enum has no default variant
+    :const c:Color [:default]
+}

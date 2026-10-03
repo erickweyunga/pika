@@ -1,6 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_structs.pk
 ---
 fn norm(self: Point) -> f64
@@ -111,12 +111,20 @@ fn main() -> nothing
     │ 
     │ Help: the fields of `Point` are `x`, `y`
 ────╯
-[E0303] Error: `:put` cannot be used with a value of type `Point`
+[E0303] Error: `:put` cannot be used with a value of type `Point`, which does not implement `Display`
     ╭─[ err_structs.pk:41:10 ]
     │
  41 │     :put $p
     │          ─┬  
-    │           ╰── `:put` cannot be used with a value of type `Point`
+    │           ╰── `Point` cannot be displayed
+    │
+    ├─[ err_structs.pk:41:10 ]
+    │
+  3 │ :struct Point impl=Copy,Eq {
+    │         ──┬──  
+    │           ╰──── declared here
+    │ 
+    │ Help: add `Display` to the `impl=` list of `Point`: `:struct Point impl=Copy,Eq,Display {`
 ────╯
 [E0312] Error: `Point` has no method named `missing`
     ╭─[ err_structs.pk:42:15 ]
@@ -146,19 +154,35 @@ fn main() -> nothing
     │                    ┬  
     │                    ╰── `Point->norm` takes 0 arguments, but 1 were given
 ────╯
-[E0303] Error: operator `=` cannot be used with `Unordered`
+[E0303] Error: operator `=` cannot be used with `Unordered`, which does not implement `Eq`
     ╭─[ err_structs.pk:47:14 ]
     │
  47 │     :put ($q = $q)
     │              ┬  
-    │              ╰── operator `=` cannot be used with `Unordered`
+    │              ╰── `Unordered` cannot be compared
+    │
+    ├─[ err_structs.pk:47:14 ]
+    │
+ 24 │ :struct Unordered {
+    │         ────┬────  
+    │             ╰────── declared here
+    │ 
+    │ Help: add `impl=Eq` to `Unordered`: `:struct Unordered impl=Eq {`
 ────╯
-[E0303] Error: operator `<` cannot be used with `Point`
+[E0303] Error: operator `<` cannot be used with `Point`, which does not implement `Ord`
     ╭─[ err_structs.pk:48:14 ]
     │
  48 │     :put ($p < $p)
     │              ┬  
-    │              ╰── operator `<` cannot be used with `Point`
+    │              ╰── `Point` has no order
+    │
+    ├─[ err_structs.pk:48:14 ]
+    │
+  3 │ :struct Point impl=Copy,Eq {
+    │         ──┬──  
+    │           ╰──── declared here
+    │ 
+    │ Help: add `Ord` to the `impl=` list of `Point`: `:struct Point impl=Copy,Eq,Ord {`
 ────╯
 [E0301] Error: mismatched types: expected `f64`, found `String`
     ╭─[ err_structs.pk:49:18 ]

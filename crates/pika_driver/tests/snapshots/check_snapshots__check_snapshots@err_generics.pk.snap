@@ -1,6 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_generics.pk
 ---
 fn get<T>(self: Cell<T>) -> i64
@@ -20,21 +20,21 @@ fn main<T>() -> nothing
     c: Cell<i64>
 
 --- diagnostics ---
-[E0303] Error: operator `<` cannot be used with `T`
+[E0303] Error: operator `<` cannot be used with `T`, which does not implement `Ord`
    ╭─[ err_generics.pk:2:50 ]
    │
  2 │ :fn no_bound<T> a:T b:T -> bool do={ :return ($a < $b) }
    │                                                  ┬  
-   │                                                  ╰── operator `<` cannot be used with `T`
+   │                                                  ╰── `T` has no order
    │ 
    │ Help: add a bound to the type parameter: `<T: Ord>`
 ───╯
-[E0303] Error: `:put` cannot be used with a value of type `T`
+[E0303] Error: `:put` cannot be used with a value of type `T`, which does not implement `Display`
    ╭─[ err_generics.pk:3:33 ]
    │
  3 │ :fn no_display<T> x:T do={ :put $x }
    │                                 ─┬  
-   │                                  ╰── `:put` cannot be used with a value of type `T`
+   │                                  ╰── `T` cannot be displayed
    │ 
    │ Help: add a bound to the type parameter: `<T: Display>`
 ───╯
@@ -47,12 +47,12 @@ fn main<T>() -> nothing
    │ 
    │ Help: add a bound to the type parameter: `<T: Clone>`
 ───╯
-[E0317] Error: `K` cannot be a map key or a set element
+[E0317] Error: `K` cannot be a map key or a set element, as `K` does not implement `Hash` or `Eq`
    ╭─[ err_generics.pk:6:15 ]
    │
  6 │ :fn keys<K> m:Map<K, i64> -> i64 do={ :return [:len $m] }
    │               ─────┬─────  
-   │                    ╰─────── `K` cannot be a map key or a set element
+   │                    ╰─────── `K` cannot be hashed
    │ 
    │ Help: add a bound to the type parameter: `<K: Hash + Eq>`
 ───╯
@@ -95,7 +95,9 @@ fn main<T>() -> nothing
     │
  31 │     :put [:needs_ord {1=1} {2=2}]
     │           ───────────┬──────────  
-    │                      ╰──────────── `Map<i64, i64>` does not implement `Ord`, which `:needs_ord` requires of `T`
+    │                      ╰──────────── `Map<i64, i64>` has no order
+    │ 
+    │ Help: sets and maps have no order: only lists, numbers, characters, strings and durations compare with `<`
 ────╯
 [E0305] Error: `:needs_ord` takes 1 type argument, but 2 were given
     ╭─[ err_generics.pk:32:21 ]
@@ -109,23 +111,23 @@ fn main<T>() -> nothing
     │
  33 │     :put [:twice_copy "s"]
     │           ───────┬───────  
-    │                  ╰───────── `String` does not implement `Copy`, which `:twice_copy` requires of `T`
+    │                  ╰───────── `String` cannot be copied
 ────╯
-[E0317] Error: `f64` cannot be a map key or a set element
+[E0317] Error: `f64` cannot be a map key or a set element, as `f64` does not implement `Hash`
     ╭─[ err_generics.pk:35:14 ]
     │
  35 │     :const s:Map<f64, i64> {}
     │              ──────┬──────  
-    │                    ╰──────── `f64` cannot be a map key or a set element
+    │                    ╰──────── `f64` cannot be hashed
     │ 
-    │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+    │ Help: floats cannot be hashed, so they cannot be map keys or set elements
 ────╯
 [E0319] Error: `bool` does not implement `Ord`, which `Sorted` requires of `T`
     ╭─[ err_generics.pk:36:16 ]
     │
  36 │     :const bad:Sorted<bool> Sorted{items={true}}
     │                ──────┬─────  
-    │                      ╰─────── `bool` does not implement `Ord`, which `Sorted` requires of `T`
+    │                      ╰─────── `bool` has no order
 ────╯
 [E0305] Error: the built-in method `len` takes no type arguments
     ╭─[ err_generics.pk:38:21 ]
@@ -134,12 +136,20 @@ fn main<T>() -> nothing
     │                     ──┬──  
     │                       ╰──── the built-in method `len` takes no type arguments
 ────╯
-[E0303] Error: `:put` cannot be used with a value of type `Opt<i64>`
+[E0303] Error: `:put` cannot be used with a value of type `Opt<i64>`, which does not implement `Display`
     ╭─[ err_generics.pk:39:11 ]
     │
  39 │     :put [Opt->just<i64> 1]
     │           ────────┬───────  
-    │                   ╰───────── `:put` cannot be used with a value of type `Opt<i64>`
+    │                   ╰───────── `Opt<i64>` cannot be displayed
+    │
+    ├─[ err_generics.pk:39:11 ]
+    │
+ 20 │ :enum Opt<T> {
+    │       ─┬─  
+    │        ╰─── declared here
+    │ 
+    │ Help: add `impl=Display` to `Opt`: `:enum Opt<T> impl=Display {`
 ────╯
 [E0217] Error: a variant takes no type arguments
     ╭─[ err_generics.pk:39:20 ]

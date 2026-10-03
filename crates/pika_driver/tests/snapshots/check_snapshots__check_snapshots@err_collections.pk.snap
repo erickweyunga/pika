@@ -28,23 +28,23 @@ fn main() -> nothing
    │           ─┬─  
    │            ╰─── not `Hash`
 ───╯
-[E0317] Error: `f64` cannot be a map key or a set element
+[E0317] Error: `f64` cannot be a map key or a set element, as `f64` does not implement `Hash`
    ╭─[ err_collections.pk:7:12 ]
    │
  7 │ :fn keys k:Map<f64, i64> s:Set<List<i64>> do={}
    │            ──────┬──────  
-   │                  ╰──────── `f64` cannot be a map key or a set element
+   │                  ╰──────── `f64` cannot be hashed
    │ 
-   │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+   │ Help: floats cannot be hashed, so they cannot be map keys or set elements
 ───╯
-[E0317] Error: `List<i64>` cannot be a map key or a set element
+[E0317] Error: `List<i64>` cannot be a map key or a set element, as `List<i64>` does not implement `Hash`
    ╭─[ err_collections.pk:7:28 ]
    │
  7 │ :fn keys k:Map<f64, i64> s:Set<List<i64>> do={}
    │                            ───────┬──────  
-   │                                   ╰──────── `List<i64>` cannot be a map key or a set element
+   │                                   ╰──────── `List<i64>` cannot be hashed
    │ 
-   │ Help: keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, `Duration`, and types that derive them; floats cannot be keys
+   │ Help: collections cannot be hashed, so they cannot be map keys or set elements
 ───╯
 [E0302] Error: cannot infer the type of an empty collection
     ╭─[ err_collections.pk:10:18 ]
@@ -153,10 +153,12 @@ fn main() -> nothing
     │                           ┬  
     │                           ╰── expected `String`
 ────╯
-[E0303] Error: operator `<` cannot be used with `Set<i64>`
+[E0303] Error: operator `<` cannot be used with `Set<i64>`, which does not implement `Ord`
     ╭─[ err_collections.pk:26:16 ]
     │
  26 │     :put ($set < $set)
     │                ┬  
-    │                ╰── operator `<` cannot be used with `Set<i64>`
+    │                ╰── `Set<i64>` has no order
+    │ 
+    │ Help: sets and maps have no order: only lists, numbers, characters, strings and durations compare with `<`
 ────╯

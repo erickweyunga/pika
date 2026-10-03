@@ -75,12 +75,14 @@ closure closure(x: i64) -> String
     │           ──┬──  
     │             ╰──── a value of type `{integer}` cannot be called
 ────╯
-[E0303] Error: `:put` cannot be used with a value of type `fn() -> i64`
+[E0303] Error: `:put` cannot be used with a value of type `fn() -> i64`, which does not implement `Display`
     ╭─[ err_closures.pk:24:10 ]
     │
  24 │     :put $f
     │          ─┬  
-    │           ╰── `:put` cannot be used with a value of type `fn() -> i64`
+    │           ╰── `fn() -> i64` cannot be displayed
+    │ 
+    │ Help: function values can only be called and cloned
 ────╯
 [E0217] Error: the parameters of a function value are borrowed for reading
     ╭─[ err_closures.pk:25:25 ]

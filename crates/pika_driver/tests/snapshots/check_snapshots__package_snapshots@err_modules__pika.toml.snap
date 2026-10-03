@@ -110,6 +110,15 @@ fn _times(x: i64, n: i64) -> i64
     │ 
     │ Help: names that start with `_` can only be used in the module that declares them
 ────╯
+[E0303] Error: operator `=` cannot be used with `Color`, which does not implement `Eq`
+    ╭─[ src/main.pk:18:30 ]
+    │
+ 18 │     :put ([/shapes/favorite] = [/shapes/favorite])
+    │                              ┬  
+    │                              ╰── `Color` cannot be compared
+    │ 
+    │ Help: `Color` is declared in `/colors`, outside this package, which would have to add `Eq`
+────╯
 [E0225] Error: only the program's entry module can have top-level statements
    ╭─[ src/util.pk:3:1 ]
    │

@@ -1,6 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_builtin_traits.pk
 ---
 fn drop(self: Guard) -> nothing
@@ -139,7 +139,7 @@ fn main4() -> nothing
     │ 
     │ Help: declare it as `:fn default -> Self`
 ────╯
-[E0303] Error: `T` has no default value
+[E0303] Error: `T` has no default value, as `T` does not implement `Default`
     ╭─[ err_builtin_traits.pk:38:33 ]
     │
  38 │ :fn fresh<T> -> T do={ :return [:default] }
@@ -157,12 +157,20 @@ fn main4() -> nothing
     │ 
     │ Help: write the type: `[:default<Point>]`
 ────╯
-[E0303] Error: `Gen<NoDefault>` has no default value
+[E0303] Error: `Gen<NoDefault>` has no default value, as `Gen<NoDefault>` does not implement `Default`
     ╭─[ err_builtin_traits.pk:41:30 ]
     │
  41 │     :const g:Gen<NoDefault> [:default]
     │                              ────┬───  
     │                                  ╰───── `Gen<NoDefault>` has no default value
+    │
+    ├─[ err_builtin_traits.pk:41:30 ]
+    │
+ 37 │ :struct Gen<T> impl=Default { v:T }
+    │                                 ┬  
+    │                                 ╰── not `Default` for `Gen<NoDefault>`
+    │ 
+    │ Help: `Gen` implements `Default` only when its fields do, and the field `v` of `Gen<NoDefault>` has type `NoDefault`, which does not; add `impl=Default` to `NoDefault`: `:struct NoDefault impl=Default {`
 ────╯
 [E0305] Error: `:default` takes one type argument, as in `[:default<i64>]`
     ╭─[ err_builtin_traits.pk:42:19 ]
@@ -196,19 +204,27 @@ fn main4() -> nothing
     │ 
     │ Help: declare it as `:fn fmt self mut out:Formatter`
 ────╯
-[E0303] Error: `write` cannot be used with a value of type `Plain`
+[E0303] Error: `write` cannot be used with a value of type `Plain`, which does not implement `Display`
     ╭─[ err_builtin_traits.pk:51:21 ]
     │
  51 │         $out->write Plain{n=1}
     │                     ─────┬────  
-    │                          ╰────── `write` cannot be used with a value of type `Plain`
+    │                          ╰────── `Plain` cannot be displayed
+    │
+    ├─[ err_builtin_traits.pk:51:21 ]
+    │
+ 48 │ :struct Plain { n:i64 }
+    │         ──┬──  
+    │           ╰──── declared here
+    │ 
+    │ Help: add `impl=Display` to `Plain`: `:struct Plain impl=Display {`
 ────╯
-[E0303] Error: `:put` cannot be used with a value of type `Formatter`
+[E0303] Error: `:put` cannot be used with a value of type `Formatter`, which does not implement `Display`
     ╭─[ err_builtin_traits.pk:52:14 ]
     │
  52 │         :put $out
     │              ──┬─  
-    │                ╰─── `:put` cannot be used with a value of type `Formatter`
+    │                ╰─── `Formatter` cannot be displayed
 ────╯
 [E0204] Error: `Add` is a built-in trait and cannot be redeclared
     ╭─[ err_builtin_traits.pk:58:8 ]

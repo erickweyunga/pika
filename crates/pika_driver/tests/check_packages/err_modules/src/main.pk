@@ -14,4 +14,6 @@
     :const made [/app/counter/Counter->_make]
     :put [/app/counter/Counter->make]->count
     :put [/shapes/area 2.0]
+    # `Color` is declared in another package, without `Eq`.
+    :put ([/shapes/favorite] = [/shapes/favorite])
 }

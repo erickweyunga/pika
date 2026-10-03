@@ -10,6 +10,7 @@ use pika_hir::{
     UnaryOp,
 };
 
+mod advice;
 mod traits;
 
 use crate::codes;
@@ -137,15 +138,24 @@ impl<'m> ModuleChecker<'m> {
             let def = &self.module.types[id];
             for (param, arg) in def.generics.params.iter().zip(ty.components()) {
                 for bound in &param.bounds {
-                    if !satisfies(cx, arg, bound_requirement(bound.value)) {
-                        self.report(bound_error(
+                    let requirement = bound_requirement(bound.value);
+                    if !satisfies(cx, arg, requirement) {
+                        let mut diagnostic = bound_error(
                             self.module,
                             arg,
                             bound.value,
                             &format!("`{}`", def.name.value),
                             &param.name.value,
                             span,
-                        ));
+                        );
+                        if is_builtin_trait(requirement) {
+                            let mut advice =
+                                advice::advise(cx, arg, &format!("`{arg}`"), requirement);
+                            // The message names the trait already.
+                            advice.missing = None;
+                            diagnostic = advice.apply(diagnostic);
+                        }
+                        self.report(diagnostic);
                     }
                 }
             }
@@ -153,20 +163,15 @@ impl<'m> ModuleChecker<'m> {
         if let Some(key) = key
             && !satisfies(cx, key, Requirement::Key)
         {
-            let help = match key {
-                Ty::Param(param) => bound_hint(self.module, &param.name, Requirement::Key),
-                _ => "keys must implement `Hash` and `Eq`: integers, `bool`, `char`, `String`, \
-                      `Duration`, and types that derive them; floats cannot be keys"
-                    .to_owned(),
-            };
-            self.report(
-                Diagnostic::error(
-                    codes::INVALID_KEY,
-                    format!("`{key}` cannot be a map key or a set element"),
-                    span,
-                )
-                .with_help(help),
-            );
+            let mut advice = advice::advise(cx, key, &format!("`{key}`"), Requirement::Key);
+            advice.help = advice
+                .help
+                .or_else(|| requirement_help(self.module, key, Requirement::Key));
+            self.report(advice.apply(Diagnostic::error(
+                codes::INVALID_KEY,
+                format!("`{key}` cannot be a map key or a set element"),
+                span,
+            )));
         }
         for component in ty.components() {
             self.check_type_wf(component, span, generics);
@@ -1173,6 +1178,11 @@ fn bound_hint(module: &Module, name: &str, requirement: Requirement) -> String {
     format!("add a bound to the type parameter: `<{name}: {bound}>`")
 }
 
+/// Whether a requirement is one or two of the built-in traits.
+fn is_builtin_trait(requirement: Requirement) -> bool {
+    is_trait(requirement) && !matches!(requirement, Requirement::Trait(_))
+}
+
 /// Whether a requirement is a trait that a type parameter can be bound by.
 fn is_trait(requirement: Requirement) -> bool {
     matches!(
@@ -1366,9 +1376,15 @@ impl<'c, 'm> InferCtx<'c, 'm> {
         }
     }
 
-    fn report_requirement(&mut self, ty: Ty, requirement: Requirement, origin: Origin, span: Span) {
-        let shown = self.show(ty);
-        let (code, message) = match origin {
+    /// The code and message of the error for `ty`, shown as `shown`, which does not meet
+    /// `requirement` where `origin` needs it.
+    fn requirement_message(
+        &self,
+        shown: &str,
+        requirement: Requirement,
+        origin: Origin,
+    ) -> (&'static str, String) {
+        match origin {
             Origin::BinaryOp(op) => (
                 codes::UNSUPPORTED_OPERATION,
                 format!("operator `{}` cannot be used with {shown}", op.symbol()),
@@ -1458,11 +1474,24 @@ impl<'c, 'm> InferCtx<'c, 'm> {
                     requirement_name(self.checker.module, requirement)
                 ),
             ),
-        };
+        }
+    }
+
+    fn report_requirement(&mut self, ty: Ty, requirement: Requirement, origin: Origin, span: Span) {
+        let shown = self.show(ty);
+        let (code, message) = self.requirement_message(&shown, requirement, origin);
         let help = requirement_help(self.checker.module, ty, requirement)
             .or_else(|| self.unmet_supertrait(ty, requirement));
         let mut diagnostic = Diagnostic::error(code, message, span);
-        if let Some(help) = help {
+        if is_builtin_trait(requirement) {
+            let mut advice = advice::advise(self.cx(), ty, &shown, requirement);
+            // These messages name the trait already.
+            if matches!(origin, Origin::Bound(..) | Origin::Method(_)) {
+                advice.missing = None;
+            }
+            advice.help = advice.help.or(help);
+            diagnostic = advice.apply(diagnostic);
+        } else if let Some(help) = help {
             diagnostic = diagnostic.with_help(help);
         }
         self.report(diagnostic);
@@ -2341,7 +2370,11 @@ impl<'c, 'm> InferCtx<'c, 'm> {
             format!("{shown} has no method named `{}`", method.value),
             method.span,
         );
-        if let Some(help) = help {
+        // A struct or enum has `clone` when it implements `Clone`.
+        if method.value == "clone" && adt_of(self.checker.module, resolved).is_some() {
+            diagnostic =
+                advice::advise(self.cx(), resolved, &shown, Requirement::Clone).apply(diagnostic);
+        } else if let Some(help) = help {
             diagnostic = diagnostic.with_help(help);
         }
         self.report(diagnostic);
