@@ -1,0 +1,297 @@
+---
+source: crates/pika_syntax/tests/parser_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/parser/err_misspelled_forms.pk
+---
+SourceFile@0..587
+  Comment@0..88 "# A misspelled built- ..."
+  Newline@88..89 "\n"
+  Error@89..355
+    Colon@89..90 ":"
+    Ident@90..94 "emun"
+    Whitespace@94..95 " "
+    Ident@95..100 "Shape"
+    Whitespace@100..101 " "
+    Ident@101..105 "impl"
+    Eq@105..106 "="
+    Ident@106..113 "Display"
+    Whitespace@113..114 " "
+    LBrace@114..115 "{"
+    Newline@115..116 "\n"
+    Whitespace@116..120 "    "
+    Ident@120..126 "circle"
+    Whitespace@126..127 " "
+    Ident@127..133 "radius"
+    Colon@133..134 ":"
+    Ident@134..137 "f64"
+    Newline@137..138 "\n"
+    Whitespace@138..142 "    "
+    Ident@142..146 "rect"
+    Whitespace@146..147 " "
+    Ident@147..152 "width"
+    Colon@152..153 ":"
+    Ident@153..156 "f64"
+    Whitespace@156..157 " "
+    Ident@157..163 "height"
+    Colon@163..164 ":"
+    Ident@164..167 "f64"
+    Newline@167..168 "\n"
+    Newline@168..169 "\n"
+    Whitespace@169..173 "    "
+    Colon@173..174 ":"
+    Ident@174..176 "fn"
+    Whitespace@176..177 " "
+    Ident@177..181 "area"
+    Whitespace@181..182 " "
+    KwSelf@182..186 "self"
+    Whitespace@186..187 " "
+    Arrow@187..189 "->"
+    Whitespace@189..190 " "
+    Ident@190..193 "f64"
+    Whitespace@193..194 " "
+    Ident@194..196 "do"
+    Eq@196..197 "="
+    LBrace@197..198 "{"
+    Newline@198..199 "\n"
+    Whitespace@199..207 "        "
+    Colon@207..208 ":"
+    Ident@208..213 "match"
+    Whitespace@213..214 " "
+    Variable@214..219 "$self"
+    Whitespace@219..220 " "
+    LBrace@220..221 "{"
+    Newline@221..222 "\n"
+    Whitespace@222..234 "            "
+    Ident@234..239 "Shape"
+    Arrow@239..241 "->"
+    Ident@241..247 "circle"
+    Whitespace@247..248 " "
+    Ident@248..249 "r"
+    Whitespace@249..250 " "
+    Ident@250..252 "do"
+    Eq@252..253 "="
+    LBrace@253..254 "{"
+    Whitespace@254..255 " "
+    Colon@255..256 ":"
+    Ident@256..262 "return"
+    Whitespace@262..263 " "
+    LParen@263..264 "("
+    Float@264..271 "3.14159"
+    Whitespace@271..272 " "
+    Star@272..273 "*"
+    Whitespace@273..274 " "
+    Variable@274..276 "$r"
+    Whitespace@276..277 " "
+    Star@277..278 "*"
+    Whitespace@278..279 " "
+    Variable@279..281 "$r"
+    RParen@281..282 ")"
+    Whitespace@282..283 " "
+    RBrace@283..284 "}"
+    Newline@284..285 "\n"
+    Whitespace@285..297 "            "
+    Ident@297..302 "Shape"
+    Arrow@302..304 "->"
+    Ident@304..308 "rect"
+    Whitespace@308..309 " "
+    Ident@309..310 "w"
+    Whitespace@310..311 " "
+    Ident@311..312 "h"
+    Whitespace@312..313 " "
+    Ident@313..315 "do"
+    Eq@315..316 "="
+    LBrace@316..317 "{"
+    Whitespace@317..318 " "
+    Colon@318..319 ":"
+    Ident@319..325 "return"
+    Whitespace@325..326 " "
+    LParen@326..327 "("
+    Variable@327..329 "$w"
+    Whitespace@329..330 " "
+    Star@330..331 "*"
+    Whitespace@331..332 " "
+    Variable@332..334 "$h"
+    RParen@334..335 ")"
+    Whitespace@335..336 " "
+    RBrace@336..337 "}"
+    Newline@337..338 "\n"
+    Whitespace@338..346 "        "
+    RBrace@346..347 "}"
+    Newline@347..348 "\n"
+    Whitespace@348..352 "    "
+    RBrace@352..353 "}"
+    Newline@353..354 "\n"
+    RBrace@354..355 "}"
+  Newline@355..356 "\n"
+  Error@356..383
+    Colon@356..357 ":"
+    Ident@357..363 "strcut"
+    Whitespace@363..364 " "
+    Ident@364..369 "Point"
+    Whitespace@369..370 " "
+    LBrace@370..371 "{"
+    Newline@371..372 "\n"
+    Whitespace@372..376 "    "
+    Ident@376..377 "x"
+    Colon@377..378 ":"
+    Ident@378..381 "f64"
+    Newline@381..382 "\n"
+    RBrace@382..383 "}"
+  Newline@383..384 "\n"
+  Error@384..437
+    Colon@384..385 ":"
+    Ident@385..389 "fucn"
+    Whitespace@389..390 " "
+    Ident@390..393 "add"
+    Whitespace@393..394 " "
+    Ident@394..395 "a"
+    Colon@395..396 ":"
+    Ident@396..399 "i64"
+    Whitespace@399..400 " "
+    Ident@400..401 "b"
+    Colon@401..402 ":"
+    Ident@402..405 "i64"
+    Whitespace@405..406 " "
+    Arrow@406..408 "->"
+    Whitespace@408..409 " "
+    Ident@409..412 "i64"
+    Whitespace@412..413 " "
+    Ident@413..415 "do"
+    Eq@415..416 "="
+    LBrace@416..417 "{"
+    Whitespace@417..418 " "
+    Colon@418..419 ":"
+    Ident@419..425 "return"
+    Whitespace@425..426 " "
+    LParen@426..427 "("
+    Variable@427..429 "$a"
+    Whitespace@429..430 " "
+    Plus@430..431 "+"
+    Whitespace@431..432 " "
+    Variable@432..434 "$b"
+    RParen@434..435 ")"
+    Whitespace@435..436 " "
+    RBrace@436..437 "}"
+  Newline@437..438 "\n"
+  FnDecl@438..586
+    Colon@438..439 ":"
+    Ident@439..441 "fn"
+    Whitespace@441..442 " "
+    Name@442..446
+      Ident@442..446 "main"
+    Whitespace@446..447 " "
+    ParamList@447..447
+    NamedArg@447..586
+      NameRef@447..449
+        Ident@447..449 "do"
+      Eq@449..450 "="
+      Block@450..586
+        LBrace@450..451 "{"
+        Newline@451..452 "\n"
+        Whitespace@452..456 "    "
+        Error@456..465
+          Colon@456..457 ":"
+          Ident@457..461 "locl"
+          Whitespace@461..462 " "
+          Ident@462..463 "x"
+          Whitespace@463..464 " "
+          Int@464..465 "5"
+        Semi@465..466 ";"
+        Whitespace@466..467 " "
+        Call@467..493
+          CommandName@467..471
+            Colon@467..468 ":"
+            Ident@468..471 "put"
+          Whitespace@471..472 " "
+          ArgList@472..493
+            StringLit@472..493
+              StringStart@472..473 "\""
+              StringText@473..492 "after the semicolon"
+              StringEnd@492..493 "\""
+        Newline@493..494 "\n"
+        Whitespace@494..498 "    "
+        Call@498..547
+          CommandName@498..502
+            Colon@498..499 ":"
+            Ident@499..502 "put"
+          Whitespace@502..503 " "
+          ArgList@503..547
+            BracketExpr@503..547
+              LBracket@503..504 "["
+              Error@504..546
+                Colon@504..505 ":"
+                Ident@505..509 "fucn"
+                Whitespace@509..510 " "
+                Ident@510..515 "twice"
+                Whitespace@515..516 " "
+                Ident@516..517 "x"
+                Colon@517..518 ":"
+                Ident@518..521 "i64"
+                Whitespace@521..522 " "
+                Arrow@522..524 "->"
+                Whitespace@524..525 " "
+                Ident@525..528 "i64"
+                Whitespace@528..529 " "
+                Ident@529..531 "do"
+                Eq@531..532 "="
+                LBrace@532..533 "{"
+                Whitespace@533..534 " "
+                Colon@534..535 ":"
+                Ident@535..541 "return"
+                Whitespace@541..542 " "
+                Variable@542..544 "$x"
+                Whitespace@544..545 " "
+                RBrace@545..546 "}"
+              RBracket@546..547 "]"
+        Newline@547..548 "\n"
+        Whitespace@548..552 "    "
+        Call@552..584
+          CommandName@552..556
+            Colon@552..553 ":"
+            Ident@553..556 "put"
+          Whitespace@556..557 " "
+          ArgList@557..584
+            StringLit@557..584
+              StringStart@557..558 "\""
+              StringText@558..583 "the next statement pa ..."
+              StringEnd@583..584 "\""
+        Newline@584..585 "\n"
+        RBrace@585..586 "}"
+  Newline@586..587 "\n"
+
+--- diagnostics ---
+[E0118] Error: unknown command `:emun`
+   ╭─[ err_misspelled_forms.pk:2:1 ]
+   │
+ 2 │ :emun Shape impl=Display {
+   │ ──┬──  
+   │   ╰──── did you mean `:enum`?
+───╯
+[E0118] Error: unknown command `:strcut`
+    ╭─[ err_misspelled_forms.pk:13:1 ]
+    │
+ 13 │ :strcut Point {
+    │ ───┬───  
+    │    ╰───── did you mean `:struct`?
+────╯
+[E0118] Error: unknown command `:fucn`
+    ╭─[ err_misspelled_forms.pk:16:1 ]
+    │
+ 16 │ :fucn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+    │ ──┬──  
+    │   ╰──── did you mean `:fn`?
+────╯
+[E0118] Error: unknown command `:locl`
+    ╭─[ err_misspelled_forms.pk:18:5 ]
+    │
+ 18 │     :locl x 5; :put "after the semicolon"
+    │     ──┬──  
+    │       ╰──── did you mean `:local`?
+────╯
+[E0118] Error: unknown command `:fucn`
+    ╭─[ err_misspelled_forms.pk:19:11 ]
+    │
+ 19 │     :put [:fucn twice x:i64 -> i64 do={ :return $x }]
+    │           ──┬──  
+    │             ╰──── did you mean `:fn`?
+────╯

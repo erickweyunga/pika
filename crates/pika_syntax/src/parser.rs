@@ -215,6 +215,20 @@ impl<'a> Parser<'a> {
         self.nth_token(n).map_or_else(|| Span::empty(0), |t| t.span)
     }
 
+    /// The end of the last significant token consumed, or 0 before the first.
+    pub(crate) fn previous_end(&self) -> u32 {
+        self.tokens[..self.pos]
+            .iter()
+            .rev()
+            .find(|token| !token.kind.is_trivia() && token.kind != TokenKind::Newline)
+            .map_or(0, |token| token.span.end)
+    }
+
+    /// The source text of `span`.
+    pub(crate) fn text(&self, span: Span) -> &'a str {
+        &self.source[span.range()]
+    }
+
     // ----- Tree building ---------------------------------------------------------------------
 
     fn emit(&mut self, token: Token) {

@@ -1,0 +1,9 @@
+# Fields written in an enum: reported once, at the first one.
+:enum Point impl=Display {
+    x:f64
+    y:f64=0.0
+}
+:enum Fine {
+    point x:f64 y:f64
+    origin
+}

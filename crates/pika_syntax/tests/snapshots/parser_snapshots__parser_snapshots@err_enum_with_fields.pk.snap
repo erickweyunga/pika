@@ -1,0 +1,110 @@
+---
+source: crates/pika_syntax/tests/parser_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/parser/err_enum_with_fields.pk
+---
+SourceFile@0..163
+  Comment@0..61 "# Fields written in a ..."
+  Newline@61..62 "\n"
+  EnumDecl@62..114
+    Colon@62..63 ":"
+    Ident@63..67 "enum"
+    Whitespace@67..68 " "
+    Name@68..73
+      Ident@68..73 "Point"
+    Whitespace@73..74 " "
+    NamedArg@74..86
+      NameRef@74..78
+        Ident@74..78 "impl"
+      Eq@78..79 "="
+      ImplList@79..86
+        PathType@79..86
+          NameRef@79..86
+            Ident@79..86 "Display"
+    Whitespace@86..87 " "
+    MemberList@87..114
+      LBrace@87..88 "{"
+      Newline@88..89 "\n"
+      Whitespace@89..93 "    "
+      FieldDecl@93..98
+        Name@93..94
+          Ident@93..94 "x"
+        TypeAnnotation@94..98
+          Colon@94..95 ":"
+          PathType@95..98
+            NameRef@95..98
+              Ident@95..98 "f64"
+      Newline@98..99 "\n"
+      Whitespace@99..103 "    "
+      FieldDecl@103..112
+        Name@103..104
+          Ident@103..104 "y"
+        TypeAnnotation@104..108
+          Colon@104..105 ":"
+          PathType@105..108
+            NameRef@105..108
+              Ident@105..108 "f64"
+        DefaultValue@108..112
+          Eq@108..109 "="
+          Literal@109..112
+            Float@109..112 "0.0"
+      Newline@112..113 "\n"
+      RBrace@113..114 "}"
+  Newline@114..115 "\n"
+  EnumDecl@115..162
+    Colon@115..116 ":"
+    Ident@116..120 "enum"
+    Whitespace@120..121 " "
+    Name@121..125
+      Ident@121..125 "Fine"
+    Whitespace@125..126 " "
+    MemberList@126..162
+      LBrace@126..127 "{"
+      Newline@127..128 "\n"
+      Whitespace@128..132 "    "
+      VariantDecl@132..149
+        Name@132..137
+          Ident@132..137 "point"
+        Whitespace@137..138 " "
+        FieldDecl@138..143
+          Name@138..139
+            Ident@138..139 "x"
+          TypeAnnotation@139..143
+            Colon@139..140 ":"
+            PathType@140..143
+              NameRef@140..143
+                Ident@140..143 "f64"
+        Whitespace@143..144 " "
+        FieldDecl@144..149
+          Name@144..145
+            Ident@144..145 "y"
+          TypeAnnotation@145..149
+            Colon@145..146 ":"
+            PathType@146..149
+              NameRef@146..149
+                Ident@146..149 "f64"
+      Newline@149..150 "\n"
+      Whitespace@150..154 "    "
+      VariantDecl@154..160
+        Name@154..160
+          Ident@154..160 "origin"
+      Newline@160..161 "\n"
+      RBrace@161..162 "}"
+  Newline@162..163 "\n"
+
+--- diagnostics ---
+[E0117] Error: `x:f64` looks like a struct field, but `Point` is an enum
+   ╭─[ err_enum_with_fields.pk:3:5 ]
+   │
+ 3 │     x:f64
+   │     ──┬──  
+   │       ╰──── variants of an enum are written `name`, or `name field:Type ...`
+   │
+   ├─[ err_enum_with_fields.pk:3:5 ]
+   │
+ 2 │ :enum Point impl=Display {
+   │ ──┬──  
+   │   ╰──── declared as an enum here
+   │ 
+   │ Help: if a value has all of these fields at once, declare it with `:struct Point`; if it is one of several kinds, give each variant a name, followed by its fields, as in `point x:f64 y:f64`
+───╯

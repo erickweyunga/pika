@@ -3565,6 +3565,9 @@ impl<'a> BodyCtx<'a> {
                             {
                                 diagnostic = diagnostic
                                     .with_help(format!("to read the variable, write `${name}`"));
+                            } else if let Some(close) = self.closest_command(&name) {
+                                diagnostic =
+                                    diagnostic.with_label(format!("did you mean `:{close}`?"));
                             }
                             self.diagnostics.push(diagnostic);
                             Callee::Error
@@ -3627,6 +3630,15 @@ impl<'a> BodyCtx<'a> {
             },
             span,
         )
+    }
+
+    /// The built-in command or function in scope that `name` is most likely a misspelling of.
+    fn closest_command(&self, name: &str) -> Option<String> {
+        // In a fixed order, so that ties are broken the same way every time.
+        let mut fns: Vec<&str> = self.names.items.fns.keys().map(String::as_str).collect();
+        fns.sort_unstable();
+        pika_syntax::commands::closest(name, RESERVED_COMMANDS.iter().copied().chain(fns))
+            .map(str::to_owned)
     }
 
     /// The message of an `:assert` written without one: its condition, as written.

@@ -68,3 +68,7 @@ pub const PATH_SPACING: &str = "E0114";
 pub const UNMATCHED_CLOSING: &str = "E0115";
 /// An opening delimiter without its closing delimiter.
 pub const UNCLOSED_DELIMITER: &str = "E0116";
+/// A member of a `:struct` written as an enum variant, or of an `:enum` written as a field.
+pub const MEMBER_OF_OTHER_KIND: &str = "E0117";
+/// A command whose name is a misspelling of a built-in form, such as `:emun`.
+pub const MISSPELLED_FORM: &str = "E0118";

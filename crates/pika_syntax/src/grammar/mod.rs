@@ -272,8 +272,64 @@ fn colon_command(p: &mut Parser<'_>) {
         "use" => decls::use_decl(p),
         "extern" => decls::extern_decl(p),
         "test" => decls::test_decl(p),
+        _ if misspelled_form(p) => {}
         _ => call(p),
     }
+}
+
+/// At `:name`, a misspelling of a built-in form followed by a bare name, as in
+/// `:emun Shape {...}`: reports it and skips the rest of the statement, which would only give
+/// errors about the wrong reading of it as a call. A call cannot have a bare name as an
+/// argument, so no valid call is taken for one.
+fn misspelled_form(p: &mut Parser<'_>) -> bool {
+    let name = p.nth_text(1);
+    let Some(form) = crate::commands::closest(name, crate::commands::FORMS.iter().copied()) else {
+        return false;
+    };
+    // A bare name, not a named argument, a struct literal or a member of a type.
+    let bare_name = p.nth_at(2, TokenKind::Ident)
+        && !(p.nth_joined(3)
+            && matches!(
+                p.nth(3),
+                TokenKind::LBrace | TokenKind::Arrow | TokenKind::Lt
+            ))
+        && !p.nth_at(3, TokenKind::Eq);
+    if !bare_name {
+        return false;
+    }
+    let span = p.current_span().to(p.nth_span(1));
+    p.report(
+        Diagnostic::error(
+            codes::MISSPELLED_FORM,
+            format!("unknown command `:{name}`"),
+            span,
+        )
+        .with_label(format!("did you mean `:{form}`?")),
+    );
+    p.start(SyntaxKind::Error);
+    let mut depth = 0usize;
+    loop {
+        match p.current() {
+            TokenKind::Eof => break,
+            TokenKind::Newline | TokenKind::Semi if depth == 0 => break,
+            TokenKind::LParen
+            | TokenKind::LBracket
+            | TokenKind::LBrace
+            | TokenKind::InterpParen
+            | TokenKind::InterpBracket => depth += 1,
+            TokenKind::RParen | TokenKind::RBracket | TokenKind::RBrace => {
+                // The bracket that encloses the statement ends it.
+                let Some(inner) = depth.checked_sub(1) else {
+                    break;
+                };
+                depth = inner;
+            }
+            _ => {}
+        }
+        p.bump();
+    }
+    p.finish_node();
+    true
 }
 
 /// Starts a built-in form: opens `kind` and consumes `:name`.

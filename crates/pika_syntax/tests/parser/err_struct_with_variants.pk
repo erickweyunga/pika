@@ -1,0 +1,10 @@
+# Variants written in a struct: reported once, at the first one.
+:struct Shape impl=Display {
+    circle radius:f64
+    rect width:f64 height:f64
+
+    :fn area self -> f64 do={ :return 0.0 }
+}
+:struct Fine {
+    x:f64
+}

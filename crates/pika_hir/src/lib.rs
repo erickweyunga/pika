@@ -1198,9 +1198,4 @@ impl Builtin {
 }
 
 /// Command names reserved by the language (spec section 3.6). They cannot name functions.
-pub const RESERVED_COMMANDS: &[&str] = &[
-    "local", "const", "global", "set", "if", "do", "while", "for", "foreach", "match", "break",
-    "continue", "return", "error", "onerror", "panic", "fn", "struct", "enum", "trait", "impl",
-    "use", "extern", "unsafe", "test", "put", "len", "typeof", "tostr", "assert", "nothing",
-    "default",
-];
+pub use pika_syntax::commands::RESERVED_COMMANDS;

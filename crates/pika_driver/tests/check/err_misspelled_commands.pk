@@ -1,0 +1,13 @@
+# Unknown commands suggest the closest built-in command or function in scope.
+:fn greet who:String do={ :put "hi $who" }
+:fn main do={
+    :putt "hi"
+    :greeet "Ada"
+    :retrun
+    :assrt true
+    :pnaic "no"
+    :zzzz 1
+    # A user function named like a misspelled form is still called.
+    :sets 1
+}
+:fn sets n:i64 do={ :put $n }

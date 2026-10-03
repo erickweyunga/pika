@@ -1,0 +1,21 @@
+# A misspelled built-in form is reported once, and the rest of its statement is skipped.
+:emun Shape impl=Display {
+    circle radius:f64
+    rect width:f64 height:f64
+
+    :fn area self -> f64 do={
+        :match $self {
+            Shape->circle r do={ :return (3.14159 * $r * $r) }
+            Shape->rect w h do={ :return ($w * $h) }
+        }
+    }
+}
+:strcut Point {
+    x:f64
+}
+:fucn add a:i64 b:i64 -> i64 do={ :return ($a + $b) }
+:fn main do={
+    :locl x 5; :put "after the semicolon"
+    :put [:fucn twice x:i64 -> i64 do={ :return $x }]
+    :put "the next statement parses"
+}

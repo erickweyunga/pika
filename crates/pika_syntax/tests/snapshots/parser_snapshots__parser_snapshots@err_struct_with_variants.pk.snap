@@ -1,0 +1,143 @@
+---
+source: crates/pika_syntax/tests/parser_snapshots.rs
+expression: snapshot
+input_file: crates/pika_syntax/tests/parser/err_struct_with_variants.pk
+---
+SourceFile@0..220
+  Comment@0..64 "# Variants written in ..."
+  Newline@64..65 "\n"
+  StructDecl@65..192
+    Colon@65..66 ":"
+    Ident@66..72 "struct"
+    Whitespace@72..73 " "
+    Name@73..78
+      Ident@73..78 "Shape"
+    Whitespace@78..79 " "
+    NamedArg@79..91
+      NameRef@79..83
+        Ident@79..83 "impl"
+      Eq@83..84 "="
+      ImplList@84..91
+        PathType@84..91
+          NameRef@84..91
+            Ident@84..91 "Display"
+    Whitespace@91..92 " "
+    MemberList@92..192
+      LBrace@92..93 "{"
+      Newline@93..94 "\n"
+      Whitespace@94..98 "    "
+      VariantDecl@98..115
+        Name@98..104
+          Ident@98..104 "circle"
+        Whitespace@104..105 " "
+        FieldDecl@105..115
+          Name@105..111
+            Ident@105..111 "radius"
+          TypeAnnotation@111..115
+            Colon@111..112 ":"
+            PathType@112..115
+              NameRef@112..115
+                Ident@112..115 "f64"
+      Newline@115..116 "\n"
+      Whitespace@116..120 "    "
+      VariantDecl@120..145
+        Name@120..124
+          Ident@120..124 "rect"
+        Whitespace@124..125 " "
+        FieldDecl@125..134
+          Name@125..130
+            Ident@125..130 "width"
+          TypeAnnotation@130..134
+            Colon@130..131 ":"
+            PathType@131..134
+              NameRef@131..134
+                Ident@131..134 "f64"
+        Whitespace@134..135 " "
+        FieldDecl@135..145
+          Name@135..141
+            Ident@135..141 "height"
+          TypeAnnotation@141..145
+            Colon@141..142 ":"
+            PathType@142..145
+              NameRef@142..145
+                Ident@142..145 "f64"
+      Newline@145..146 "\n"
+      Newline@146..147 "\n"
+      Whitespace@147..151 "    "
+      FnDecl@151..190
+        Colon@151..152 ":"
+        Ident@152..154 "fn"
+        Whitespace@154..155 " "
+        Name@155..159
+          Ident@155..159 "area"
+        Whitespace@159..160 " "
+        ParamList@160..164
+          Param@160..164
+            KwSelf@160..164 "self"
+        Whitespace@164..165 " "
+        RetType@165..171
+          Arrow@165..167 "->"
+          Whitespace@167..168 " "
+          PathType@168..171
+            NameRef@168..171
+              Ident@168..171 "f64"
+        Whitespace@171..172 " "
+        NamedArg@172..190
+          NameRef@172..174
+            Ident@172..174 "do"
+          Eq@174..175 "="
+          Block@175..190
+            LBrace@175..176 "{"
+            Whitespace@176..177 " "
+            Call@177..188
+              CommandName@177..184
+                Colon@177..178 ":"
+                Ident@178..184 "return"
+              Whitespace@184..185 " "
+              ArgList@185..188
+                Literal@185..188
+                  Float@185..188 "0.0"
+            Whitespace@188..189 " "
+            RBrace@189..190 "}"
+      Newline@190..191 "\n"
+      RBrace@191..192 "}"
+  Newline@192..193 "\n"
+  StructDecl@193..219
+    Colon@193..194 ":"
+    Ident@194..200 "struct"
+    Whitespace@200..201 " "
+    Name@201..205
+      Ident@201..205 "Fine"
+    Whitespace@205..206 " "
+    MemberList@206..219
+      LBrace@206..207 "{"
+      Newline@207..208 "\n"
+      Whitespace@208..212 "    "
+      FieldDecl@212..217
+        Name@212..213
+          Ident@212..213 "x"
+        TypeAnnotation@213..217
+          Colon@213..214 ":"
+          PathType@214..217
+            NameRef@214..217
+              Ident@214..217 "f64"
+      Newline@217..218 "\n"
+      RBrace@218..219 "}"
+  Newline@219..220 "\n"
+
+--- diagnostics ---
+[E0117] Error: `circle radius:f64` looks like an enum variant, but `Shape` is a struct
+   ╭─[ err_struct_with_variants.pk:3:5 ]
+   │
+ 3 │     circle radius:f64
+   │     ────────┬────────  
+   │             ╰────────── fields of a struct are written `name:Type`, one per line
+   │
+   ├─[ err_struct_with_variants.pk:3:5 ]
+   │
+ 2 │ :struct Shape impl=Display {
+   │ ───┬───  
+   │    ╰───── declared as a struct here
+   │ 
+   │ Help: if a value is one of several kinds, declare it with `:enum Shape`
+───╯

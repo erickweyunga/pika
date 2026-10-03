@@ -6,6 +6,7 @@
 
 pub mod ast;
 pub mod codes;
+pub mod commands;
 mod grammar;
 pub mod lexer;
 pub mod literal;

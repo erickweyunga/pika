@@ -1,0 +1,52 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_misspelled_commands.pk
+---
+fn greet(who: String) -> nothing
+fn main() -> nothing
+fn sets(n: i64) -> nothing
+
+--- diagnostics ---
+[E0202] Error: unknown command `:putt`
+   ╭─[ err_misspelled_commands.pk:4:5 ]
+   │
+ 4 │     :putt "hi"
+   │     ──┬──  
+   │       ╰──── did you mean `:put`?
+───╯
+[E0202] Error: unknown command `:greeet`
+   ╭─[ err_misspelled_commands.pk:5:5 ]
+   │
+ 5 │     :greeet "Ada"
+   │     ───┬───  
+   │        ╰───── did you mean `:greet`?
+───╯
+[E0202] Error: unknown command `:retrun`
+   ╭─[ err_misspelled_commands.pk:6:5 ]
+   │
+ 6 │     :retrun
+   │     ───┬───  
+   │        ╰───── did you mean `:return`?
+───╯
+[E0202] Error: unknown command `:assrt`
+   ╭─[ err_misspelled_commands.pk:7:5 ]
+   │
+ 7 │     :assrt true
+   │     ───┬──  
+   │        ╰──── did you mean `:assert`?
+───╯
+[E0202] Error: unknown command `:pnaic`
+   ╭─[ err_misspelled_commands.pk:8:5 ]
+   │
+ 8 │     :pnaic "no"
+   │     ───┬──  
+   │        ╰──── did you mean `:panic`?
+───╯
+[E0202] Error: unknown command `:zzzz`
+   ╭─[ err_misspelled_commands.pk:9:5 ]
+   │
+ 9 │     :zzzz 1
+   │     ──┬──  
+   │       ╰──── unknown command `:zzzz`
+───╯

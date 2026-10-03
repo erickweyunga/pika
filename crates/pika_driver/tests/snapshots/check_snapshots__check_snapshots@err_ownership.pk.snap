@@ -1,5 +1,6 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
+assertion_line: 15
 expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_ownership.pk
 ---
