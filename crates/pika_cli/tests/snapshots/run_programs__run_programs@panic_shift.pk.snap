@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_shift.pk
 ---
 exit: 101
@@ -17,3 +17,5 @@ exit: 101
 ───╯
 panic: shift amount is not smaller than the bit width
   at panic_shift.pk:2:7
+    2 | :put (1 << $amount)
+      |       ^

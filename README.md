@@ -43,7 +43,7 @@ Early development. Milestones M0 to M5 are complete:
 - Function values: closures that capture by value, named functions as values, and function
   types `fn(A) -> R` (M5).
 
-M6 is in progress:
+M6 is complete, without foreign functions, which move to M8:
 
 - Packages with a `pika.toml` manifest and path dependencies, one module per source file,
   paths to the items of other modules (`/geo/shapes/area`), `:use` imports and aliases, and
@@ -58,11 +58,19 @@ M6 is in progress:
   own and reports failed assertions with the values compared.
 - `pika fmt`, which rewrites files in the canonical layout (spec section 3.9), and
   `pika fmt --check` for CI.
+
+M7 is complete:
+
+- `pika build`, which makes a program into one executable that needs nothing installed.
+- Error reports show the calls an error came out of (a trace through the `?` calls), and
+  panic and error reports show the source line with a `^` under the column. Reports and
+  compiler diagnostics show source lines without their comments.
+- Strings are copied instead of moved, cheaply: copies share their text until one changes.
 - Methods of built-in types, which the standard library declares with `:impl`:
   `[$text->trim]`, `[[$line->split ","]->map $f]`, `[$items->sort]`, `[$x->sqrt]`,
   `[$n->checked_add 1]`, `[$option->expect "msg"]`.
 
-Features of later milestones (foreign functions) are reported as "not supported yet". See the
+Foreign functions (milestone M8) are reported as "not supported yet". See the
 milestones in section 17 of the spec.
 
 ## Building
@@ -76,6 +84,7 @@ cargo test
 cargo run -p pika_cli -- run path/to/file.pk     # compile and run a program
 cargo run -p pika_cli -- run path/to/package     # run the package with a pika.toml there
 cargo run -p pika_cli -- run app.pk -- a b       # pass arguments to the program
+cargo run -p pika_cli -- build path/to/package   # make an executable of a program
 cargo run -p pika_cli -- test path/to/package    # run the tests of a package or file
 cargo run -p pika_cli -- fmt path/to/package     # format the .pk files of a package
 cargo run -p pika_cli -- run --interpret file.pk # run with the MIR interpreter instead

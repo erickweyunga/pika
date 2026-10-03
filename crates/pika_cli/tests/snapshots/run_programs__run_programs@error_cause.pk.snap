@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/error_cause.pk
 ---
 exit: 1
@@ -8,5 +8,11 @@ exit: 1
 --- stderr ---
 error: could not load x
   at error_cause.pk:5:9
+    5 |         :error "could not load $name" source=$e
+      |         ^
+  called at error_cause.pk:9:11
 caused by: not a number: x
   at error_cause.pk:2:39
+    2 | :fn parse n:String -> i64 raises do={ :error "not a number: $n" }
+      |                                       ^
+  called at error_cause.pk:4:30

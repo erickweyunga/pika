@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_overflow.pk
 ---
 exit: 101
@@ -9,3 +9,5 @@ before
 --- stderr ---
 panic: integer overflow
   at panic_overflow.pk:1:39
+    1 | :fn add a:u8 b:u8 -> u8 do={ :return ($a + $b) }
+      |                                       ^

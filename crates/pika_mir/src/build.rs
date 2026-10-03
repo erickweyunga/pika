@@ -2299,6 +2299,19 @@ impl<'a, 'c> Builder<'a, 'c> {
             return self.lower_read_own(expr);
         }
         let span = self.hir.expr_span(expr);
+        // A string taken from a variable, a field or an element is copied, not moved: copies
+        // share the text until one of them changes, so they are cheap (spec section 12.1).
+        if ty == Ty::String {
+            match self.hir.exprs[expr] {
+                // Read into a copy already, as globals are.
+                hir::Expr::Global(_) => return to_move(self.lower_read_own(expr)),
+                hir::Expr::Local(_) | hir::Expr::Index { .. } | hir::Expr::Field { .. } => {
+                    let value = self.lower_read_own(expr);
+                    return self.owned_copy(value, ty, span);
+                }
+                _ => {}
+            }
+        }
         match self.hir.exprs[expr] {
             hir::Expr::Local(local) if self.capture_map.get(local).is_some() => {
                 let place = self.local_place(local);
@@ -2625,6 +2638,36 @@ impl<'a, 'c> Builder<'a, 'c> {
         }
     }
 
+    /// Adds the location of the call at `span` to the trace of the error in `error`, which
+    /// came out of that call: the calls an error passes through, innermost first.
+    fn record_trace(&mut self, error: LocalId, span: Span) {
+        let Some(sources) = self.locate else {
+            return;
+        };
+        let error_ty = self.error_ty();
+        let field = self
+            .structs
+            .adt(error_ty)
+            .and_then(|info| info.fields.iter().position(|(name, _)| name == "trace"));
+        let Some(field) = field else {
+            return;
+        };
+        let location = sources.locate(span);
+        let text = format!(
+            "{}:{}:{}",
+            sources.file(location.file).name,
+            location.line,
+            location.column
+        );
+        self.push(Statement::ListPush {
+            list: Place::Field(
+                Box::new(Place::Local(error)),
+                u32::try_from(field).expect("few fields"),
+            ),
+            value: Operand::Const(Value::Str(text.into())),
+        });
+    }
+
     /// `:error value` or `:error value source=$cause`: raises an error made from a message
     /// at this location, or the error given.
     fn lower_raise(
@@ -2675,7 +2718,23 @@ impl<'a, 'c> Builder<'a, 'c> {
                 })
             };
             let file = Operand::Const(Value::Str(file.into()));
-            let fields = vec![message, source, file, u32_const(line), u32_const(column)];
+            let trace_ty = Ty::list(Ty::String);
+            let trace = to_move(self.assign_temp(
+                trace_ty,
+                Rvalue::List {
+                    ty: trace_ty,
+                    elements: Vec::new(),
+                },
+                span,
+            ));
+            let fields = vec![
+                message,
+                source,
+                file,
+                u32_const(line),
+                u32_const(column),
+                trace,
+            ];
             to_move(self.assign_temp(
                 error_ty,
                 Rvalue::Struct {
@@ -3639,6 +3698,7 @@ impl<'a, 'c> Builder<'a, 'c> {
         });
         if let Some((error, block)) = on_error {
             self.switch_to(block);
+            self.record_trace(error, span);
             self.raise_from(error, span);
         }
         if let Some(target) = target {

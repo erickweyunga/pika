@@ -3,17 +3,17 @@
 :fn main do={
     :const fixed {1; 2}
     $fixed->push 3
-    :local names {"ada"; "alan"}
-    :const first $names->0
-    :foreach n in=$names do={
-        $names->push "grace"
-        :set names {}
+    :local lists {{1}; {2}}
+    :const first $lists->0
+    :foreach n in=$lists do={
+        $lists->push {3}
+        :set lists {}
     }
-    :foreach mut n in=$names do={
+    :foreach mut n in=$lists do={
         :const taken $n
     }
-    :const copy $names
-    :put $names
-    :const word "twice"
-    :const pair {$word; $word}
+    :const copy $lists
+    :put $lists
+    :const twice {4}
+    :const pair {$twice; $twice}
 }

@@ -12,7 +12,7 @@ use std::sync::{LazyLock, Mutex, PoisonError};
 
 use crate::intrinsics::{self, Arg, Intrinsic, Io, Kind, Ret};
 use crate::string::{self, PikaString};
-use crate::{PANIC_EXIT_CODE, PanicKind, collections, format, heap, program_file};
+use crate::{PANIC_EXIT_CODE, PanicKind, collections, format, heap, program_file, program_line};
 
 /// Stream number of standard output.
 pub const STDOUT: u32 = 1;
@@ -152,9 +152,12 @@ pub extern "C" fn pika_panic_begin(kind: u32) {
 /// Finishes reporting a panic started by [`pika_panic_begin`], at line `line` and column
 /// `column` of the source file at index `file`, and exits.
 pub extern "C" fn pika_panic_end(file: u32, line: u32, column: u32) -> ! {
+    let name = program_file(file);
+    let source = program_line(&name, line);
+    write(STDERR, "\n");
     write(
         STDERR,
-        &format!("\n  at {}:{line}:{column}\n", program_file(file)),
+        &format::location(&name, line, column, source.as_deref()),
     );
     std::process::exit(PANIC_EXIT_CODE);
 }
@@ -164,9 +167,11 @@ pub extern "C" fn pika_panic_end(file: u32, line: u32, column: u32) -> ! {
 pub extern "C" fn pika_panic(kind: u32, file: u32, line: u32, column: u32) -> ! {
     finish();
     let message = PanicKind::from_code(kind).map_or("unknown error", PanicKind::message);
+    let name = program_file(file);
+    let source = program_line(&name, line);
     write(
         STDERR,
-        &format::panic_report(message, &program_file(file), line, column),
+        &format::panic_report(message, &name, line, column, source.as_deref()),
     );
     std::process::exit(PANIC_EXIT_CODE);
 }
@@ -187,6 +192,8 @@ pub struct ErrorLayout {
     pub line: u32,
     /// The column, a `u32`.
     pub column: u32,
+    /// The trace, a `List<String>`.
+    pub trace: u32,
 }
 
 /// Reports an error raised by `main` and exits with status 1.
@@ -214,11 +221,26 @@ pub unsafe extern "C" fn pika_uncaught(error: *const u8, layout: *const ErrorLay
                 .as_str();
             let line = field(layout.line).cast::<u32>().read_unaligned();
             let column = field(layout.column).cast::<u32>().read_unaligned();
+            let trace_list = field(layout.trace)
+                .cast::<collections::RawList>()
+                .read_unaligned();
+            let trace = (0..trace_list.len)
+                .map(|i| {
+                    trace_list
+                        .ptr
+                        .add(i * std::mem::size_of::<PikaString>())
+                        .cast::<PikaString>()
+                        .read_unaligned()
+                        .as_str()
+                        .to_owned()
+                })
+                .collect();
             errors.push(format::RaisedError {
                 message: message.to_owned(),
                 file: file.to_owned(),
                 line,
                 column,
+                trace,
             });
             let tag = field(layout.source).cast::<u32>().read_unaligned();
             if tag == 0 {
@@ -230,7 +252,10 @@ pub unsafe extern "C" fn pika_uncaught(error: *const u8, layout: *const ErrorLay
         }
     }
     finish();
-    write(STDERR, &format::error_report(&errors));
+    write(
+        STDERR,
+        &format::error_report(&errors, &|name, line| program_line(name, line)),
+    );
     std::process::exit(crate::ERROR_EXIT_CODE);
 }
 

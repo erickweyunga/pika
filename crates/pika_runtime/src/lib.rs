@@ -96,15 +96,23 @@ pub const PANIC_EXIT_CODE: i32 = 101;
 /// The exit status of a program whose `main` raised an error.
 pub const ERROR_EXIT_CODE: i32 = 1;
 
-/// The names of the source files of the running program, which panic locations refer to by
-/// index.
-static PROGRAM_FILES: Mutex<Vec<String>> = Mutex::new(Vec::new());
+/// A source file of the running program, for the locations in panic and error reports.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProgramFile {
+    /// The name reports give it.
+    pub name: String,
+    /// Its text, to show the lines that reports point at.
+    pub text: String,
+}
 
-/// Sets the names of the source files that panic locations refer to.
-pub fn set_program_files(names: Vec<String>) {
+/// The source files of the running program, which panic locations refer to by index.
+static PROGRAM_FILES: Mutex<Vec<ProgramFile>> = Mutex::new(Vec::new());
+
+/// Sets the source files that panic locations refer to.
+pub fn set_program_files(files: Vec<ProgramFile>) {
     *PROGRAM_FILES
         .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner) = names;
+        .unwrap_or_else(std::sync::PoisonError::into_inner) = files;
 }
 
 /// The name of the source file at `index`, for a panic location.
@@ -113,6 +121,14 @@ pub fn program_file(index: u32) -> String {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
         .get(index as usize)
-        .cloned()
-        .unwrap_or_else(|| "<unknown>".to_owned())
+        .map_or_else(|| "<unknown>".to_owned(), |file| file.name.clone())
+}
+
+/// The text of line `line` (from 1) of the source file named `name`, if it is known.
+pub fn program_line(name: &str, line: u32) -> Option<String> {
+    let files = PROGRAM_FILES
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let file = files.iter().find(|file| file.name == name)?;
+    format::source_line(&file.text, line).map(str::to_owned)
 }

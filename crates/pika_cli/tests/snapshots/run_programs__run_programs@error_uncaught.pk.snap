@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/error_uncaught.pk
 ---
 exit: 1
@@ -34,3 +34,7 @@ drop main
 --- stderr ---
 error: too big: 3
   at error_uncaught.pk:9:23
+    9 |     :if ($n > 2) do={ :error "too big: $n" }
+      |                       ^
+  called at error_uncaught.pk:17:21
+  called at error_uncaught.pk:25:11

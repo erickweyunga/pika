@@ -285,7 +285,7 @@ impl Value {
         let mut chain = Vec::new();
         let mut current = Some(self);
         while let Some(Self::Struct { fields, .. }) = current {
-            let [message, source, file, line, column] = fields.as_slice() else {
+            let [message, source, file, line, column, trace] = fields.as_slice() else {
                 break;
             };
             let number = |value: &Value| match value {
@@ -297,6 +297,10 @@ impl Value {
                 file: file.display(),
                 line: number(line),
                 column: number(column),
+                trace: match trace {
+                    Self::List { elements, .. } => elements.iter().map(Value::display).collect(),
+                    _ => Vec::new(),
+                },
             });
             current = match source {
                 Self::Variant { fields, .. } => match fields.first() {

@@ -1,5 +1,6 @@
 //! The `pika` command-line tool.
 
+mod bundle;
 mod fmt;
 mod test;
 
@@ -8,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
-use pika_diagnostics::{Diagnostic, RenderOptions, render, render_map};
+use pika_diagnostics::{Diagnostic, RenderOptions, SourceMap, render_map};
 use pika_driver::Sources;
 
 #[derive(Parser)]
@@ -37,6 +38,16 @@ enum Command {
         /// Arguments for the program, after `--`.
         #[arg(last = true)]
         args: Vec<String>,
+    },
+    /// Build a program into an executable, which runs it with nothing else installed.
+    Build {
+        /// The program: a `.pk` file, or a package directory with a `pika.toml`.
+        #[arg(default_value = ".")]
+        path: PathBuf,
+        /// Where to write the executable; by default, in the current directory, named after
+        /// the package or the file.
+        #[arg(short, long)]
+        output: Option<PathBuf>,
     },
     /// Rewrite source files in the canonical layout.
     Fmt {
@@ -84,6 +95,10 @@ enum Command {
 }
 
 fn main() -> ExitCode {
+    // An executable built by `pika build` runs the program it carries.
+    if let Some(status) = bundle::run_embedded() {
+        return status;
+    }
     match Cli::parse().command {
         Command::Check { paths } => check(&paths),
         Command::Run {
@@ -91,6 +106,7 @@ fn main() -> ExitCode {
             interpret,
             args,
         } => run(&path, interpret, args),
+        Command::Build { path, output } => bundle::build(&path, output.as_deref()),
         Command::Fmt { paths, check } => fmt::fmt(&paths, check),
         Command::Test {
             path,
@@ -215,6 +231,18 @@ fn run(path: &Path, interpret: bool, args: Vec<String>) -> ExitCode {
     ExitCode::from(u8::try_from(status).unwrap_or(1))
 }
 
+/// Renders diagnostics about one source file, named `name`, whose text is `source`.
+pub(crate) fn render_file(
+    diagnostics: &[Diagnostic],
+    name: &str,
+    source: &str,
+    options: RenderOptions,
+) -> String {
+    let mut map = SourceMap::default();
+    pika_syntax::add_file(&mut map, name, source);
+    render_map(diagnostics, &map, options)
+}
+
 /// Reads `file`, runs `f` on its contents, and reports the returned diagnostics on stderr.
 /// Fails if the file cannot be read or any diagnostic is an error.
 fn with_source(file: &Path, f: impl FnOnce(&str) -> Vec<Diagnostic>) -> ExitCode {
@@ -234,7 +262,7 @@ fn with_source(file: &Path, f: impl FnOnce(&str) -> Vec<Diagnostic>) -> ExitCode
     };
     eprint!(
         "{}",
-        render(&diagnostics, &file.display().to_string(), &source, options)
+        render_file(&diagnostics, &file.display().to_string(), &source, options)
     );
     if diagnostics.iter().any(Diagnostic::is_error) {
         ExitCode::FAILURE

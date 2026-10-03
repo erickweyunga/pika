@@ -196,3 +196,75 @@ fn fmt_leaves_files_with_syntax_errors() {
     assert!(text(&output.stderr).contains("has syntax errors, so it was not formatted"));
     assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
 }
+
+#[test]
+fn build_makes_an_executable_that_runs_the_program() {
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let file = source_file(
+        "cli_build.pk",
+        ":use /std/env\n:use /std/io\n:fn main raises do={\n    :put [/env/args]\n    :put [/io/read_line]\n    :put ([\"20\"->parse_int?] + 1)\n    :const empty:List<i64> {}\n    :put $empty->0\n}\n",
+    );
+    let executable = dir.join(format!("cli_build_app{}", std::env::consts::EXE_SUFFIX));
+    let _ = std::fs::remove_file(&executable);
+    let build = pika(&[
+        "build",
+        file.to_str().unwrap(),
+        "-o",
+        executable.to_str().unwrap(),
+    ]);
+    assert!(build.status.success(), "stderr: {}", text(&build.stderr));
+
+    let mut child = Command::new(&executable)
+        .args(["a", "b c"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("the executable runs");
+    {
+        use std::io::Write;
+        child
+            .stdin
+            .take()
+            .expect("piped")
+            .write_all(b"line\n")
+            .expect("the program reads its input");
+    }
+    let output = child.wait_with_output().expect("the program finishes");
+    assert_eq!(output.status.code(), Some(101));
+    assert_eq!(
+        text(&output.stdout),
+        "{\"a\"; \"b c\"}\n[some \"line\"]\n21\n"
+    );
+    let stderr = text(&output.stderr);
+    assert!(
+        stderr.contains("panic: index out of bounds") && stderr.contains("|     :put $empty->0"),
+        "stderr: {stderr}"
+    );
+}
+
+#[test]
+fn build_fails_for_libraries_and_programs_with_errors() {
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR"));
+    let invalid = source_file("cli_build_invalid.pk", ":put $missing\n");
+    let executable = dir.join("cli_build_invalid_app");
+    let output = pika(&[
+        "build",
+        invalid.to_str().unwrap(),
+        "-o",
+        executable.to_str().unwrap(),
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        !executable.exists(),
+        "nothing is written for a program with errors"
+    );
+
+    let library = dir.join("cli_build_library");
+    std::fs::create_dir_all(library.join("src")).unwrap();
+    std::fs::write(library.join("pika.toml"), "[package]\nname = \"helpers\"\n").unwrap();
+    std::fs::write(library.join("src/lib.pk"), ":fn help do={}\n").unwrap();
+    let output = pika(&["build", library.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(text(&output.stderr).contains("is a library, not a program"));
+}

@@ -1,6 +1,5 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-assertion_line: 74
 expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_assert_message.pk
 ---
@@ -20,3 +19,5 @@ panic: assertion failed: x should be 6 but is 5
   left: 5
  right: 6
   at panic_assert_message.pk:2:1
+    2 | :assert ($x = 6) "x should be 6 but is $x"
+      | ^

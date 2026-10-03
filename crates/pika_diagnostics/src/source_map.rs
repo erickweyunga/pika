@@ -4,6 +4,8 @@
 //! so a span alone tells which file it is in. A gap of one byte separates files, so that the
 //! empty span at the end of a file belongs to it.
 
+use std::borrow::Cow;
+
 use crate::{LineIndex, Span};
 
 /// Identifies a file in a [`SourceMap`].
@@ -20,6 +22,32 @@ pub struct SourceFile {
     /// The offset of its first byte.
     pub base: u32,
     lines: LineIndex,
+    /// The parts of the text that reports leave out, such as comments, as offsets in the file.
+    hidden: Vec<Span>,
+}
+
+impl SourceFile {
+    /// The text as reports show it: with the parts given to [`SourceMap::hide`] replaced by
+    /// spaces, so that every offset and column stays where it is.
+    pub fn shown(&self) -> Cow<'_, str> {
+        if self.hidden.is_empty() {
+            return Cow::Borrowed(&self.text);
+        }
+        let mut hidden = vec![false; self.text.len()];
+        for span in &self.hidden {
+            hidden[span.range()].fill(true);
+        }
+        let mut shown = String::with_capacity(self.text.len());
+        for (offset, c) in self.text.char_indices() {
+            if hidden[offset] && c != '\n' && c != '\r' {
+                // As many spaces as the character has bytes, so that offsets stay the same.
+                shown.extend(std::iter::repeat_n(' ', c.len_utf8()));
+            } else {
+                shown.push(c);
+            }
+        }
+        Cow::Owned(shown)
+    }
 }
 
 /// The source files of a program.
@@ -58,8 +86,15 @@ impl SourceMap {
             lines: LineIndex::new(&text),
             text,
             base,
+            hidden: Vec::new(),
         });
         id
+    }
+
+    /// Leaves the parts `spans` of the file `id`, given as offsets in the file, out of reports.
+    /// A character is left out if its first byte is in one of them.
+    pub fn hide(&mut self, id: FileId, spans: impl IntoIterator<Item = Span>) {
+        self.files[id.0 as usize].hidden.extend(spans);
     }
 
     /// The file `id`.

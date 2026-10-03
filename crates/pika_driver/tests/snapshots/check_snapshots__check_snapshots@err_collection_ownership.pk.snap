@@ -1,18 +1,18 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_collection_ownership.pk
 ---
 fn main() -> nothing
     fixed: List<i64>
-    names: List<String>
-    first: String
-    n: String
-    n: String
-    taken: String
-    copy: List<String>
-    word: String
-    pair: List<String>
+    lists: List<List<i64>>
+    first: List<i64>
+    n: List<i64>
+    n: List<i64>
+    taken: List<i64>
+    copy: List<List<i64>>
+    twice: List<i64>
+    pair: List<List<i64>>
 
 --- diagnostics ---
 [E0406] Error: cannot call `push` on `fixed`: it cannot be modified
@@ -33,7 +33,7 @@ fn main() -> nothing
 [E0408] Error: cannot move an element out of its collection
    ╭─[ err_collection_ownership.pk:7:18 ]
    │
- 7 │     :const first $names->0
+ 7 │     :const first $lists->0
    │                  ────┬────  
    │                      ╰────── cannot move an element out of its collection
    │ 
@@ -42,13 +42,13 @@ fn main() -> nothing
 [E0409] Error: cannot change or move a collection while `:foreach` iterates over it
    ╭─[ err_collection_ownership.pk:9:9 ]
    │
- 9 │         $names->push "grace"
+ 9 │         $lists->push {3}
    │         ───┬──  
    │            ╰──── cannot change or move a collection while `:foreach` iterates over it
    │
    ├─[ err_collection_ownership.pk:9:9 ]
    │
- 8 │     :foreach n in=$names do={
+ 8 │     :foreach n in=$lists do={
    │                   ───┬──  
    │                      ╰──── the collection iterated over
    │ 
@@ -57,13 +57,13 @@ fn main() -> nothing
 [E0409] Error: cannot change or move a collection while `:foreach` iterates over it
     ╭─[ err_collection_ownership.pk:10:9 ]
     │
- 10 │         :set names {}
+ 10 │         :set lists {}
     │         ──────┬──────  
     │               ╰──────── cannot change or move a collection while `:foreach` iterates over it
     │
     ├─[ err_collection_ownership.pk:10:9 ]
     │
-  8 │     :foreach n in=$names do={
+  8 │     :foreach n in=$lists do={
     │                   ───┬──  
     │                      ╰──── the collection iterated over
     │ 
@@ -78,29 +78,29 @@ fn main() -> nothing
     │ 
     │ Help: use a copy: `[$n->clone]`
 ────╯
-[E0404] Error: `names` is used after its value was moved
+[E0404] Error: `lists` is used after its value was moved
     ╭─[ err_collection_ownership.pk:16:10 ]
     │
- 16 │     :put $names
+ 16 │     :put $lists
     │          ───┬──  
-    │             ╰──── `names` is used after its value was moved
+    │             ╰──── `lists` is used after its value was moved
     │
     ├─[ err_collection_ownership.pk:16:10 ]
     │
- 15 │     :const copy $names
+ 15 │     :const copy $lists
     │                 ───┬──  
     │                    ╰──── the value is moved here
     │ 
-    │ Help: copy the value before moving it: `[$names->clone]`
+    │ Help: copy the value before moving it: `[$lists->clone]`
 ────╯
-[E0404] Error: `word` is used after its value was moved
-    ╭─[ err_collection_ownership.pk:18:25 ]
+[E0404] Error: `twice` is used after its value was moved
+    ╭─[ err_collection_ownership.pk:18:26 ]
     │
- 18 │     :const pair {$word; $word}
-    │                  ──┬──  ──┬──  
-    │                    │      ╰──── `word` is used after its value was moved
-    │                    │           
-    │                    ╰─────────── the value is moved here
+ 18 │     :const pair {$twice; $twice}
+    │                  ───┬──  ───┬──  
+    │                     │       ╰──── `twice` is used after its value was moved
+    │                     │            
+    │                     ╰──────────── the value is moved here
     │ 
-    │ Help: copy the value before moving it: `[$word->clone]`
+    │ Help: copy the value before moving it: `[$twice->clone]`
 ────╯

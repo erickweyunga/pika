@@ -118,9 +118,42 @@ pub fn quote_char(c: char) -> String {
     out
 }
 
-/// The text printed to standard error when a program panics.
-pub fn panic_report(message: &str, file: &str, line: u32, column: u32) -> String {
-    format!("panic: {message}\n  at {file}:{line}:{column}\n")
+/// Line `line` (from 1) of `text`, without its line break.
+pub fn source_line(text: &str, line: u32) -> Option<&str> {
+    let index = usize::try_from(line.checked_sub(1)?).ok()?;
+    text.split('\n')
+        .nth(index)
+        .map(|line| line.trim_end_matches('\r').trim_end())
+}
+
+/// The lines of a report that point at a place in a source file: `  at file:line:column`, then
+/// the line of the source, when it is known, with a `^` under the column.
+pub fn location(file: &str, line: u32, column: u32, source: Option<&str>) -> String {
+    let mut out = format!("  at {file}:{line}:{column}\n");
+    if let Some(text) = source {
+        let number = line.to_string();
+        // Tabs before the column stay tabs, so that the caret lines up.
+        let indent: String = text
+            .chars()
+            .take(usize::try_from(column.saturating_sub(1)).unwrap_or(0))
+            .map(|c| if c == '\t' { '\t' } else { ' ' })
+            .collect();
+        writeln!(out, "    {number} | {text}").expect("writing to a String");
+        writeln!(out, "    {} | {indent}^", " ".repeat(number.len())).expect("writing to a String");
+    }
+    out
+}
+
+/// The text printed to standard error when a program panics, at line `line` and column
+/// `column` of `file`, whose text is `source` if it is known.
+pub fn panic_report(
+    message: &str,
+    file: &str,
+    line: u32,
+    column: u32,
+    source: Option<&str>,
+) -> String {
+    format!("panic: {message}\n{}", location(file, line, column, source))
 }
 
 /// An error raised by a program, as reported: its message and where it was raised. An error
@@ -135,22 +168,32 @@ pub struct RaisedError {
     pub line: u32,
     /// The 1-based column.
     pub column: u32,
+    /// The calls the error came out of on its way, as `file:line:column`, innermost first.
+    pub trace: Vec<String>,
 }
 
 /// The report of an error raised by `main`: the error, then each error that caused it, each
-/// with the location where it was raised.
-pub fn error_report(errors: &[RaisedError]) -> String {
+/// with the location where it was raised, and the calls it came out of. `source` gives the
+/// text of a line of a source file, by the file's name, if it is known.
+pub fn error_report(
+    errors: &[RaisedError],
+    source: &dyn Fn(&str, u32) -> Option<String>,
+) -> String {
     let mut report = String::new();
     for (index, error) in errors.iter().enumerate() {
         let lead = if index == 0 { "error" } else { "caused by" };
         writeln!(report, "{lead}: {}", error.message).expect("writing to a String");
         if error.line > 0 {
-            writeln!(
-                report,
-                "  at {}:{}:{}",
-                error.file, error.line, error.column
-            )
-            .expect("writing to a String");
+            let text = source(&error.file, error.line);
+            report.push_str(&location(
+                &error.file,
+                error.line,
+                error.column,
+                text.as_deref(),
+            ));
+        }
+        for call in &error.trace {
+            writeln!(report, "  called at {call}").expect("writing to a String");
         }
     }
     report
@@ -159,6 +202,18 @@ pub fn error_report(errors: &[RaisedError]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn locations_show_the_source_line() {
+        assert_eq!(
+            location("a.pk", 3, 7, Some("\t:put $x")),
+            "  at a.pk:3:7\n    3 | \t:put $x\n      | \t     ^\n"
+        );
+        assert_eq!(location("a.pk", 3, 7, None), "  at a.pk:3:7\n");
+        assert_eq!(source_line("a\r\nb  \nc", 2), Some("b"));
+        assert_eq!(source_line("a", 2), None);
+        assert_eq!(source_line("a", 0), None);
+    }
 
     #[test]
     fn floats() {

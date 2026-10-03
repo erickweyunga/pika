@@ -6,7 +6,7 @@ mod source_map;
 mod span;
 
 pub use line_index::LineIndex;
-pub use render::{RenderOptions, render, render_map};
+pub use render::{RenderOptions, render_map};
 pub use source_map::{FileId, Location, SourceFile, SourceMap};
 pub use span::Span;
 

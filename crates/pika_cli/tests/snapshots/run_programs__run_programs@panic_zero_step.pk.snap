@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_zero_step.pk
 ---
 exit: 101
@@ -17,3 +17,5 @@ exit: 101
 ───╯
 panic: the step of a `:for` loop is zero
   at panic_zero_step.pk:2:1
+    2 | :for i from=1 to=10 step=$step do={ :put $i }
+      | ^

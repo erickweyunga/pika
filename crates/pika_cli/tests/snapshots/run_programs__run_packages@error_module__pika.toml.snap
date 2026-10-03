@@ -9,5 +9,10 @@ exit: 1
 --- stderr ---
 error: cannot start
   at src/main.pk:9:9
+    9 |         :error "cannot start" source=$e
+      |         ^
 caused by: unknown setting `colour`
   at src/config.pk:3:5
+    3 |     :error "unknown setting `$key`"
+      |     ^
+  called at src/main.pk:7:15

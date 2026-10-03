@@ -2,7 +2,11 @@
 //!
 //! A string is a [`PikaString`]: a pointer, a length and a capacity. Literals point at static
 //! data with a capacity of 0, so they need no allocation; any change copies the bytes to the
-//! heap first. A string owns its buffer exactly when its capacity is not 0.
+//! heap first. A string with a capacity that is not 0 has a heap buffer, which copies of the
+//! string share: a count of the strings sharing it is kept just before its bytes. Copying a
+//! string adds to the count; changing a string whose buffer is shared first gives it a buffer
+//! of its own (copy on write). Programs are single-threaded in v0, so the count is a plain
+//! integer.
 
 #![allow(
     unsafe_code,
@@ -25,8 +29,48 @@ pub struct PikaString {
     pub cap: usize,
 }
 
+/// The size of the count of strings sharing a buffer, before its bytes.
+const HEADER: usize = std::mem::size_of::<usize>();
+
+/// The layout of a heap buffer for `cap` bytes, with its count.
 fn buffer_layout(cap: usize) -> Layout {
-    Layout::array::<u8>(cap).expect("string capacity overflow")
+    Layout::from_size_align(
+        HEADER.checked_add(cap).expect("string capacity overflow"),
+        std::mem::align_of::<usize>(),
+    )
+    .expect("string capacity overflow")
+}
+
+/// A new heap buffer for `cap` bytes, shared by one string; returns the address of its first
+/// byte.
+#[allow(
+    clippy::cast_ptr_alignment,
+    reason = "the buffer is aligned for `usize` by `buffer_layout`"
+)]
+fn new_buffer(cap: usize) -> *mut u8 {
+    // SAFETY: the layout has a non-zero size.
+    let base = unsafe { alloc(buffer_layout(cap)) };
+    assert!(!base.is_null(), "out of memory");
+    heap::allocated();
+    // SAFETY: the buffer starts with room for the count, aligned for it.
+    unsafe {
+        base.cast::<usize>().write(1);
+        base.add(HEADER)
+    }
+}
+
+/// The count of strings sharing the heap buffer whose first byte is at `ptr`.
+///
+/// # Safety
+///
+/// `ptr` must be the first byte of a heap buffer made by [`new_buffer`].
+#[allow(
+    clippy::cast_ptr_alignment,
+    reason = "the count starts a buffer aligned for `usize` by `buffer_layout`"
+)]
+unsafe fn count(ptr: *mut u8) -> *mut usize {
+    // SAFETY: guaranteed by the caller.
+    unsafe { ptr.sub(HEADER).cast::<usize>() }
 }
 
 impl PikaString {
@@ -43,7 +87,7 @@ impl PikaString {
         unsafe { std::str::from_utf8_unchecked(std::slice::from_raw_parts(self.ptr, self.len)) }
     }
 
-    /// Makes room for `additional` more bytes in an owned buffer.
+    /// Makes room for `additional` more bytes in a heap buffer that only this string uses.
     ///
     /// # Safety
     ///
@@ -53,26 +97,36 @@ impl PikaString {
             .len
             .checked_add(additional)
             .expect("string length overflow");
-        if self.cap >= needed {
+        // SAFETY: a string with a capacity has a heap buffer with a count.
+        let shared = self.cap > 0 && unsafe { *count(self.ptr) } > 1;
+        if self.cap >= needed && !shared {
             return;
         }
         let new_cap = needed.max(self.cap.saturating_mul(2)).max(16);
-        let new_ptr = if self.cap == 0 {
-            // Not owned (static or empty): copy the existing bytes into a new buffer.
-            // SAFETY: the layout has a non-zero size.
-            let new_ptr = unsafe { alloc(buffer_layout(new_cap)) };
-            assert!(!new_ptr.is_null(), "out of memory");
+        let new_ptr = if self.cap == 0 || shared {
+            // Static, empty or shared: copy the bytes into a buffer of its own.
+            let new_ptr = new_buffer(new_cap);
             if self.len > 0 {
                 // SAFETY: both regions are valid for `len` bytes and do not overlap.
                 unsafe { std::ptr::copy_nonoverlapping(self.ptr, new_ptr, self.len) };
             }
-            heap::allocated();
+            if shared {
+                // SAFETY: the buffer is shared, so the count stays above 0.
+                unsafe { *count(self.ptr) -= 1 };
+            }
             new_ptr
         } else {
-            // SAFETY: `ptr` was allocated with `buffer_layout(cap)`.
-            let new_ptr = unsafe { realloc(self.ptr, buffer_layout(self.cap), new_cap) };
-            assert!(!new_ptr.is_null(), "out of memory");
-            new_ptr
+            // SAFETY: the buffer was allocated with `buffer_layout(cap)`, and only this string
+            // uses it; the count moves with it.
+            unsafe {
+                let base = realloc(
+                    self.ptr.sub(HEADER),
+                    buffer_layout(self.cap),
+                    buffer_layout(new_cap).size(),
+                );
+                assert!(!base.is_null(), "out of memory");
+                base.add(HEADER)
+            }
         };
         self.ptr = new_ptr;
         self.cap = new_cap;
@@ -122,7 +176,7 @@ pub unsafe extern "C" fn pika_string_new(dest: *mut PikaString) {
     unsafe { dest.write(empty()) };
 }
 
-/// Frees the buffer of a string, if it owns one.
+/// Destroys a string: frees its heap buffer if no other string shares it.
 ///
 /// # Safety
 ///
@@ -131,26 +185,37 @@ pub unsafe extern "C" fn pika_string_drop(string: *mut PikaString) {
     // SAFETY: guaranteed by the caller.
     let string = unsafe { &mut *string };
     if string.cap > 0 {
-        // SAFETY: an owned buffer was allocated with `buffer_layout(cap)`.
-        unsafe { dealloc(string.ptr, buffer_layout(string.cap)) };
-        heap::freed();
+        // SAFETY: a heap buffer has a count, and was allocated with `buffer_layout(cap)`.
+        unsafe {
+            let shared = count(string.ptr);
+            *shared -= 1;
+            if *shared == 0 {
+                dealloc(string.ptr.sub(HEADER), buffer_layout(string.cap));
+                heap::freed();
+            }
+        }
         string.cap = 0;
         string.len = 0;
     }
 }
 
-/// Initializes `dest` as an owned copy of `source`.
+/// Initializes `dest` as a copy of `source`, which shares its heap buffer.
 ///
 /// # Safety
 ///
 /// `dest` must be writable memory for a string; `source` must be a valid string.
 pub unsafe extern "C" fn pika_string_clone(dest: *mut PikaString, source: *const PikaString) {
-    // SAFETY: guaranteed by the caller.
+    // SAFETY: guaranteed by the caller; a heap buffer has a count.
     unsafe {
-        let text = (*source).as_str();
-        let mut copy = empty();
-        copy.push_str(text);
-        dest.write(copy);
+        let source = &*source;
+        if source.cap > 0 {
+            *count(source.ptr) += 1;
+        }
+        dest.write(PikaString {
+            ptr: source.ptr,
+            len: source.len,
+            cap: source.cap,
+        });
     }
 }
 
@@ -343,6 +408,67 @@ mod tests {
             assert_eq!(pika_string_contains(&raw const hello, &raw const ell), 1);
             assert_eq!(pika_string_contains(&raw const hello, &raw const empty), 1);
             assert_eq!(pika_string_contains(&raw const hi, &raw const hello), 0);
+        }
+    }
+}
+
+#[cfg(test)]
+mod sharing_tests {
+    use super::*;
+
+    #[test]
+    fn copies_share_a_buffer_until_one_changes() {
+        let mut original = owned("shared text");
+        let mut copy = empty();
+        // SAFETY: both strings are valid, and each is dropped once.
+        unsafe {
+            pika_string_clone(&raw mut copy, &raw const original);
+            assert_eq!(copy.ptr, original.ptr, "a copy shares the buffer");
+            assert_eq!(*count(original.ptr), 2);
+
+            copy.push_str("!");
+            assert_ne!(
+                copy.ptr, original.ptr,
+                "a change gives the copy its own buffer"
+            );
+            assert_eq!(*count(original.ptr), 1);
+            assert_eq!(copy.as_str(), "shared text!");
+            assert_eq!(original.as_str(), "shared text");
+
+            pika_string_drop(&raw mut copy);
+            pika_string_drop(&raw mut original);
+        }
+    }
+
+    #[test]
+    fn the_last_copy_frees_the_buffer() {
+        let mut first = owned("text");
+        let mut second = empty();
+        // SAFETY: both strings are valid, and each is dropped once.
+        unsafe {
+            pika_string_clone(&raw mut second, &raw const first);
+            pika_string_drop(&raw mut first);
+            assert_eq!(*count(second.ptr), 1, "the other copy keeps the buffer");
+            assert_eq!(second.as_str(), "text");
+            pika_string_drop(&raw mut second);
+        }
+    }
+
+    #[test]
+    fn static_strings_are_not_counted() {
+        let text = "static";
+        let literal = PikaString {
+            ptr: text.as_ptr().cast_mut(),
+            len: text.len(),
+            cap: 0,
+        };
+        let mut copy = empty();
+        // SAFETY: the literal points at static data; the copy shares it and frees nothing.
+        unsafe {
+            pika_string_clone(&raw mut copy, &raw const literal);
+            assert_eq!(copy.cap, 0);
+            assert_eq!(copy.as_str(), "static");
+            pika_string_drop(&raw mut copy);
         }
     }
 }

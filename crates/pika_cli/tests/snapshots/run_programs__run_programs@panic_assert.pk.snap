@@ -1,6 +1,5 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-assertion_line: 74
 expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_assert.pk
 ---
@@ -11,3 +10,5 @@ panic: assertion failed: (1 > 2)
   left: 1
  right: 2
   at panic_assert.pk:1:1
+    1 | :assert (1 > 2)
+      | ^

@@ -1,54 +1,65 @@
-:global G:String "global"
-:fn take owned text:String do={ :put $text }
-:fn read text:String do={ :put $text }
-:fn change mut text:String do={ :set text "changed" }
-:fn both mut a:String b:String do={ :put "$a $b" }
+# Moves and `mut` arguments, with lists, which move; strings are copied instead (spec
+# section 12.1), as the last function shows.
+:global shared:List<i64> {}
+:fn take owned items:List<i64> do={ :put $items }
+:fn read items:List<i64> do={ :put $items }
+:fn change mut items:List<i64> do={ :set items {9} }
+:fn both mut a:List<i64> b:List<i64> do={ :put "$a $b" }
 
 :fn use_after_move do={
-    :local a "a"
+    :local a {1}
     :take $a
     :put $a
 }
 
 :fn maybe_moved flag:bool do={
-    :local b "b"
+    :local b {2}
     :if ($flag) do={ :take $b }
     :read $b
 }
 
 :fn moved_in_loop do={
-    :local c "c"
+    :local c {3}
     :for i from=1 to=2 do={ :take $c }
 }
 
-:fn move_out_of_borrow text:String -> String do={
-    :return $text
+:fn move_out_of_borrow items:List<i64> -> List<i64> do={
+    :return $items
 }
 
 :fn move_out_of_global do={
-    :local g $G
+    :local g $shared
     :put $g
 }
 
 :fn bad_mut_arguments limit:i64 do={
-    :const fixed "fixed"
+    :const fixed {4}
     :change $fixed
-    :change "literal"
-    :local s "s"
+    :change {5}
+    :local s {6}
     :both $s $s
     :for i from=1 to=2 do={ :put $i }
 }
 
-
 :fn fine do={
-    :local d "d"
+    :local d {7}
     :take [$d->clone]
     :read $d
     :take $d
-    :set d "new value"
+    :set d {8}
     :read $d
-    :change $G
-    :local e "e"
+    :change $shared
+    :local e {9}
     :change $e
     :read $e
+}
+
+:fn keep owned text:String -> String do={ :return $text }
+
+:fn strings_are_copied text:String do={
+    :const a "a"
+    :const b [:keep $a]
+    :put "$a $b"
+    :const c $text
+    :put "$text $c"
 }

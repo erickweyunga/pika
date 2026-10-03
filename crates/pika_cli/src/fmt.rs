@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use pika_diagnostics::{Diagnostic, RenderOptions, render};
+use pika_diagnostics::{Diagnostic, RenderOptions};
 use pika_fmt::FormatError;
 
 /// Formats the `.pk` files at `paths`, which are files or directories searched recursively.
@@ -74,7 +74,7 @@ fn report(diagnostics: &[Diagnostic], name: &str, source: &str) {
     let options = RenderOptions {
         color: std::io::IsTerminal::is_terminal(&std::io::stderr()),
     };
-    eprint!("{}", render(diagnostics, name, source, options));
+    eprint!("{}", crate::render_file(diagnostics, name, source, options));
 }
 
 /// Adds the `.pk` files under `dir` to `files`, recursively, skipping hidden directories, build

@@ -222,11 +222,13 @@ pub fn interpret(
         Ok(()) => 0,
         Err(InterpretError::Panic { message, span, .. }) => {
             let location = sources.locate(span);
+            let file = sources.file(location.file);
             let report = pika_runtime::format::panic_report(
                 &message,
-                &sources.file(location.file).name,
+                &file.name,
                 location.line,
                 location.column,
+                pika_runtime::format::source_line(&file.shown(), location.line),
             );
             // As in compiled programs, output written before the panic comes first.
             let _ = out.flush();
@@ -235,7 +237,11 @@ pub fn interpret(
         }
         Err(InterpretError::Uncaught { errors }) => {
             let _ = out.flush();
-            let report = pika_runtime::format::error_report(&errors);
+            let source = |name: &str, line: u32| {
+                let (_, file) = sources.files().find(|(_, file)| file.name == name)?;
+                pika_runtime::format::source_line(&file.shown(), line).map(str::to_owned)
+            };
+            let report = pika_runtime::format::error_report(&errors, &source);
             let _ = err.write_all(report.as_bytes());
             pika_runtime::ERROR_EXIT_CODE
         }
@@ -260,7 +266,15 @@ const PROGRAM_STACK_SIZE: usize = 256 * 1024 * 1024;
 /// of its heap memory returns 102.
 pub fn run_native(program: &pika_mir::Program, sources: &SourceMap, args: Vec<String>) -> i32 {
     start_program(args);
-    pika_runtime::set_program_files(sources.files().map(|(_, file)| file.name.clone()).collect());
+    pika_runtime::set_program_files(
+        sources
+            .files()
+            .map(|(_, file)| pika_runtime::ProgramFile {
+                name: file.name.clone(),
+                text: file.shown().into_owned(),
+            })
+            .collect(),
+    );
     std::thread::scope(|scope| {
         let runner = std::thread::Builder::new()
             .name("pika-main".to_owned())

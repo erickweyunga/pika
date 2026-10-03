@@ -1,20 +1,19 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 42
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_match_ownership.pk
 ---
 fn take(t: Token) -> nothing
 fn grow(t: Token) -> nothing
 fn main() -> nothing
     t: Token
-    w: String
-    stolen: String
+    w: List<i64>
+    stolen: List<i64>
     n: f64
     fixed: String?
     first: String?
-    b: Box<String>
-    inner: String
+    b: Box<List<i64>>
+    inner: List<i64>
     o: String?
     value: String
 

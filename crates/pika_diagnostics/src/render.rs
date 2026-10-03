@@ -9,22 +9,6 @@ pub struct RenderOptions {
     pub color: bool,
 }
 
-/// Renders diagnostics for one source file as human-readable text.
-///
-/// # Panics
-///
-/// Panics if a diagnostic's span lies outside `source`.
-pub fn render(
-    diagnostics: &[Diagnostic],
-    file_name: &str,
-    source: &str,
-    options: RenderOptions,
-) -> String {
-    let mut map = SourceMap::default();
-    map.add(file_name, source);
-    render_map(diagnostics, &map, options)
-}
-
 /// Renders diagnostics about the files of `map` as human-readable text. Each label is shown
 /// in its own file.
 ///
@@ -35,7 +19,7 @@ pub fn render_map(diagnostics: &[Diagnostic], map: &SourceMap, options: RenderOp
     let mut out = Vec::new();
     let mut cache = ariadne::sources(
         map.files()
-            .map(|(_, file)| (file.name.clone(), file.text.clone())),
+            .map(|(_, file)| (file.name.clone(), file.shown().into_owned())),
     );
     let place = |span: Span| {
         let (file, local) = map.local(span);

@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_explicit.pk
 ---
 exit: 101
@@ -9,3 +9,5 @@ start
 --- stderr ---
 panic: failed with code 7 at 3.0
   at panic_explicit.pk:1:33
+    1 | :fn fail code:i64 -> never do={ :panic "failed with code $code at $(1.5 * 2.0)" }
+      |                                 ^

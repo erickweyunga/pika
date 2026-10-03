@@ -13,7 +13,7 @@ fn main() -> nothing
    │ ───┬───  
    │    ╰───── foreign functions are not supported yet
    │ 
-   │ Help: planned for milestone M6 of the compiler
+   │ Help: planned for milestone M8 of the compiler
 ───╯
 [E0208] Error: `:unsafe` is not supported yet
    ╭─[ err_unsupported.pk:5:5 ]
@@ -22,5 +22,5 @@ fn main() -> nothing
    │     ───┬───  
    │        ╰───── `:unsafe` is not supported yet
    │ 
-   │ Help: planned for milestone M6 of the compiler
+   │ Help: planned for milestone M8 of the compiler
 ───╯

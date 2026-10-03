@@ -282,7 +282,7 @@ fn define_start(
         .ok_or_else(missing)?;
     // As `pika_runtime::abi::ErrorLayout`.
     let error_layout = [
-        fields[0], fields[1], source_box, fields[2], fields[3], fields[4],
+        fields[0], fields[1], source_box, fields[2], fields[3], fields[4], fields[5],
     ];
 
     let signature = module.make_signature();
@@ -319,7 +319,7 @@ fn define_start(
         builder.switch_to_block(raised);
         let layout_slot = builder.create_sized_stack_slot(StackSlotData::new(
             StackSlotKind::ExplicitSlot,
-            4 * 6,
+            4 * 7,
             2,
         ));
         let layout_address = builder.ins().stack_addr(pointer, layout_slot, 0);

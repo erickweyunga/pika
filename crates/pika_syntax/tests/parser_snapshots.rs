@@ -2,7 +2,7 @@
 //! diagnostics are compared with the stored snapshot. Files named `ok_*` must parse without
 //! diagnostics; files named `err_*` must produce at least one.
 
-use pika_diagnostics::{RenderOptions, render};
+use pika_diagnostics::{RenderOptions, SourceMap, render_map};
 
 #[test]
 fn parser_snapshots() {
@@ -32,10 +32,11 @@ fn parser_snapshots() {
         let mut snapshot = parse.debug_tree();
         if !parse.diagnostics().is_empty() {
             snapshot.push_str("\n--- diagnostics ---\n");
-            snapshot.push_str(&render(
+            let mut map = SourceMap::default();
+            pika_syntax::add_file(&mut map, name.as_ref(), source.as_str());
+            snapshot.push_str(&render_map(
                 parse.diagnostics(),
-                &name,
-                &source,
+                &map,
                 RenderOptions::default(),
             ));
         }

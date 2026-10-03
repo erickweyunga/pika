@@ -9,3 +9,5 @@ exit: 101
 --- stderr ---
 panic: index out of bounds: the index is 5 but the length is 3
   at vendor/checks/src/lib.pk:2:21
+    2 |     :return $items->$index
+      |                     ^

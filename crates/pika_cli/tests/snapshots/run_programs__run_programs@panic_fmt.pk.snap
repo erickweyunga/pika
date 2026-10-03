@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_fmt.pk
 ---
 exit: 101
@@ -9,3 +9,5 @@ exit: 101
 x --- stderr ---
 panic: cannot show zero
   at panic_fmt.pk:5:33
+    5 |         :if ($self->n = 0) do={ :panic "cannot show zero" }
+      |                                 ^

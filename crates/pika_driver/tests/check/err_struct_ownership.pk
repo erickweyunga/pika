@@ -1,29 +1,29 @@
 # Ownership errors involving structs.
 
 :struct Person impl=Clone {
-    name:String
+    tags:List<i64>
     age:u8
 
-    :fn rename mut self name:String do={ :set ($self->name) [$name->clone] }
+    :fn retag mut self tags:List<i64> do={ :set ($self->tags) [$tags->clone] }
 }
 
 :fn take owned p:Person do={}
 :fn grow mut age:u8 do={ :set age ($age + 1) }
-:fn both mut a:Person b:String do={}
+:fn both mut a:Person b:List<i64> do={}
 :fn read p:Person do={
-    :local stolen $p->name
+    :local stolen $p->tags
 }
 
 :fn main do={
-    :const fixed Person{name="a"; age=1}
+    :const fixed Person{tags={1}; age=1}
     :grow $fixed->age
-    $fixed->rename "b"
+    $fixed->retag {2}
 
-    :local alice Person{name="alice"; age=2}
-    :local name $alice->name
-    :both $alice $alice->name
+    :local alice Person{tags={3}; age=2}
+    :local tags $alice->tags
+    :both $alice $alice->tags
 
-    :local bob Person{name="bob"; age=3}
+    :local bob Person{tags={4}; age=3}
     :take $bob
     :put $bob->age
     :set ($bob->age) 4

@@ -1,7 +1,7 @@
 # Ownership errors involving `:match`, options and boxes.
 
 :enum Token {
-    word text:String
+    word items:List<i64>
     number value:f64
 }
 
@@ -9,7 +9,7 @@
 :fn grow mut t:Token do={}
 
 :fn main do={
-    :local t [Token->word "pika"]
+    :local t [Token->word {1}]
     :match $t {
         Token->word w do={
             :set t [Token->number 1.0]
@@ -26,7 +26,7 @@
     :const fixed:String? [some "x"]
     :const first [$fixed->take]
 
-    :const b [Box->new "boxed"]
+    :const b [Box->new {2}]
     :const inner $b->value
 
     :const o:String? none

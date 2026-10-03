@@ -1,154 +1,158 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 42
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_ownership.pk
 ---
-global G: String
-fn take(text: String) -> nothing
-fn read(text: String) -> nothing
-fn change(text: String) -> nothing
-fn both(a: String, b: String) -> nothing
+global shared: List<i64>
+fn take(items: List<i64>) -> nothing
+fn read(items: List<i64>) -> nothing
+fn change(items: List<i64>) -> nothing
+fn both(a: List<i64>, b: List<i64>) -> nothing
 fn use_after_move() -> nothing
-    a: String
+    a: List<i64>
 fn maybe_moved(flag: bool) -> nothing
-    b: String
+    b: List<i64>
 fn moved_in_loop() -> nothing
-    c: String
+    c: List<i64>
     i: i64
-fn move_out_of_borrow(text: String) -> String
+fn move_out_of_borrow(items: List<i64>) -> List<i64>
 fn move_out_of_global() -> nothing
-    g: String
+    g: List<i64>
 fn bad_mut_arguments(limit: i64) -> nothing
-    fixed: String
-    s: String
+    fixed: List<i64>
+    s: List<i64>
     i: i64
 fn fine() -> nothing
-    d: String
-    e: String
+    d: List<i64>
+    e: List<i64>
+fn keep(text: String) -> String
+fn strings_are_copied(text: String) -> nothing
+    a: String
+    b: String
+    c: String
 
 --- diagnostics ---
 [W0001] Warning: variable `a` is never modified
-   ╭─[ err_ownership.pk:8:12 ]
-   │
- 8 │     :local a "a"
-   │            ┬  
-   │            ╰── variable `a` is never modified
-   │ 
-   │ Help: declare it with `:const a`
-───╯
-[E0404] Error: `a` is used after its value was moved
-    ╭─[ err_ownership.pk:10:10 ]
+    ╭─[ err_ownership.pk:10:12 ]
     │
- 10 │     :put $a
+ 10 │     :local a {1}
+    │            ┬  
+    │            ╰── variable `a` is never modified
+    │ 
+    │ Help: declare it with `:const a`
+────╯
+[E0404] Error: `a` is used after its value was moved
+    ╭─[ err_ownership.pk:12:10 ]
+    │
+ 12 │     :put $a
     │          ─┬  
     │           ╰── `a` is used after its value was moved
     │
-    ├─[ err_ownership.pk:10:10 ]
+    ├─[ err_ownership.pk:12:10 ]
     │
-  9 │     :take $a
+ 11 │     :take $a
     │           ─┬  
     │            ╰── the value is moved here
     │ 
     │ Help: copy the value before moving it: `[$a->clone]`
 ────╯
 [W0001] Warning: variable `b` is never modified
-    ╭─[ err_ownership.pk:14:12 ]
+    ╭─[ err_ownership.pk:16:12 ]
     │
- 14 │     :local b "b"
+ 16 │     :local b {2}
     │            ┬  
     │            ╰── variable `b` is never modified
     │ 
     │ Help: declare it with `:const b`
 ────╯
 [E0404] Error: `b` is used after its value was moved
-    ╭─[ err_ownership.pk:16:11 ]
+    ╭─[ err_ownership.pk:18:11 ]
     │
- 16 │     :read $b
+ 18 │     :read $b
     │           ─┬  
     │            ╰── `b` is used after its value was moved
     │
-    ├─[ err_ownership.pk:16:11 ]
+    ├─[ err_ownership.pk:18:11 ]
     │
- 15 │     :if ($flag) do={ :take $b }
+ 17 │     :if ($flag) do={ :take $b }
     │                            ─┬  
     │                             ╰── the value is moved here
     │ 
     │ Help: copy the value before moving it: `[$b->clone]`
 ────╯
 [W0001] Warning: variable `c` is never modified
-    ╭─[ err_ownership.pk:20:12 ]
+    ╭─[ err_ownership.pk:22:12 ]
     │
- 20 │     :local c "c"
+ 22 │     :local c {3}
     │            ┬  
     │            ╰── variable `c` is never modified
     │ 
     │ Help: declare it with `:const c`
 ────╯
 [E0404] Error: `c` is moved here in an earlier iteration of the loop
-    ╭─[ err_ownership.pk:21:35 ]
+    ╭─[ err_ownership.pk:23:35 ]
     │
- 21 │     :for i from=1 to=2 do={ :take $c }
+ 23 │     :for i from=1 to=2 do={ :take $c }
     │                                   ─┬  
     │                                    ╰── `c` is moved here in an earlier iteration of the loop
     │ 
     │ Help: move a copy (`[$c->clone]`), or assign `c` a new value before the next iteration
 ────╯
-[E0408] Error: cannot move `text` out: it is a borrowed parameter
-    ╭─[ err_ownership.pk:25:13 ]
+[E0408] Error: cannot move `items` out: it is a borrowed parameter
+    ╭─[ err_ownership.pk:27:13 ]
     │
- 25 │     :return $text
-    │             ──┬──  
-    │               ╰──── cannot move `text` out: it is a borrowed parameter
+ 27 │     :return $items
+    │             ───┬──  
+    │                ╰──── cannot move `items` out: it is a borrowed parameter
     │ 
-    │ Help: pass a copy with `[$text->clone]`, or declare the parameter `owned`
+    │ Help: pass a copy with `[$items->clone]`, or declare the parameter `owned`
 ────╯
 [W0001] Warning: variable `g` is never modified
-    ╭─[ err_ownership.pk:29:12 ]
+    ╭─[ err_ownership.pk:31:12 ]
     │
- 29 │     :local g $G
+ 31 │     :local g $shared
     │            ┬  
     │            ╰── variable `g` is never modified
     │ 
     │ Help: declare it with `:const g`
 ────╯
-[E0408] Error: cannot move the global `G` out
-    ╭─[ err_ownership.pk:29:14 ]
+[E0408] Error: cannot move the global `shared` out
+    ╭─[ err_ownership.pk:31:14 ]
     │
- 29 │     :local g $G
-    │              ─┬  
-    │               ╰── cannot move the global `G` out
+ 31 │     :local g $shared
+    │              ───┬───  
+    │                 ╰───── cannot move the global `shared` out
     │ 
-    │ Help: use a copy: `[$G->clone]`
+    │ Help: use a copy: `[$shared->clone]`
 ────╯
 [E0406] Error: cannot pass `fixed` to a `mut` parameter: it cannot be modified
-    ╭─[ err_ownership.pk:35:13 ]
+    ╭─[ err_ownership.pk:37:13 ]
     │
- 35 │     :change $fixed
+ 37 │     :change $fixed
     │             ───┬──  
     │                ╰──── cannot pass `fixed` to a `mut` parameter: it cannot be modified
     │
-    ├─[ err_ownership.pk:35:13 ]
+    ├─[ err_ownership.pk:37:13 ]
     │
- 34 │     :const fixed "fixed"
+ 36 │     :const fixed {4}
     │            ──┬──  
     │              ╰──── declared here
     │ 
     │ Help: declare it with `:local`, or as a `mut` parameter
 ────╯
 [E0407] Error: a `mut` parameter needs a variable to modify
-    ╭─[ err_ownership.pk:36:13 ]
+    ╭─[ err_ownership.pk:38:13 ]
     │
- 36 │     :change "literal"
-    │             ────┬────  
-    │                 ╰────── a `mut` parameter needs a variable to modify
+ 38 │     :change {5}
+    │             ─┬─  
+    │              ╰─── a `mut` parameter needs a variable to modify
     │ 
     │ Help: store the value in a `:local` variable first
 ────╯
 [E0405] Error: a variable passed to a `mut` parameter cannot be used by another argument of the same call
-    ╭─[ err_ownership.pk:38:11 ]
+    ╭─[ err_ownership.pk:40:11 ]
     │
- 38 │     :both $s $s
+ 40 │     :both $s $s
     │           ─┬ ─┬  
     │            ╰───── a variable passed to a `mut` parameter cannot be used by another argument of the same call
     │               │  

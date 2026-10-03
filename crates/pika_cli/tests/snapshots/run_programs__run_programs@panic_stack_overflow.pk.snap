@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_stack_overflow.pk
 ---
 exit: 101
@@ -9,3 +9,5 @@ before
 --- stderr ---
 panic: stack overflow
   at panic_stack_overflow.pk:1:5
+    1 | :fn down n:i64 -> i64 do={ :return ([:down ($n + 1)] + 1) }
+      |     ^

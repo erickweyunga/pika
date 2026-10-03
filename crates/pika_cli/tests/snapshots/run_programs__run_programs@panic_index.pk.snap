@@ -1,7 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-assertion_line: 61
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_index.pk
 ---
 exit: 101
@@ -10,3 +9,5 @@ exit: 101
 --- stderr ---
 panic: index out of bounds: the index is 3 but the length is 3
   at panic_index.pk:4:15
+    4 |     :put $xs->3
+      |               ^

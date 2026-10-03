@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_drop.pk
 ---
 exit: 101
@@ -9,3 +9,5 @@ before
 --- stderr ---
 panic: drop failed
   at panic_drop.pk:3:28
+    3 |     :fn drop mut self do={ :panic "drop failed" }
+      |                            ^

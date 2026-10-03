@@ -1,7 +1,7 @@
 //! Snapshot tests: every `lexer/*.pk` file is lexed, and the tokens (including trivia) and the
 //! rendered diagnostics are compared with the stored snapshot.
 
-use pika_diagnostics::{RenderOptions, render};
+use pika_diagnostics::{RenderOptions, SourceMap, render_map};
 
 #[test]
 fn lexer_snapshots() {
@@ -12,10 +12,11 @@ fn lexer_snapshots() {
         if !lexed.diagnostics.is_empty() {
             let name = path.file_name().expect("file name").to_string_lossy();
             snapshot.push_str("\n--- diagnostics ---\n");
-            snapshot.push_str(&render(
+            let mut map = SourceMap::default();
+            pika_syntax::add_file(&mut map, name.as_ref(), source.as_str());
+            snapshot.push_str(&render_map(
                 &lexed.diagnostics,
-                &name,
-                &source,
+                &map,
                 RenderOptions::default(),
             ));
         }

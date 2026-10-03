@@ -1,6 +1,6 @@
 ---
 source: crates/pika_cli/tests/run_programs.rs
-expression: native
+expression: "run_both(dir, &name, &name)"
 input_file: crates/pika_cli/tests/run/panic_duration.pk
 ---
 exit: 101
@@ -17,3 +17,5 @@ exit: 101
 ───╯
 panic: integer overflow
   at panic_duration.pk:2:7
+    2 | :put ($d + 1ns)
+      |       ^

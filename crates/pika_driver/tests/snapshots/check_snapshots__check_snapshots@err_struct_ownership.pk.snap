@@ -1,39 +1,38 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 42
-expression: snapshot
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_struct_ownership.pk
 ---
-fn rename(self: Person, name: String) -> nothing
+fn retag(self: Person, tags: List<i64>) -> nothing
 fn take(p: Person) -> nothing
 fn grow(age: u8) -> nothing
-fn both(a: Person, b: String) -> nothing
+fn both(a: Person, b: List<i64>) -> nothing
 fn read(p: Person) -> nothing
-    stolen: String
+    stolen: List<i64>
 fn main() -> nothing
     fixed: Person
     alice: Person
-    name: String
+    tags: List<i64>
     bob: Person
 
 --- diagnostics ---
 [W0001] Warning: variable `stolen` is never modified
     ╭─[ err_struct_ownership.pk:14:12 ]
     │
- 14 │     :local stolen $p->name
+ 14 │     :local stolen $p->tags
     │            ───┬──  
     │               ╰──── variable `stolen` is never modified
     │ 
     │ Help: declare it with `:const stolen`
 ────╯
-[E0408] Error: cannot move the field `name` out of its struct
+[E0408] Error: cannot move the field `tags` out of its struct
     ╭─[ err_struct_ownership.pk:14:19 ]
     │
- 14 │     :local stolen $p->name
+ 14 │     :local stolen $p->tags
     │                   ────┬───  
-    │                       ╰───── cannot move the field `name` out of its struct
+    │                       ╰───── cannot move the field `tags` out of its struct
     │ 
-    │ Help: use a copy: `[$p->name->clone]`
+    │ Help: use a copy: `[$p->tags->clone]`
 ────╯
 [E0406] Error: cannot pass `fixed` to a `mut` parameter: it cannot be modified
     ╭─[ err_struct_ownership.pk:19:11 ]
@@ -44,7 +43,7 @@ fn main() -> nothing
     │
     ├─[ err_struct_ownership.pk:19:11 ]
     │
- 18 │     :const fixed Person{name="a"; age=1}
+ 18 │     :const fixed Person{tags={1}; age=1}
     │            ──┬──  
     │              ╰──── declared here
     │ 
@@ -53,40 +52,40 @@ fn main() -> nothing
 [E0406] Error: cannot pass `fixed` to a `mut` parameter: it cannot be modified
     ╭─[ err_struct_ownership.pk:20:5 ]
     │
- 20 │     $fixed->rename "b"
+ 20 │     $fixed->retag {2}
     │     ───┬──  
     │        ╰──── cannot pass `fixed` to a `mut` parameter: it cannot be modified
     │
     ├─[ err_struct_ownership.pk:20:5 ]
     │
- 18 │     :const fixed Person{name="a"; age=1}
+ 18 │     :const fixed Person{tags={1}; age=1}
     │            ──┬──  
     │              ╰──── declared here
     │ 
     │ Help: declare it with `:local`, or as a `mut` parameter
 ────╯
-[W0001] Warning: variable `name` is never modified
+[W0001] Warning: variable `tags` is never modified
     ╭─[ err_struct_ownership.pk:23:12 ]
     │
- 23 │     :local name $alice->name
+ 23 │     :local tags $alice->tags
     │            ──┬─  
-    │              ╰─── variable `name` is never modified
+    │              ╰─── variable `tags` is never modified
     │ 
-    │ Help: declare it with `:const name`
+    │ Help: declare it with `:const tags`
 ────╯
-[E0408] Error: cannot move the field `name` out of its struct
+[E0408] Error: cannot move the field `tags` out of its struct
     ╭─[ err_struct_ownership.pk:23:17 ]
     │
- 23 │     :local name $alice->name
+ 23 │     :local tags $alice->tags
     │                 ──────┬─────  
-    │                       ╰─────── cannot move the field `name` out of its struct
+    │                       ╰─────── cannot move the field `tags` out of its struct
     │ 
-    │ Help: use a copy: `[$alice->name->clone]`
+    │ Help: use a copy: `[$alice->tags->clone]`
 ────╯
 [E0405] Error: a variable passed to a `mut` parameter cannot be used by another argument of the same call
     ╭─[ err_struct_ownership.pk:24:11 ]
     │
- 24 │     :both $alice $alice->name
+ 24 │     :both $alice $alice->tags
     │           ───┬── ──────┬─────  
     │              ╰───────────────── a variable passed to a `mut` parameter cannot be used by another argument of the same call
     │                        │       

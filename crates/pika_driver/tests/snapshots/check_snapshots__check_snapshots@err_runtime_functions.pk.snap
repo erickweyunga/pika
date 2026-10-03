@@ -20,5 +20,5 @@ script main() -> nothing
    │ ───┬───  
    │    ╰───── foreign functions are not supported yet
    │ 
-   │ Help: planned for milestone M6 of the compiler
+   │ Help: planned for milestone M8 of the compiler
 ───╯
