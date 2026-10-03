@@ -207,6 +207,11 @@
 
 (escape_sequence) @string.escape
 
+; Code inside a string: `$name`, `$(expression)` and `$[command]`. Themes give `@embedded` the
+; colour of ordinary code; without it, a variable would take the colour of the string around
+; it, since many themes have no colour for `@variable`.
+(interpolation) @embedded
+
 [
   (integer)
   (float)
