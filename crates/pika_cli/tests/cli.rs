@@ -172,6 +172,22 @@ fn fmt_rewrites_files_and_check_reports_them() {
 }
 
 #[test]
+fn fmt_skips_other_repositories_inside_a_directory() {
+    let dir = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("cli_fmt_repositories");
+    let nested = dir.join("vendor/clone");
+    std::fs::create_dir_all(nested.join(".git")).expect("scratch directory is writable");
+    let unformatted = ":put ( 1+2 )\n";
+    std::fs::write(dir.join("main.pk"), unformatted).expect("scratch directory is writable");
+    std::fs::write(nested.join("lib.pk"), unformatted).expect("scratch directory is writable");
+
+    let check = pika(&["fmt", "--check", dir.to_str().unwrap()]);
+    assert_eq!(check.status.code(), Some(1));
+    let listed = text(&check.stdout);
+    assert!(listed.contains("main.pk"), "stdout: {listed}");
+    assert!(!listed.contains("lib.pk"), "stdout: {listed}");
+}
+
+#[test]
 fn fmt_leaves_files_with_syntax_errors() {
     let source = ":put $a + $b\n";
     let file = source_file("cli_fmt_invalid.pk", source);

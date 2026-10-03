@@ -77,8 +77,9 @@ fn report(diagnostics: &[Diagnostic], name: &str, source: &str) {
     eprint!("{}", render(diagnostics, name, source, options));
 }
 
-/// Adds the `.pk` files under `dir` to `files`, recursively, skipping hidden directories and
-/// build output (`target`).
+/// Adds the `.pk` files under `dir` to `files`, recursively, skipping hidden directories, build
+/// output (`target`) and other git repositories inside `dir`, such as the clone of a grammar
+/// that an editor keeps there.
 fn find_sources(dir: &Path, files: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         eprintln!("error: cannot read the directory {}", dir.display());
@@ -89,7 +90,9 @@ fn find_sources(dir: &Path, files: &mut Vec<PathBuf>) {
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if path.is_dir() {
-            if !name.starts_with('.') && name != "target" {
+            // `.git` is a directory in a clone and a file in a submodule or worktree.
+            let is_repository = path.join(".git").exists();
+            if !name.starts_with('.') && name != "target" && !is_repository {
                 find_sources(&path, files);
             }
         } else if path.extension().is_some_and(|e| e == "pk") {
