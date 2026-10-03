@@ -217,7 +217,7 @@ pub fn interpret(
     out: &mut dyn std::io::Write,
     err: &mut dyn std::io::Write,
 ) -> i32 {
-    start_program(args);
+    pika_runtime::start::prepare(args, program_files(sources));
     match pika_mir::interpret(program, out, err) {
         Ok(()) => 0,
         Err(InterpretError::Panic { message, span, .. }) => {
@@ -248,14 +248,29 @@ pub fn interpret(
     }
 }
 
-/// Prepares the runtime for a program that starts now, with the arguments `args`.
-fn start_program(args: Vec<String>) {
-    pika_runtime::intrinsics::set_program_args(args);
-    pika_runtime::intrinsics::start_clock();
+/// The source files of a program as its reports show them, for the runtime.
+pub fn program_files(sources: &SourceMap) -> Vec<pika_runtime::ProgramFile> {
+    sources
+        .files()
+        .map(|(_, file)| pika_runtime::ProgramFile {
+            name: file.name.clone(),
+            text: file.shown().into_owned(),
+        })
+        .collect()
 }
 
-/// Stack size of the thread that runs compiled programs, generous for deep recursion.
-const PROGRAM_STACK_SIZE: usize = 256 * 1024 * 1024;
+/// Compiles a program ahead of time to an object file for the host, to be linked with the
+/// runtime library into an executable (see [`pika_codegen::compile_object`]).
+///
+/// # Errors
+///
+/// Fails only on internal errors of the code generator.
+pub fn compile_object(
+    program: &pika_mir::Program,
+    sources: &SourceMap,
+) -> Result<Vec<u8>, pika_codegen::CodegenError> {
+    pika_codegen::compile_object(program, sources, &program_files(sources))
+}
 
 /// Compiles a program to native code and runs it in this process, with the arguments `args`.
 /// `sources` are its source files, which panic reports refer to.
@@ -265,40 +280,15 @@ const PROGRAM_STACK_SIZE: usize = 256 * 1024 * 1024;
 /// environment variable `PIKA_LEAK_CHECK` is set, a program that finishes without freeing all
 /// of its heap memory returns 102.
 pub fn run_native(program: &pika_mir::Program, sources: &SourceMap, args: Vec<String>) -> i32 {
-    start_program(args);
-    pika_runtime::set_program_files(
-        sources
-            .files()
-            .map(|(_, file)| pika_runtime::ProgramFile {
-                name: file.name.clone(),
-                text: file.shown().into_owned(),
-            })
-            .collect(),
-    );
-    std::thread::scope(|scope| {
-        let runner = std::thread::Builder::new()
-            .name("pika-main".to_owned())
-            .stack_size(PROGRAM_STACK_SIZE)
-            .spawn_scoped(scope, || match pika_codegen::compile(program, sources) {
-                Ok(compiled) => {
-                    pika_runtime::abi::set_stack_limit(PROGRAM_STACK_SIZE);
-                    compiled.run();
-                    pika_runtime::abi::finish();
-                    pika_runtime::abi::leak_check().unwrap_or(0)
-                }
-                Err(error) => {
-                    eprintln!("internal compiler error: {error}");
-                    70
-                }
-            });
-        match runner {
-            Ok(handle) => handle.join().unwrap_or(70),
-            Err(error) => {
-                eprintln!("error: cannot start the program: {error}");
-                70
-            }
+    pika_runtime::start::prepare(args, program_files(sources));
+    match pika_codegen::compile(program, sources) {
+        // The compiled code lives as long as `compiled`, which outlives the run.
+        Ok(compiled) => pika_runtime::start::run(compiled.entry(), compiled.finish()),
+        Err(error) => {
+            eprintln!("internal compiler error: {error}");
+            pika_runtime::start::INTERNAL_ERROR_EXIT_CODE
         }
-    })
+    }
 }
 
 /// Describes the inferred types of a module: every constant, global and function with the

@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use cranelift_codegen::ir::{AbiParam, Signature, Type, types};
-use cranelift_jit::JITModule;
 use cranelift_module::Module;
 use pika_hir::{AdtKind, FloatTy, IntTy};
 use pika_mir::{Body, LocalMode, Types, Value};
@@ -352,7 +351,7 @@ impl Layouts {
 
     /// The signature of a function. Parameters held by reference or in memory are pointers;
     /// a result in memory is written through a pointer passed as the first parameter.
-    pub(crate) fn signature(&self, module: &JITModule, body: &Body) -> Signature {
+    pub(crate) fn signature(&self, module: &dyn Module, body: &Body) -> Signature {
         let pointer = module.target_config().pointer_type();
         let mut signature = module.make_signature();
         // The body of a function value receives its object first.
@@ -385,7 +384,7 @@ impl Layouts {
 
     /// The signature of calls of function values of type `function`: as the
     /// [`Self::signature`] of their bodies.
-    pub(crate) fn value_signature(&self, module: &JITModule, function: &FnTy) -> Signature {
+    pub(crate) fn value_signature(&self, module: &dyn Module, function: &FnTy) -> Signature {
         let pointer = module.target_config().pointer_type();
         let mut signature = module.make_signature();
         signature.params.push(AbiParam::new(pointer));

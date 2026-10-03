@@ -10,6 +10,7 @@ pub mod collections;
 pub mod format;
 pub mod heap;
 pub mod intrinsics;
+pub mod start;
 pub mod string;
 
 use std::sync::Mutex;

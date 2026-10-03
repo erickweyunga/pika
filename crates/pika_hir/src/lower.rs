@@ -770,7 +770,7 @@ impl Collected {
         if lib.as_deref() != Some("pika") {
             diagnostics.push(not_supported(
                 "foreign functions",
-                "M8",
+                "M9",
                 decl.keyword_span(),
             ));
             return;
@@ -1199,8 +1199,8 @@ fn new_value_name(
 /// where it starts.
 fn unsupported_form(stmt: &ast::Stmt) -> Option<(&'static str, &'static str, Span)> {
     Some(match stmt {
-        ast::Stmt::ExternDecl(d) => ("foreign functions", "M8", d.keyword_span()),
-        ast::Stmt::UnsafeBlock(s) => ("`:unsafe`", "M8", s.keyword_span()),
+        ast::Stmt::ExternDecl(d) => ("foreign functions", "M9", d.keyword_span()),
+        ast::Stmt::UnsafeBlock(s) => ("`:unsafe`", "M9", s.keyword_span()),
         _ => return None,
     })
 }
@@ -1779,7 +1779,7 @@ fn unknown_type(name: &str, span: Span, diagnostics: &mut Vec<Diagnostic>) -> Ty
             ));
             return Ty::Error;
         }
-        "Ptr" => ("raw pointers", "M8"),
+        "Ptr" => ("raw pointers", "M9"),
         _ => {
             diagnostics.push(Diagnostic::error(
                 codes::UNKNOWN_TYPE,

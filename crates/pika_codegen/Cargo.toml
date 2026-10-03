@@ -12,6 +12,7 @@ cranelift-codegen.workspace = true
 cranelift-frontend.workspace = true
 cranelift-jit.workspace = true
 cranelift-module.workspace = true
+cranelift-object.workspace = true
 cranelift-native.workspace = true
 la-arena.workspace = true
 pika_diagnostics.workspace = true

@@ -8,7 +8,6 @@ use cranelift_codegen::ir::{
     StackSlotKind, TrapCode, Type, Value, types,
 };
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
-use cranelift_jit::JITModule;
 use cranelift_module::{DataId, FuncId, Module};
 use la_arena::ArenaMap;
 use pika_diagnostics::{SourceMap, Span};
@@ -41,7 +40,7 @@ enum Storage {
     reason = "the translation needs all of its context"
 )]
 pub(crate) fn translate_body(
-    module: &mut JITModule,
+    module: &mut dyn Module,
     ctx: &mut ModuleCtx,
     program: &Program,
     body: &Body,
@@ -76,7 +75,7 @@ pub(crate) fn translate_body(
 
 struct Translator<'a, 'f> {
     builder: FunctionBuilder<'f>,
-    module: &'a mut JITModule,
+    module: &'a mut dyn Module,
     ctx: &'a mut ModuleCtx,
     program: &'a Program,
     body: &'a Body,

@@ -62,6 +62,7 @@ pub fn leak_check() -> Option<i32> {
 
 /// The lowest stack address compiled code may use; below it, calls report a stack overflow.
 /// Compiled functions read it in their prologue.
+#[unsafe(export_name = "pika_stack_limit")]
 pub static STACK_LIMIT: AtomicUsize = AtomicUsize::new(0);
 
 /// Sets the stack limit for a program running on the current thread, whose stack is
@@ -81,37 +82,44 @@ pub fn set_stack_limit(stack_size: usize) {
 /// # Safety
 ///
 /// `string` must point to a valid string.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_print_string(string: *const PikaString, stream: u32) {
     // SAFETY: guaranteed by the caller.
     write(stream, unsafe { (*string).as_str() });
 }
 
 /// Prints a signed integer.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_i64(value: i64, stream: u32) {
     write(stream, &value.to_string());
 }
 
 /// Prints an unsigned integer.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_u64(value: u64, stream: u32) {
     write(stream, &value.to_string());
 }
 
 /// Prints a 64-bit float.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_f64(value: f64, stream: u32) {
     write(stream, &format::f64_to_string(value));
 }
 
 /// Prints a 32-bit float.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_f32(value: f32, stream: u32) {
     write(stream, &format::f32_to_string(value));
 }
 
 /// Prints a boolean (0 or 1).
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_bool(value: u8, stream: u32) {
     write(stream, if value == 0 { "false" } else { "true" });
 }
 
 /// Prints a character given as a Unicode scalar value.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_char(value: u32, stream: u32) {
     write(
         stream,
@@ -120,6 +128,7 @@ pub extern "C" fn pika_print_char(value: u32, stream: u32) {
 }
 
 /// Prints a duration given in nanoseconds.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_duration(nanos: i64, stream: u32) {
     write(stream, &format::duration_to_string(nanos));
 }
@@ -130,6 +139,7 @@ pub extern "C" fn pika_print_duration(nanos: i64, stream: u32) {
 ///
 /// `ptr` must point to `len` bytes of valid UTF-8 that stay alive for the duration of the
 /// call. Compiled code only passes string constants from its data section.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_print_str(ptr: *const u8, len: usize, stream: u32) {
     // SAFETY: guaranteed by the caller, see above.
     let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
@@ -137,11 +147,13 @@ pub unsafe extern "C" fn pika_print_str(ptr: *const u8, len: usize, stream: u32)
 }
 
 /// Prints a line break.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_print_newline(stream: u32) {
     write(stream, "\n");
 }
 
 /// Starts reporting a panic whose message the program prints next, to standard error.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_panic_begin(kind: u32) {
     finish();
     let prefix = PanicKind::from_code(kind).map_or("", PanicKind::message_prefix);
@@ -151,6 +163,7 @@ pub extern "C" fn pika_panic_begin(kind: u32) {
 
 /// Finishes reporting a panic started by [`pika_panic_begin`], at line `line` and column
 /// `column` of the source file at index `file`, and exits.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_panic_end(file: u32, line: u32, column: u32) -> ! {
     let name = program_file(file);
     let source = program_line(&name, line);
@@ -164,6 +177,7 @@ pub extern "C" fn pika_panic_end(file: u32, line: u32, column: u32) -> ! {
 
 /// Reports a runtime error with a fixed message, at line `line` and column `column` of the
 /// source file at index `file`, and exits.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_panic(kind: u32, file: u32, line: u32, column: u32) -> ! {
     finish();
     let message = PanicKind::from_code(kind).map_or("unknown error", PanicKind::message);
@@ -201,6 +215,7 @@ pub struct ErrorLayout {
 /// # Safety
 ///
 /// `error` must point to a valid `Error` value laid out as `layout` describes.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_uncaught(error: *const u8, layout: *const ErrorLayout) -> ! {
     // SAFETY: guaranteed by the caller.
     let layout = unsafe { &*layout };
@@ -261,11 +276,13 @@ pub unsafe extern "C" fn pika_uncaught(error: *const u8, layout: *const ErrorLay
 
 /// Floating-point remainder, which Cranelift has no instruction for: the result has the sign
 /// of the dividend.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_rem_f64(a: f64, b: f64) -> f64 {
     a % b
 }
 
 /// Floating-point remainder for `f32`.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_rem_f32(a: f32, b: f32) -> f32 {
     a % b
 }
@@ -302,6 +319,7 @@ impl Io for ProcessIo {
 /// `code` must be the discriminant of an intrinsic, `args` must point to one valid pointer
 /// per parameter, each to a valid value of the parameter's kind, and `out` must be writable
 /// for a value of the result's kind.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_intrinsic(code: u32, args: *const *const u8, out: *mut u8) {
     let intrinsic = Intrinsic::from_code(code).expect("compiled code passes valid intrinsics");
     let values: Vec<Arg<'_>> = intrinsic

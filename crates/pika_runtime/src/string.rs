@@ -171,6 +171,7 @@ fn empty() -> PikaString {
 /// # Safety
 ///
 /// `dest` must point to writable memory for a `PikaString`.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_new(dest: *mut PikaString) {
     // SAFETY: guaranteed by the caller.
     unsafe { dest.write(empty()) };
@@ -181,6 +182,7 @@ pub unsafe extern "C" fn pika_string_new(dest: *mut PikaString) {
 /// # Safety
 ///
 /// `string` must point to a valid string that is not used afterwards.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_drop(string: *mut PikaString) {
     // SAFETY: guaranteed by the caller.
     let string = unsafe { &mut *string };
@@ -204,6 +206,7 @@ pub unsafe extern "C" fn pika_string_drop(string: *mut PikaString) {
 /// # Safety
 ///
 /// `dest` must be writable memory for a string; `source` must be a valid string.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_clone(dest: *mut PikaString, source: *const PikaString) {
     // SAFETY: guaranteed by the caller; a heap buffer has a count.
     unsafe {
@@ -224,6 +227,7 @@ pub unsafe extern "C" fn pika_string_clone(dest: *mut PikaString, source: *const
 /// # Safety
 ///
 /// `dest` must be a valid string; `ptr` must point to `len` bytes of UTF-8.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_push_bytes(dest: *mut PikaString, ptr: *const u8, len: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe {
@@ -237,6 +241,7 @@ pub unsafe extern "C" fn pika_string_push_bytes(dest: *mut PikaString, ptr: *con
 /// # Safety
 ///
 /// Both must be valid strings; they may be the same string.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_push_string(dest: *mut PikaString, source: *const PikaString) {
     // SAFETY: guaranteed by the caller. The text is copied before `dest` may reallocate.
     unsafe {
@@ -250,6 +255,7 @@ pub unsafe extern "C" fn pika_string_push_string(dest: *mut PikaString, source: 
 /// # Safety
 ///
 /// Both must be valid strings; they may be the same string.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_push_string_quoted(
     dest: *mut PikaString,
     source: *const PikaString,
@@ -268,6 +274,7 @@ macro_rules! push_formatted {
         /// # Safety
         ///
         /// `dest` must be a valid string.
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn $name(dest: *mut PikaString, value: $ty) {
             let text = $format(value);
             // SAFETY: guaranteed by the caller.
@@ -299,6 +306,7 @@ push_formatted!(pika_string_push_duration, i64, format::duration_to_string);
 /// # Safety
 ///
 /// Both must be valid strings.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_compare(a: *const PikaString, b: *const PikaString) -> i32 {
     // SAFETY: guaranteed by the caller.
     let (a, b) = unsafe { ((*a).as_str(), (*b).as_str()) };
@@ -314,6 +322,7 @@ pub unsafe extern "C" fn pika_string_compare(a: *const PikaString, b: *const Pik
 /// # Safety
 ///
 /// Both must be valid strings.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_string_contains(
     haystack: *const PikaString,
     needle: *const PikaString,

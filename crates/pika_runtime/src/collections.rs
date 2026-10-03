@@ -113,6 +113,7 @@ impl RawList {
 /// # Safety
 ///
 /// `list` must point to a valid list of such elements.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_list_reserve(
     list: *mut RawList,
     additional: usize,
@@ -128,6 +129,7 @@ pub unsafe extern "C" fn pika_list_reserve(
 /// # Safety
 ///
 /// `list` must point to a valid list of such elements, not used afterwards.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_list_free(list: *mut RawList, size: usize, align: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe { (*list).free(size, align) };
@@ -139,6 +141,7 @@ pub unsafe extern "C" fn pika_list_free(list: *mut RawList, size: usize, align: 
 /// # Safety
 ///
 /// `list` must point to a valid list of such elements, and `index <= len`.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_list_open(
     list: *mut RawList,
     index: usize,
@@ -163,6 +166,7 @@ pub unsafe extern "C" fn pika_list_open(
 /// # Safety
 ///
 /// `list` must point to a valid list of such elements, and `index < len`.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_list_close(list: *mut RawList, index: usize, size: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe {
@@ -286,6 +290,7 @@ impl RawMap {
 /// # Panics
 ///
 /// Never in practice: a map cannot have 2^63 entries.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_map_find(
     map: *const RawMap,
     hash: u64,
@@ -324,6 +329,7 @@ pub unsafe extern "C" fn pika_map_find(
 /// # Safety
 ///
 /// `map` must point to a valid map of entries of `entry_size` bytes aligned to `align`.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_map_push(
     map: *mut RawMap,
     hash: u64,
@@ -353,6 +359,7 @@ pub unsafe extern "C" fn pika_map_push(
 /// # Safety
 ///
 /// `map` must point to a valid map of entries of `entry_size` bytes, and `index < len`.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_map_remove(map: *mut RawMap, index: usize, entry_size: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe {
@@ -367,6 +374,7 @@ pub unsafe extern "C" fn pika_map_remove(map: *mut RawMap, index: usize, entry_s
 /// # Safety
 ///
 /// `map` must point to a valid map.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_map_clear(map: *mut RawMap) {
     // SAFETY: guaranteed by the caller.
     unsafe {
@@ -384,6 +392,7 @@ pub unsafe extern "C" fn pika_map_clear(map: *mut RawMap) {
 ///
 /// `map` must point to a valid map of entries of `entry_size` bytes aligned to `align`, not
 /// used afterwards.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_map_free(map: *mut RawMap, entry_size: usize, align: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe {
@@ -398,6 +407,7 @@ pub unsafe extern "C" fn pika_map_free(map: *mut RawMap, entry_size: usize, alig
 /// # Safety
 ///
 /// `ptr` must point to `len` readable bytes.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_hash_bytes(ptr: *const u8, len: usize) -> u64 {
     if len == 0 {
         return 0x9e37_79b9_7f4a_7c15;

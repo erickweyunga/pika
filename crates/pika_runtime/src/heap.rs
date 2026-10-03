@@ -37,6 +37,7 @@ fn layout(size: usize, align: usize) -> Layout {
 /// # Panics
 ///
 /// Panics (aborting the program) when out of memory or when `align` is not a power of two.
+#[unsafe(no_mangle)]
 pub extern "C" fn pika_alloc(size: usize, align: usize) -> *mut u8 {
     // SAFETY: the layout has a non-zero size.
     let ptr = unsafe { alloc(layout(size, align)) };
@@ -51,6 +52,7 @@ pub extern "C" fn pika_alloc(size: usize, align: usize) -> *mut u8 {
 ///
 /// `ptr` must come from `pika_alloc(size, align)` with the same size and alignment, and not
 /// be used afterwards.
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn pika_free(ptr: *mut u8, size: usize, align: usize) {
     // SAFETY: guaranteed by the caller.
     unsafe { dealloc(ptr, layout(size, align)) };

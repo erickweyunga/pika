@@ -1,6 +1,6 @@
 //! The `pika` command-line tool.
 
-mod bundle;
+mod executable;
 mod fmt;
 mod test;
 
@@ -95,10 +95,6 @@ enum Command {
 }
 
 fn main() -> ExitCode {
-    // An executable built by `pika build` runs the program it carries.
-    if let Some(status) = bundle::run_embedded() {
-        return status;
-    }
     match Cli::parse().command {
         Command::Check { paths } => check(&paths),
         Command::Run {
@@ -106,7 +102,7 @@ fn main() -> ExitCode {
             interpret,
             args,
         } => run(&path, interpret, args),
-        Command::Build { path, output } => bundle::build(&path, output.as_deref()),
+        Command::Build { path, output } => executable::build(&path, output.as_deref()),
         Command::Fmt { paths, check } => fmt::fmt(&paths, check),
         Command::Test {
             path,

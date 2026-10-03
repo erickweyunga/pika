@@ -1,6 +1,5 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-assertion_line: 15
 expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_runtime_functions.pk
 ---
@@ -21,5 +20,5 @@ script main() -> nothing
    │ ───┬───  
    │    ╰───── foreign functions are not supported yet
    │ 
-   │ Help: planned for milestone M8 of the compiler
+   │ Help: planned for milestone M9 of the compiler
 ───╯

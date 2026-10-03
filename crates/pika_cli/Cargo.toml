@@ -17,6 +17,10 @@ pika_driver.workspace = true
 pika_fmt.workspace = true
 pika_syntax.workspace = true
 
+[target.'cfg(target_env = "msvc")'.dependencies]
+# Finds the Visual C++ linker, which links the executables of `pika build`.
+cc.workspace = true
+
 [dev-dependencies]
 insta.workspace = true
 proptest.workspace = true

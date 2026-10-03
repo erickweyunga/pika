@@ -6,7 +6,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 
 use pika_diagnostics::{FileId, SourceMap};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 /// The name of a package's manifest file.
 pub const MANIFEST: &str = "pika.toml";
@@ -104,114 +104,6 @@ impl Sources {
             .modules
             .iter()
             .any(|&(_, root_file)| root_file == file)
-    }
-}
-
-/// The packages of a program other than the standard library, with their sources, as
-/// [`Sources::to_bundle`] writes them.
-#[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Bundle {
-    /// The index of the package compiled, among `packages`.
-    root: usize,
-    packages: Vec<BundledPackage>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct BundledPackage {
-    name: String,
-    version: Option<String>,
-    binary: bool,
-    dependencies: Vec<String>,
-    modules: Vec<BundledModule>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct BundledModule {
-    path: Vec<String>,
-    /// The file's name in reports.
-    file: String,
-    text: String,
-}
-
-impl Sources {
-    /// The program's sources as text, without the standard library, which every version of
-    /// the compiler has: what an executable built by `pika build` carries.
-    ///
-    /// # Panics
-    ///
-    /// Does not panic: the bundle is always valid TOML.
-    pub fn to_bundle(&self) -> String {
-        let is_std = |package: &Package| package.name == pika_hir::STD_PACKAGE;
-        let packages: Vec<BundledPackage> = self
-            .packages
-            .iter()
-            .filter(|package| !is_std(package))
-            .map(|package| BundledPackage {
-                name: package.name.clone(),
-                version: package.version.clone(),
-                binary: package.binary,
-                dependencies: package.dependencies.clone(),
-                modules: package
-                    .modules
-                    .iter()
-                    .map(|(path, file)| {
-                        let file = self.map.file(*file);
-                        BundledModule {
-                            path: path.clone(),
-                            file: file.name.clone(),
-                            text: file.text.clone(),
-                        }
-                    })
-                    .collect(),
-            })
-            .collect();
-        let root = self.packages[..self.root]
-            .iter()
-            .filter(|package| !is_std(package))
-            .count();
-        toml::to_string(&Bundle { root, packages }).expect("a bundle is valid TOML")
-    }
-
-    /// The sources that [`Sources::to_bundle`] wrote, with the standard library.
-    ///
-    /// # Errors
-    ///
-    /// Fails if `text` is not such a bundle.
-    pub fn from_bundle(text: &str) -> Result<Self, LoadError> {
-        let bundle: Bundle = toml::from_str(text)
-            .map_err(|error| LoadError(format!("invalid program bundle: {error}")))?;
-        let mut sources = Self::default();
-        sources.add_standard_library();
-        let first = sources.packages.len();
-        for package in bundle.packages {
-            let modules = package
-                .modules
-                .into_iter()
-                .map(|module| {
-                    (
-                        module.path,
-                        pika_syntax::add_file(&mut sources.map, module.file, module.text),
-                    )
-                })
-                .collect();
-            sources.packages.push(Package {
-                name: package.name,
-                version: package.version,
-                binary: package.binary,
-                dependencies: package.dependencies,
-                modules,
-            });
-        }
-        sources.root = first + bundle.root;
-        if sources.root >= sources.packages.len() {
-            return Err(LoadError(
-                "invalid program bundle: no root package".to_owned(),
-            ));
-        }
-        Ok(sources)
     }
 }
 

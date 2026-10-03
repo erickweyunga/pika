@@ -43,7 +43,7 @@ Early development. Milestones M0 to M5 are complete:
 - Function values: closures that capture by value, named functions as values, and function
   types `fn(A) -> R` (M5).
 
-M6 is complete, without foreign functions, which move to M8:
+M6 is complete, without foreign functions, which move to M9:
 
 - Packages with a `pika.toml` manifest and path dependencies, one module per source file,
   paths to the items of other modules (`/geo/shapes/area`), `:use` imports and aliases, and
@@ -70,7 +70,13 @@ M7 is complete:
   `[$text->trim]`, `[[$line->split ","]->map $f]`, `[$items->sort]`, `[$x->sqrt]`,
   `[$n->checked_add 1]`, `[$option->expect "msg"]`.
 
-Foreign functions (milestone M8) are reported as "not supported yet". See the
+M8 is complete:
+
+- `pika build` compiles ahead of time: the executable is native code linked with the
+  runtime, so it starts at once and does not compile anything when it runs. Building one
+  needs the system's C toolchain (`cc`, or Visual C++ on Windows) for linking.
+
+Foreign functions (milestone M9) are reported as "not supported yet". See the
 milestones in section 17 of the spec.
 
 ## Building

@@ -7,7 +7,6 @@
 
 use cranelift_codegen::ir::condcodes::IntCC;
 use cranelift_codegen::ir::{InstBuilder, MemFlagsData, Value, types};
-use cranelift_module::Module;
 use pika_types::Ty;
 
 use crate::CodegenError;

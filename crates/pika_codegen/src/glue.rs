@@ -11,7 +11,6 @@
 use cranelift_codegen::ir::condcodes::{FloatCC, IntCC};
 use cranelift_codegen::ir::{AbiParam, Block, InstBuilder, MemFlagsData, Type, Value, types};
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
-use cranelift_jit::JITModule;
 use cranelift_module::{FuncId, Linkage, Module};
 use pika_hir::{FloatTy, IntTy};
 use pika_types::Ty;
@@ -63,7 +62,7 @@ impl GlueKind {
         }
     }
 
-    fn signature(self, module: &JITModule) -> cranelift_codegen::ir::Signature {
+    fn signature(self, module: &dyn Module) -> cranelift_codegen::ir::Signature {
         let pointer = module.target_config().pointer_type();
         let mut signature = module.make_signature();
         let params = if matches!(self, Self::Drop | Self::Hash) {
@@ -88,7 +87,7 @@ impl ModuleCtx {
     /// enum or collection, or the key comparison of any type.
     pub(crate) fn glue(
         &mut self,
-        module: &mut JITModule,
+        module: &mut dyn Module,
         ty: Ty,
         kind: GlueKind,
     ) -> Result<FuncId, CodegenError> {
@@ -115,7 +114,7 @@ impl ModuleCtx {
 
 /// Defines the glue functions declared so far, and those they need in turn.
 pub(crate) fn define_pending(
-    module: &mut JITModule,
+    module: &mut dyn Module,
     ctx: &mut ModuleCtx,
     context: &mut cranelift_codegen::Context,
     builder_context: &mut FunctionBuilderContext,
@@ -159,7 +158,7 @@ pub(crate) fn define_pending(
 /// Defines `func`, which destroys captured values of the types `captures` in the function
 /// value object it receives.
 fn define_env_drop_function(
-    module: &mut JITModule,
+    module: &mut dyn Module,
     ctx: &mut ModuleCtx,
     context: &mut cranelift_codegen::Context,
     builder_context: &mut FunctionBuilderContext,
@@ -197,7 +196,7 @@ fn define_env_drop_function(
 /// Emits operations on values into a function being built.
 pub(crate) struct Emitter<'a, 'f> {
     pub(crate) builder: &'a mut FunctionBuilder<'f>,
-    pub(crate) module: &'a mut JITModule,
+    pub(crate) module: &'a mut dyn Module,
     pub(crate) ctx: &'a mut ModuleCtx,
     pub(crate) pointer: Type,
 }

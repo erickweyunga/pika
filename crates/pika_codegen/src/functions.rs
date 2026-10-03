@@ -16,7 +16,6 @@
 use cranelift_codegen::ir::condcodes::IntCC;
 use cranelift_codegen::ir::{AbiParam, InstBuilder, MemFlagsData, Value, types};
 use cranelift_frontend::FunctionBuilder;
-use cranelift_jit::JITModule;
 use cranelift_module::{FuncId, Linkage, Module};
 use pika_mir::InstanceId;
 use pika_types::Ty;
@@ -42,7 +41,7 @@ impl ModuleCtx {
     /// `instance`, whose captures have the types `captures`; `None` if none needs it.
     pub(crate) fn env_drop(
         &mut self,
-        module: &mut JITModule,
+        module: &mut dyn Module,
         instance: InstanceId,
         captures: &[Ty],
     ) -> Result<Option<FuncId>, CodegenError> {
@@ -66,7 +65,7 @@ impl ModuleCtx {
 }
 
 /// The signature of the functions that destroy captured values: they take the object.
-fn env_drop_signature(module: &JITModule) -> cranelift_codegen::ir::Signature {
+fn env_drop_signature(module: &dyn Module) -> cranelift_codegen::ir::Signature {
     let mut signature = module.make_signature();
     signature
         .params
@@ -91,7 +90,7 @@ pub(crate) fn define_env_drop(
 /// Declares the signature of capture destructors in the function being built.
 pub(crate) fn env_drop_signature_ref(
     builder: &mut FunctionBuilder<'_>,
-    module: &JITModule,
+    module: &dyn Module,
 ) -> cranelift_codegen::ir::SigRef {
     builder.import_signature(env_drop_signature(module))
 }
