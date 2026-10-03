@@ -332,3 +332,56 @@ Anonymous functions
     (command_substitution
       (function_declaration
         (block)))))
+
+================================================================================
+Calls that can raise an error
+================================================================================
+
+:put [/fs/read? $path]
+$text->parse_int?
+:const n [:load<Config>? $path]
+:put [[$s->trim]->parse_int?] [$f? 1]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (call
+    (command_name)
+    (command_substitution
+      (call
+        (path
+          (identifier)
+          (identifier))
+        (raise_mark)
+        (variable))))
+  (call
+    (member_expression
+      (variable)
+      (identifier))
+    (raise_mark))
+  (variable_declaration
+    (identifier)
+    (command_substitution
+      (call
+        (command_name)
+        (type_arguments
+          (type_identifier))
+        (raise_mark)
+        (variable))))
+  (call
+    (command_name)
+    (command_substitution
+      (call
+        (member_expression
+          (command_substitution
+            (call
+              (member_expression
+                (variable)
+                (identifier))))
+          (identifier))
+        (raise_mark)))
+    (command_substitution
+      (call
+        (variable)
+        (raise_mark)
+        (integer)))))

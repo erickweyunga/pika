@@ -1,6 +1,6 @@
 # Errors raised where nothing catches them, and invalid `:error`, `:onerror` and `raises`.
 :fn risky -> i64 raises do={ :return 1 }
-:fn plain -> i64 do={ :return [:risky] }
+:fn plain -> i64 do={ :return [:risky?] }
 :fn fails do={ :error "nope" }
 :fn bad_value -> i64 raises do={ :error 5 }
 :fn chained raises do={
@@ -16,11 +16,11 @@
 :struct Show impl=Display {
     :fn fmt self mut out:Formatter raises do={}
 }
-:const C [:risky]
+:const C [:risky?]
 :fn main do={
-    :onerror e in={ :put [:risky] } do={
+    :onerror e in={ :put [:risky?] } do={
         :set e Error{message="y"}
-        :put [:risky]
+        :put [:risky?]
     }
     :put $e
 }

@@ -588,6 +588,8 @@ function callRule($, head) {
       field('head', alias('some', $.some)),
       field('head', head),
     ),
+    // `?` joined to the head marks a call that can raise an error: `[/fs/read? $path]`.
+    optional(field('raise_mark', alias(token.immediate('?'), $.raise_mark))),
     repeat(field('argument', choice($._atom, $.named_argument))),
   ));
 }

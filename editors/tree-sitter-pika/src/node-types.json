@@ -566,6 +566,16 @@
           }
         ]
       },
+      "raise_mark": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "raise_mark",
+            "named": true
+          }
+        ]
+      },
       "type_arguments": {
         "multiple": false,
         "required": false,
@@ -3633,6 +3643,10 @@
   {
     "type": "owned",
     "named": false
+  },
+  {
+    "type": "raise_mark",
+    "named": true
   },
   {
     "type": "raises",

@@ -14,14 +14,14 @@
     :const g Guard{name="middle"}
     :for i from=0 to=$n do={
         :const step Guard{name="step $i"}
-        $out->push [:inner $i]
+        $out->push [:inner? $i]
     }
     :return $out
 }
 :fn main raises do={
     :const g Guard{name="main"}
-    :put [:middle 1]
-    :onerror e in={ :put [:middle 5] } do={ :put "caught: $e" }
-    :put [:middle 3]
+    :put [:middle? 1]
+    :onerror e in={ :put [:middle? 5] } do={ :put "caught: $e" }
+    :put [:middle? 3]
     :put "unreachable"
 }

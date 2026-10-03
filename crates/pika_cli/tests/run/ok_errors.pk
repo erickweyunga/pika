@@ -8,7 +8,7 @@
 }
 :fn load name:String -> String raises do={
     :onerror e in={
-        :const port [:parse_port $name]
+        :const port [:parse_port? $name]
         :return "loaded $port"
     } do={
         :error "could not load $name" source=$e
@@ -16,16 +16,16 @@
 }
 :fn ports do={
     :onerror e in={
-        :put "port = $([:parse_port "8080"])"
-        :put "port = $([:parse_port "99999"])"
+        :put "port = $([:parse_port? "8080"])"
+        :put "port = $([:parse_port? "99999"])"
         :put "not reached"
     } do={
         :put "failed: $e"
         :put "at $($e->line):$($e->column)"
     }
     :onerror e in={
-        :put [:load "x"]
-        :put [:load ""]
+        :put [:load? "x"]
+        :put [:load? ""]
     } do={
         :put "load failed: $e"
         :match $e->source {
@@ -38,8 +38,8 @@
 :trait Source {
     :fn read self -> String raises
     :fn read_twice self -> String raises do={
-        :const a [$self->read]
-        :return "$a$([$self->read])"
+        :const a [$self->read?]
+        :return "$a$([$self->read?])"
     }
 }
 :struct Good impl=Source {
@@ -50,11 +50,11 @@
     :fn read self -> String raises do={ :error "broken source" }
 }
 :fn first<T: Source> items:List<T> -> String raises do={
-    :foreach item in=$items do={ :return [$item->read_twice] }
+    :foreach item in=$items do={ :return [$item->read_twice?] }
     :error "no sources"
 }
 :fn attempt<T: Source> s:T -> String do={
-    :onerror e in={ :return [$s->read_twice] } do={ :return "failed: $e" }
+    :onerror e in={ :return [$s->read_twice?] } do={ :return "failed: $e" }
 }
 :fn count_until_error -> i64 do={
     :local n 0
@@ -81,10 +81,10 @@
 :fn sources do={
     :put [:attempt Good{text="ab"}]
     :put [:attempt Broken{}]
-    :onerror e in={ :put [:first {Good{text="x"}}] } do={ :put $e }
-    :onerror e in={ :put [:first List<Good>{}] } do={ :put $e }
+    :onerror e in={ :put [:first? {Good{text="x"}}] } do={ :put $e }
+    :onerror e in={ :put [:first? List<Good>{}] } do={ :put $e }
     :put [:count_until_error]
-    :onerror e in={ :put [:rethrow] } do={
+    :onerror e in={ :put [:rethrow?] } do={
         :put "main saw: $e (line $($e->line))"
         :const errors {$e; [$e->clone]}
         :put $errors

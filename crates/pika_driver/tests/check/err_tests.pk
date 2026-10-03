@@ -1,10 +1,10 @@
 # Tests are top-level declarations with unique names written as plain strings; their
 # bodies are checked like functions that raise.
-:fn parse text:String -> i64 raises do={ :return [$text->parse_int] }
+:fn parse text:String -> i64 raises do={ :return [$text->parse_int?] }
 :const label "x"
 
 :test "parses" do={
-    :assert ([:parse "1"] = 1)
+    :assert ([:parse? "1"] = 1)
 }
 :test "parses" do={
     :assert true

@@ -25,7 +25,7 @@
     :const bad [:fn mut x:i64 y:i64=2 do={}]
     :const named [:fn name x:i64 do={}]
     :const r [:fn -> i64 raises do={ :error "x" }]
-    :put [$r]
+    :put [$r?]
     :const m [:fn x:i64 -> String do={ :return $s }]
 }
 :const C [:fn do={}]

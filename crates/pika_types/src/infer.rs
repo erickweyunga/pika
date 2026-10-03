@@ -599,6 +599,8 @@ struct InferCtx<'c, 'm> {
     raises: bool,
     /// The number of `:onerror` bodies being checked, which catch errors raised in them.
     catching: usize,
+    /// The calls whose `?` was checked against whether they raise.
+    marks_checked: ArenaMap<ExprId, ()>,
 }
 
 /// The user-defined type a type is, if it is one.
@@ -1235,6 +1237,7 @@ impl<'c, 'm> InferCtx<'c, 'm> {
             in_function: false,
             raises: false,
             catching: 0,
+            marks_checked: ArenaMap::default(),
         }
     }
 
@@ -2410,6 +2413,7 @@ impl<'c, 'm> InferCtx<'c, 'm> {
             }
             self.check_expr(arg.value, function.params.get(position).copied());
         }
+        self.check_raise_mark(expr, function.raises);
         if function.raises {
             self.check_can_raise(self.span(expr), "an error raised by this function value");
         }
@@ -2673,6 +2677,7 @@ impl<'c, 'm> InferCtx<'c, 'm> {
             let expected = function.params.get(index).copied();
             self.check_expr(arg, expected);
         }
+        self.check_raise_mark(expr, function.raises);
         if function.raises {
             let span = self.span(expr);
             self.check_can_raise(span, "an error raised by this function value");
@@ -2693,6 +2698,44 @@ impl<'c, 'm> InferCtx<'c, 'm> {
     }
 
     /// Reports raising an error, by `what`, where nothing catches or propagates it.
+    /// Checks that the call `expr`, which raises errors if `raises`, has a `?` after its head
+    /// exactly then (spec section 9.1).
+    fn check_raise_mark(&mut self, expr: ExprId, raises: bool) {
+        let Some(head) = self.body.call_heads.get(expr) else {
+            return;
+        };
+        self.marks_checked.insert(expr, ());
+        match (raises, head.mark) {
+            (true, None) => self.report(
+                Diagnostic::error(
+                    codes::MISSING_RAISE_MARK,
+                    format!(
+                        "`{}` can raise an error, so its call needs a `?`",
+                        head.text
+                    ),
+                    head.span,
+                )
+                .with_help(format!(
+                    "write `{}?` to pass the error on, or catch it with `:onerror`",
+                    head.text
+                )),
+            ),
+            (false, Some(mark)) => self.report_needless_mark(&head.text, mark),
+            _ => {}
+        }
+    }
+
+    fn report_needless_mark(&mut self, head: &str, mark: Span) {
+        self.report(
+            Diagnostic::error(
+                codes::NEEDLESS_RAISE_MARK,
+                format!("`{head}` cannot raise an error, so its call takes no `?`"),
+                mark,
+            )
+            .with_help("remove the `?`"),
+        );
+    }
+
     fn check_can_raise(&mut self, span: Span, what: &str) {
         if !self.in_function || self.raises || self.catching > 0 {
             return;
@@ -2809,6 +2852,7 @@ impl<'c, 'm> InferCtx<'c, 'm> {
         let split = function.own_generics;
         let span = self.span(expr);
         let mut instance = self.owner_instance(function, owner, span);
+        self.check_raise_mark(expr, function.raises);
         if function.raises {
             self.check_can_raise(span, &format!("an error raised by `{fn_name}`"));
         }
@@ -3373,6 +3417,26 @@ impl<'c, 'm> InferCtx<'c, 'm> {
     /// returns the final types.
     fn finish(mut self) -> BodyTypes {
         self.table.apply_defaults();
+
+        // A `?` on a call of something else than a function that raises: a built-in command or
+        // method, a variant or another value. Calls whose callee is in error were reported.
+        let unchecked: Vec<(String, Span)> = self
+            .body
+            .call_heads
+            .iter()
+            .filter(|&(expr, head)| {
+                head.mark.is_some()
+                    && self.marks_checked.get(expr).is_none()
+                    && self
+                        .expr_tys
+                        .get(expr)
+                        .is_none_or(|&ty| self.table.resolve(ty) != Ty::Error)
+            })
+            .filter_map(|(_, head)| Some((head.text.clone(), head.mark?)))
+            .collect();
+        for (head, mark) in unchecked {
+            self.report_needless_mark(&head, mark);
+        }
 
         for pending in std::mem::take(&mut self.matches) {
             self.check_exhaustive(&pending);

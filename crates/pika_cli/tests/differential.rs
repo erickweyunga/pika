@@ -813,26 +813,26 @@ const ERROR_PRELUDE: &str = "\
     :return ($n * 2)
 }
 :fn twice n:i64 -> i64 raises do={
-    :const a [:check $n]
-    :const b [:check ($n + 1)]
+    :const a [:check? $n]
+    :const b [:check? ($n + 1)]
     :return ($a + $b)
 }
 :fn collect n:i64 -> List<i64> raises do={
     :local out:List<i64> {}
     :for i from=1 to=$n do={
         :const t T{id=(100 + $i)}
-        $out->push [:check $i]
+        $out->push [:check? $i]
     }
     :return $out
 }
 :fn safe n:i64 -> i64 do={
-    :onerror e in={ :return [:twice $n] } do={
+    :onerror e in={ :return [:twice? $n] } do={
         :put \"safe: $e\"
         :return -1
     }
 }
 :fn wrap n:i64 -> i64 raises do={
-    :onerror e in={ :return [:check $n] } do={ :error \"wrapped\" source=$e }
+    :onerror e in={ :return [:check? $n] } do={ :error \"wrapped\" source=$e }
 }
 ";
 
@@ -841,19 +841,19 @@ fn error_statement() -> impl Strategy<Value = String> {
     let n = || 1i64..8;
     prop_oneof![
         n().prop_map(|v| format!(":put [:safe {v}]")),
-        n().prop_map(|v| format!(":onerror e in={{ :put [:twice {v}] }} do={{ :put \"caught $e\" }}")),
-        n().prop_map(|v| format!(":onerror e in={{ :put [:collect {v}] }} do={{ :put \"caught $e\" }}")),
+        n().prop_map(|v| format!(":onerror e in={{ :put [:twice? {v}] }} do={{ :put \"caught $e\" }}")),
+        n().prop_map(|v| format!(":onerror e in={{ :put [:collect? {v}] }} do={{ :put \"caught $e\" }}")),
         (n(), n()).prop_map(|(a, b)| format!(
-            ":onerror e in={{ :const t T{{id=5{a}}}; :put \"$[:check {a}] $[:check {b}]\" }} do={{ :put \"caught $e\" }}"
+            ":onerror e in={{ :const t T{{id=5{a}}}; :put \"$[:check? {a}] $[:check? {b}]\" }} do={{ :put \"caught $e\" }}"
         )),
         n().prop_map(|v| format!(
-            ":onerror e in={{ :put [:wrap {v}] }} do={{ :put \"caught $e\"; :match $e->source {{ some c do={{ :put \"cause $($c->value)\" }}; none do={{}} }} }}"
+            ":onerror e in={{ :put [:wrap? {v}] }} do={{ :put \"caught $e\"; :match $e->source {{ some c do={{ :put \"cause $($c->value)\" }}; none do={{}} }} }}"
         )),
         n().prop_map(|v| format!(
-            ":for i from=1 to={v} do={{ :const t T{{id=(200 + $i)}}; :onerror e in={{ :put [:check $i] }} do={{ :put \"skip $e\"; :continue }} }}"
+            ":for i from=1 to={v} do={{ :const t T{{id=(200 + $i)}}; :onerror e in={{ :put [:check? $i] }} do={{ :put \"skip $e\"; :continue }} }}"
         )),
         n().prop_map(|v| format!(
-            ":onerror o in={{ :onerror i in={{ :put [:check {v}] }} do={{ :error \"inner $i\" }} }} do={{ :put \"outer $o\" }}"
+            ":onerror o in={{ :onerror i in={{ :put [:check? {v}] }} do={{ :error \"inner $i\" }} }} do={{ :put \"outer $o\" }}"
         )),
     ]
 }
@@ -867,7 +867,7 @@ fn error_program() -> impl Strategy<Value = String> {
             writeln!(source, "    {{ # {index}\n    {statement}\n    }}")
                 .expect("writing to a String");
         }
-        writeln!(source, "    :put [:check {last}]\n}}").expect("writing to a String");
+        writeln!(source, "    :put [:check? {last}]\n}}").expect("writing to a String");
         source
     })
 }
@@ -916,7 +916,7 @@ fn closure_statement() -> impl Strategy<Value = String> {
         Just(":if ([:len $fs] > 2) do={ $fs->clear }".to_owned()),
         n().prop_map(|v| format!(":set r [:limited {v}]")),
         (n(), 90i64..130).prop_map(|(_, x)| format!(
-            ":onerror e in={{ :put [$r {x}] }} do={{ :put \"caught $e\" }}"
+            ":onerror e in={{ :put [$r? {x}] }} do={{ :put \"caught $e\" }}"
         )),
         n().prop_map(|v| format!(
             ":const k T{{id=(200 + {v})}}; :set g [:fn x:i64 -> i64 do={{ :return (($x % 1000) * $k->id) }}]"

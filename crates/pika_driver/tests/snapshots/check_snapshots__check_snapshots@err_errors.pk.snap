@@ -1,6 +1,7 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+assertion_line: 15
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_errors.pk
 ---
 const C: i64
@@ -20,9 +21,9 @@ fn main() -> nothing
 [E0321] Error: an error raised by `:risky` is not caught
    ╭─[ err_errors.pk:3:32 ]
    │
- 3 │ :fn plain -> i64 do={ :return [:risky] }
-   │                                ───┬──  
-   │                                   ╰──── an error raised by `:risky` is not caught
+ 3 │ :fn plain -> i64 do={ :return [:risky?] }
+   │                                ───┬───  
+   │                                   ╰───── an error raised by `:risky` is not caught
    │ 
    │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
 ───╯
@@ -78,9 +79,9 @@ fn main() -> nothing
 [E0214] Error: module-level initializers must be constant, and cannot use calls
     ╭─[ err_errors.pk:19:11 ]
     │
- 19 │ :const C [:risky]
-    │           ───┬──  
-    │              ╰──── module-level initializers must be constant, and cannot use calls
+ 19 │ :const C [:risky?]
+    │           ───┬───  
+    │              ╰───── module-level initializers must be constant, and cannot use calls
     │ 
     │ Help: use literals, operators, casts and other constants; for a value computed when the program runs, use `:local`
 ────╯
@@ -93,7 +94,7 @@ fn main() -> nothing
     │
     ├─[ err_errors.pk:22:14 ]
     │
- 21 │     :onerror e in={ :put [:risky] } do={
+ 21 │     :onerror e in={ :put [:risky?] } do={
     │              ┬  
     │              ╰── declared here
     │ 
@@ -102,9 +103,9 @@ fn main() -> nothing
 [E0321] Error: an error raised by `:risky` is not caught
     ╭─[ err_errors.pk:23:15 ]
     │
- 23 │         :put [:risky]
-    │               ───┬──  
-    │                  ╰──── an error raised by `:risky` is not caught
+ 23 │         :put [:risky?]
+    │               ───┬───  
+    │                  ╰───── an error raised by `:risky` is not caught
     │ 
     │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
 ────╯

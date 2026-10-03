@@ -292,6 +292,24 @@ impl Call {
             .unwrap_or_default()
     }
 
+    /// The `?` joined to the head, which marks a call that can raise an error.
+    pub fn raise_mark(&self) -> Option<SyntaxToken> {
+        token(&self.0, SyntaxKind::Question)
+    }
+
+    /// The head as written, before its `?` and arguments: the command name with its type
+    /// arguments, or the expression called.
+    pub fn head_text(&self) -> Option<(String, Span)> {
+        let head = self
+            .0
+            .children()
+            .find(|n| n.kind() != SyntaxKind::ArgList)?;
+        Some((
+            head.text().to_string().trim().to_owned(),
+            span_of(head.text_range()),
+        ))
+    }
+
     /// Returns true if the head is not a valid callee (for example `put "hi"`).
     pub fn has_error_head(&self) -> bool {
         self.0

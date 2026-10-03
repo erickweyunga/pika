@@ -40,10 +40,10 @@
     :put [/strings/lines "one\r\ntwo\nthree\n"]
     :put "$([/strings/to_upper "straße"]) $([/strings/to_lower "ÀB"])"
     :put [/strings/repeat "ab" 3]
-    :put ([/strings/parse_int "-42"] + 1)
-    :put [/strings/parse_float "2.5e3"]
-    :onerror e in={ :put [/strings/parse_int "4x"] } do={ :put "error: $e" }
-    :onerror e in={ :put [/strings/parse_float ""] } do={ :put "error: $e" }
+    :put ([/strings/parse_int? "-42"] + 1)
+    :put [/strings/parse_float? "2.5e3"]
+    :onerror e in={ :put [/strings/parse_int? "4x"] } do={ :put "error: $e" }
+    :onerror e in={ :put [/strings/parse_float? ""] } do={ :put "error: $e" }
     :put [/strings/char_at "héllo" 1]
 }
 
@@ -89,18 +89,18 @@
     :put (([/time/monotonic] - $started) >= 1ms)
     :put ([/time/unix_time] > 0s)
     :const path "std_test_output.txt"
-    /fs/write $path "first line\nsecond line"
+    /fs/write? $path "first line\nsecond line"
     :put [/fs/exists $path]
-    :put [/strings/lines [/fs/read $path]]
-    /fs/remove $path
+    :put [/strings/lines [/fs/read? $path]]
+    /fs/remove? $path
     :put [/fs/exists $path]
-    :onerror e in={ :put [/fs/read $path] } do={ :put "caught: $([/strings/starts_with $e->message "cannot read std_test_output.txt"])" }
+    :onerror e in={ :put [/fs/read? $path] } do={ :put "caught: $([/strings/starts_with $e->message "cannot read std_test_output.txt"])" }
 }
 
 :fn main raises do={
     :math_demo
-    :strings_demo
+    :strings_demo?
     :chars_demo
     :collections_demo
-    :system_demo
+    :system_demo?
 }

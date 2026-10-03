@@ -82,8 +82,8 @@
     :put [:map_all {"a"; "bb"} [:fn s:String -> i64 do={ :return [:len $s] }]]
     :const limit [:checked 10]
     :onerror e in={
-        :put [$limit 5]
-        :put [$limit 50]
+        :put [$limit? 5]
+        :put [$limit? 50]
     } do={ :put "caught $e" }
     :const tagger [:make_tagger]
     :put [$tagger "x"]

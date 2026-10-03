@@ -1,6 +1,7 @@
 ---
 source: crates/pika_driver/tests/check_snapshots.rs
-expression: snapshot
+assertion_line: 15
+expression: "snapshot(&name, &analysis)"
 input_file: crates/pika_driver/tests/check/err_closures.pk
 ---
 const C: {error}
@@ -110,9 +111,9 @@ closure closure(x: i64) -> String
 [E0321] Error: an error raised by this function value is not caught
     ╭─[ err_closures.pk:28:11 ]
     │
- 28 │     :put [$r]
-    │           ─┬  
-    │            ╰── an error raised by this function value is not caught
+ 28 │     :put [$r?]
+    │           ─┬─  
+    │            ╰─── an error raised by this function value is not caught
     │ 
     │ Help: catch it with `:onerror e in={ ... } do={ ... }`, or declare the function `raises` to pass it on
 ────╯

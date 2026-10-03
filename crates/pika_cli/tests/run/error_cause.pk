@@ -1,10 +1,10 @@
 # An uncaught error reports the errors that caused it.
 :fn parse n:String -> i64 raises do={ :error "not a number: $n" }
 :fn load name:String -> i64 raises do={
-    :onerror e in={ :return [:parse $name] } do={
+    :onerror e in={ :return [:parse? $name] } do={
         :error "could not load $name" source=$e
     }
 }
 :fn main raises do={
-    :put [:load "x"]
+    :put [:load? "x"]
 }

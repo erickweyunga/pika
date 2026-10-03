@@ -25,7 +25,7 @@
     :put [/strings/bytes "hé"]
     :put [/strings/bytes ""]
     :put "$([/strings/format_int 255 16]) $([/strings/format_int -255 2]) $([/strings/format_int 35 36]) $([/strings/format_int 0 8])"
-    :put "$([/strings/parse_int_base "ff" 16]) $([/strings/parse_int_base "-101" 2]) $([/strings/parse_int_base "Z" 36])"
-    :onerror e in={ :put [/strings/parse_int_base "12" 2] } do={ :put "error: $e" }
+    :put "$([/strings/parse_int_base? "ff" 16]) $([/strings/parse_int_base? "-101" 2]) $([/strings/parse_int_base? "Z" 36])"
+    :onerror e in={ :put [/strings/parse_int_base? "12" 2] } do={ :put "error: $e" }
     :put "$([/strings/format_float 3.14159 2]) $([/strings/format_float 2.0 0]) $([/strings/format_float -0.5 3]) $([/strings/format_exp 1500.0 2]) $([/strings/format_exp 0.00012 1])"
 }

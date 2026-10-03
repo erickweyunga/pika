@@ -1,0 +1,33 @@
+# A call that can raise an error has `?` after its head, and only such a call.
+:struct Parser {
+    strict:bool
+    check:fn(String) -> i64 raises
+    :fn parse self text:String -> i64 raises do={ :return [$text->parse_int?] }
+    :fn make -> Parser raises do={ :error "no parser" }
+}
+:enum Shape {
+    dot
+}
+:fn half n:i64 -> i64 raises do={
+    :if (($n % 2) = 1) do={ :error "odd" }
+    :return ($n / 2)
+}
+:fn double n:i64 -> i64 do={ :return (2 * $n) }
+
+:fn main raises do={
+    :put [:half 4]
+    :const p [Parser->make]
+    :put [$p->parse "1"]
+    :put [$p->check "2"]
+    :const f $half
+    :put [$f 6]
+    :onerror e in={ :put [:half 3] } do={ :put "caught $e" }
+    :put [:half? 8]
+    :put [:double? 2]
+    :put? "hi"
+    :local items {1}
+    $items->push? 2
+    :const s [Shape->dot?]
+    :const g $double
+    :put [$g? 3]
+}

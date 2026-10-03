@@ -1,0 +1,117 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_raise_marks.pk
+---
+fn parse(self: Parser, text: String) -> i64
+fn make() -> Parser
+fn half(n: i64) -> i64
+fn double(n: i64) -> i64
+fn main() -> nothing
+    p: Parser
+    f: fn(i64) -> i64 raises
+    e: Error
+    items: List<i64>
+    s: Shape
+    g: fn(i64) -> i64
+
+--- diagnostics ---
+[E0323] Error: `:half` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:18:11 ]
+    │
+ 18 │     :put [:half 4]
+    │           ──┬──  
+    │             ╰──── `:half` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `:half?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0323] Error: `Parser->make` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:19:15 ]
+    │
+ 19 │     :const p [Parser->make]
+    │               ──────┬─────  
+    │                     ╰─────── `Parser->make` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `Parser->make?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0323] Error: `$p->parse` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:20:11 ]
+    │
+ 20 │     :put [$p->parse "1"]
+    │           ────┬────  
+    │               ╰────── `$p->parse` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `$p->parse?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0323] Error: `$p->check` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:21:11 ]
+    │
+ 21 │     :put [$p->check "2"]
+    │           ────┬────  
+    │               ╰────── `$p->check` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `$p->check?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0323] Error: `$f` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:23:11 ]
+    │
+ 23 │     :put [$f 6]
+    │           ─┬  
+    │            ╰── `$f` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `$f?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0323] Error: `:half` can raise an error, so its call needs a `?`
+    ╭─[ err_raise_marks.pk:24:27 ]
+    │
+ 24 │     :onerror e in={ :put [:half 3] } do={ :put "caught $e" }
+    │                           ──┬──  
+    │                             ╰──── `:half` can raise an error, so its call needs a `?`
+    │ 
+    │ Help: write `:half?` to pass the error on, or catch it with `:onerror`
+────╯
+[E0324] Error: `:double` cannot raise an error, so its call takes no `?`
+    ╭─[ err_raise_marks.pk:26:18 ]
+    │
+ 26 │     :put [:double? 2]
+    │                  ┬  
+    │                  ╰── `:double` cannot raise an error, so its call takes no `?`
+    │ 
+    │ Help: remove the `?`
+────╯
+[E0324] Error: `:put` cannot raise an error, so its call takes no `?`
+    ╭─[ err_raise_marks.pk:27:9 ]
+    │
+ 27 │     :put? "hi"
+    │         ┬  
+    │         ╰── `:put` cannot raise an error, so its call takes no `?`
+    │ 
+    │ Help: remove the `?`
+────╯
+[E0324] Error: `$items->push` cannot raise an error, so its call takes no `?`
+    ╭─[ err_raise_marks.pk:29:17 ]
+    │
+ 29 │     $items->push? 2
+    │                 ┬  
+    │                 ╰── `$items->push` cannot raise an error, so its call takes no `?`
+    │ 
+    │ Help: remove the `?`
+────╯
+[E0324] Error: `Shape->dot` cannot raise an error, so its call takes no `?`
+    ╭─[ err_raise_marks.pk:30:25 ]
+    │
+ 30 │     :const s [Shape->dot?]
+    │                         ┬  
+    │                         ╰── `Shape->dot` cannot raise an error, so its call takes no `?`
+    │ 
+    │ Help: remove the `?`
+────╯
+[E0324] Error: `$g` cannot raise an error, so its call takes no `?`
+    ╭─[ err_raise_marks.pk:32:13 ]
+    │
+ 32 │     :put [$g? 3]
+    │             ┬  
+    │             ╰── `$g` cannot raise an error, so its call takes no `?`
+    │ 
+    │ Help: remove the `?`
+────╯

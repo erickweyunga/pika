@@ -13,12 +13,12 @@ use crate::codes;
 use pika_ty::{Adt, AdtKind, IntTy, Param as TyParam};
 
 use crate::{
-    Block, Body, Bound, Builtin, BuiltinTrait, CallArg, Callee, Capture, ConstId, ConstItem,
-    Convention, Derives, Element, ElseBranch, Expr, ExprId, FieldDef, FnId, FnKind, FnOwner,
-    ForEnd, Function, GenericParam, Generics, GlobalId, GlobalItem, ImplDef, ImplId, Literal,
-    Local, LocalId, LocalKind, MatchArm, Module, ModuleDef, ModuleId, Param, Pat, PatId, Place,
-    PreludeTrait, RESERVED_COMMANDS, Spanned, Stmt, StmtId, StringPart, TestDef, TraitDef, TraitId,
-    Ty, TypeArgs, TypeDef, TypeHead, TypeId, VariantDef,
+    Block, Body, Bound, Builtin, BuiltinTrait, CallArg, CallHead, Callee, Capture, ConstId,
+    ConstItem, Convention, Derives, Element, ElseBranch, Expr, ExprId, FieldDef, FnId, FnKind,
+    FnOwner, ForEnd, Function, GenericParam, Generics, GlobalId, GlobalItem, ImplDef, ImplId,
+    Literal, Local, LocalId, LocalKind, MatchArm, Module, ModuleDef, ModuleId, Param, Pat, PatId,
+    Place, PreludeTrait, RESERVED_COMMANDS, Spanned, Stmt, StmtId, StringPart, TestDef, TraitDef,
+    TraitId, Ty, TypeArgs, TypeDef, TypeHead, TypeId, VariantDef,
 };
 use modules::{Items, ModuleNames, PathValue, Shared, Source};
 pub use modules::{Root, SourceModule, SourcePackage};
@@ -3506,7 +3506,19 @@ impl<'a> BodyCtx<'a> {
         self.diagnostics.push(diagnostic);
     }
 
+    /// A call, with its head recorded for the check of its `?`.
     fn lower_call(&mut self, call: &ast::Call) -> ExprId {
+        let id = self.lower_call_unrecorded(call);
+        if let Some((text, span)) = call.head_text() {
+            let mark = call.raise_mark().map(|t| ast::span_of(t.text_range()));
+            self.body
+                .call_heads
+                .insert(id, CallHead { text, span, mark });
+        }
+        id
+    }
+
+    fn lower_call_unrecorded(&mut self, call: &ast::Call) -> ExprId {
         let span = call.span();
         if call.has_error_head() {
             return self.alloc_expr(Expr::Missing, span);

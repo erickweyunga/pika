@@ -19,7 +19,7 @@
     :put "$([$word->len]) $([$word->char_count]) $([$word->to_lower]) $([$word->reverse]) $([$word->is_empty])"
     :put "$([$word->starts_with "Str"]) $([$word->find "ß"]) $([$word->contains "aß"]) $([$word->count "S"])"
     :put "[$([$word->pad_start 8 '.'])] $([[$word->chars]->len]) $([$word->replace "ß" "ss"])"
-    :put ([["42"->trim]->parse_int] + 1)
+    :put ([["42"->trim]->parse_int?] + 1)
     :put [String->from_chars {'o'; 'k'}]
     :put [[{"b"; "a"; "c"}->sorted]->join "/"]
 }
@@ -72,12 +72,12 @@
     :put [$absent->unwrap_or_else [:fn -> String do={ :return "computed" }]]
     :put [[{"k"="v"}->get "k"]->expect "a key"]
     :const nothing_here:String? none
-    :onerror e in={ :put [$nothing_here->or_error "no value"] } do={ :put "error: $e" }
+    :onerror e in={ :put [$nothing_here->or_error? "no value"] } do={ :put "error: $e" }
 }
 
 :fn main raises do={
-    :strings
+    :strings?
     :numbers
     :lists
-    :options
+    :options?
 }

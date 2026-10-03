@@ -259,6 +259,9 @@
   "?"
 ] @punctuation.special
 
+; The `?` after the head of a call that can raise an error.
+(raise_mark) @keyword.control
+
 (binary_expression
   operator: _ @operator)
 

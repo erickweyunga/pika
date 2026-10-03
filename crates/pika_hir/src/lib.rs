@@ -353,6 +353,20 @@ pub struct Body {
     pub pats: Arena<Pat>,
     /// Where each pattern was written.
     pub pat_spans: ArenaMap<PatId, Span>,
+    /// The head of each call written in the source, by the expression it lowers to.
+    pub call_heads: ArenaMap<ExprId, CallHead>,
+}
+
+/// The head of a call as written: what names the function, and the `?` that marks a call
+/// that can raise an error (spec section 9.1).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CallHead {
+    /// The head's text, as `/fs/read` or `$text->parse_int`.
+    pub text: String,
+    /// Where the head is.
+    pub span: Span,
+    /// The `?` joined to the head, if written.
+    pub mark: Option<Span>,
 }
 
 impl Body {

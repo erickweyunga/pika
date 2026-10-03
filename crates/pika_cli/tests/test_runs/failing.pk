@@ -19,15 +19,15 @@
     :assert ([:add 1 1] > 3) "one plus one is small"
 }
 :test "halves" do={
-    :assert ([:half 10] = 5)
+    :assert ([:half? 10] = 5)
 }
 :test "raises" do={
-    :put [:half 7]
+    :put [:half? 7]
 }
 :test "panics" do={
     :const items {1}
     :put $items->3
 }
 :test "catches" do={
-    :onerror e in={ :put [:half 3] } do={ :assert ("$e" = "3 is odd") }
+    :onerror e in={ :put [:half? 3] } do={ :assert ("$e" = "3 is odd") }
 }

@@ -487,9 +487,9 @@
     :fn reverse self -> String do={ :return [/std/strings/reverse $self] }
     :fn is_blank self -> bool do={ :return [/std/strings/is_blank $self] }
     :fn equals_ignore_case self other:String -> bool do={ :return [/std/strings/equals_ignore_case $self $other] }
-    :fn parse_int self -> i64 raises do={ :return [/std/strings/parse_int $self] }
-    :fn parse_int_base self base:i64 -> i64 raises do={ :return [/std/strings/parse_int_base $self $base] }
-    :fn parse_float self -> f64 raises do={ :return [/std/strings/parse_float $self] }
+    :fn parse_int self -> i64 raises do={ :return [/std/strings/parse_int? $self] }
+    :fn parse_int_base self base:i64 -> i64 raises do={ :return [/std/strings/parse_int_base? $self $base] }
+    :fn parse_float self -> f64 raises do={ :return [/std/strings/parse_float? $self] }
     # The string of a list of characters.
     :fn from_chars chars:List<char> -> String do={ :return [/std/strings/from_chars $chars] }
 }

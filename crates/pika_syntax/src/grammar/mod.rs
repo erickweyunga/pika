@@ -302,6 +302,10 @@ fn call(p: &mut Parser<'_>) {
     } else {
         atom(p);
     }
+    // `?` joined to the head marks a call that can raise an error.
+    if p.at(TokenKind::Question) && p.at_joined() {
+        p.bump();
+    }
     arg_list(p);
     p.finish_node();
 }

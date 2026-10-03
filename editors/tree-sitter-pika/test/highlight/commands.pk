@@ -48,3 +48,7 @@ $list->push 5
 # <- comment
 ## documentation
 # <- comment.doc
+:put [/fs/read? $path]
+#             ^ keyword.control
+$text->parse_int? 16
+#               ^ keyword.control

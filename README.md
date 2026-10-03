@@ -37,7 +37,7 @@ Early development. Milestones M0 to M5 are complete:
 - Built-in traits implemented by types: operators (`Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg`,
   `Concat`), destructors (`Drop`), `Default` with `[:default]`, and `Display` with `fmt` (M5).
 - Errors: `raises` functions, `:error`, `:onerror`, causes, and uncaught errors reported by
-  `main` (M5).
+  `main` (M5). A call that can raise is marked with `?` after its head: `[/fs/read? $path]`.
 - Function values: closures that capture by value, named functions as values, and function
   types `fn(A) -> R` (M5).
 

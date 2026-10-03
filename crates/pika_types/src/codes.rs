@@ -40,6 +40,10 @@ pub const INVALID_IMPL: &str = "E0320";
 pub const UNCAUGHT_ERROR: &str = "E0321";
 /// A value called that is not a function, or a function that cannot be a value.
 pub const NOT_A_FUNCTION_VALUE: &str = "E0322";
+/// A call that can raise an error, written without `?` after its head.
+pub const MISSING_RAISE_MARK: &str = "E0323";
+/// A `?` after the head of a call that cannot raise an error.
+pub const NEEDLESS_RAISE_MARK: &str = "E0324";
 /// A `main` function with parameters or a return value.
 pub const INVALID_MAIN: &str = "E0311";
 
