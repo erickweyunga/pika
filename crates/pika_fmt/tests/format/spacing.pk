@@ -1,0 +1,20 @@
+# Spacing between tokens: joined tokens stay joined, other tokens get one space.
+:struct Point impl=Clone,Display {
+    x:i64
+    y:i64=0
+    :fn norm2 self -> i64 do={ :return (($self->x*$self->x)+($self->y*$self->y)) }
+}
+:fn pick<T: Ord + Copy> a:T b:T -> T do={:return [ /std/math/max $a $b ]}
+:fn main do={
+    :local p Point{ x=3 ; y=4 }
+    :local xs:List<List<i64>> { }
+    :const empty {}
+    :put [ $p->norm2 ]
+    :put ( -5 )
+    :put "text $p->x and $( $p->x *2 ) and $[ :pick 1 2 ]"
+    :if ( ($p->x>=3)||(!false) ) do={:put "ok"}
+    :put (( $p->x )   as   f64)
+    :local f [:fn n:i64 -> i64 do={ :return ( $n*2 ) }]
+    :put {1;2 ;3}
+    :put {"a"=1 ; "b"=2}
+}

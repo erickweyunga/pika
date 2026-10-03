@@ -1,0 +1,24 @@
+
+
+# A messy file.
+:fn add a:i64 b:i64 -> i64 do={
+:return ( $a+$b )
+}
+
+
+
+:fn main do={   
+	:local xs {  1 ;2;3 }
+    :if (($a > 1)&&($b<2)) do={:put "yes"} else={ :put [ :add 1 2 ] }
+    :foreach x in=$xs do={
+
+        :put $x      # print it
+    
+    }
+    :local total [:sum
+            $first
+     $second]
+    :put "a $( $x + 1 ) b"
+    :put \
+      5
+}

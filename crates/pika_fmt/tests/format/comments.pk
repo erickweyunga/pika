@@ -1,0 +1,9 @@
+## Documentation of the function.
+:fn f do={
+        # a comment indented too far
+    :put 1     # aligned
+    :put 22    # comments
+	# a tab-indented comment
+}
+
+# trailing comment at the end

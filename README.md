@@ -54,12 +54,14 @@ M6 is in progress:
   implemented once in the runtime, for both compiled and interpreted programs.
 - Tests: `:test "name" do={...}` and `pika test`, which runs each test in a process of its
   own and reports failed assertions with the values compared.
+- `pika fmt`, which rewrites files in the canonical layout (spec section 3.9), and
+  `pika fmt --check` for CI.
 - Methods of built-in types, which the standard library declares with `:impl`:
   `[$text->trim]`, `[[$line->split ","]->map $f]`, `[$items->sort]`, `[$x->sqrt]`,
   `[$n->checked_add 1]`, `[$option->expect "msg"]`.
 
-Features of later milestones (foreign functions, `pika fmt`) are reported as "not supported
-yet". See the milestones in section 17 of the spec.
+Features of later milestones (foreign functions) are reported as "not supported yet". See the
+milestones in section 17 of the spec.
 
 ## Building
 
@@ -73,6 +75,7 @@ cargo run -p pika_cli -- run path/to/file.pk     # compile and run a program
 cargo run -p pika_cli -- run path/to/package     # run the package with a pika.toml there
 cargo run -p pika_cli -- run app.pk -- a b       # pass arguments to the program
 cargo run -p pika_cli -- test path/to/package    # run the tests of a package or file
+cargo run -p pika_cli -- fmt path/to/package     # format the .pk files of a package
 cargo run -p pika_cli -- run --interpret file.pk # run with the MIR interpreter instead
 cargo run -p pika_cli -- check path/to/file.pk   # report errors and warnings
 cargo run -p pika_cli -- types path/to/file.pk   # print inferred types
@@ -91,6 +94,7 @@ cargo run -p pika_cli -- lex path/to/file.pk     # print the tokens
 | `crates/pika_mir` | control-flow graphs, definite assignment, constant evaluation, interpreter |
 | `crates/pika_codegen` | native code generation with Cranelift |
 | `crates/pika_runtime` | output, value formatting, panics and the standard library's primitives |
+| `crates/pika_fmt` | the formatter: the canonical layout of source files |
 | `crates/pika_driver` | loads packages and runs the compiler phases over their files |
 | `crates/pika_cli` | the `pika` command-line tool |
 | `std` | the standard library, written in Pika and embedded in the compiler |

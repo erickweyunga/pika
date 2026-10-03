@@ -1,21 +1,15 @@
 [package]
-name = "pika_cli"
-description = "The `pika` command-line tool"
+name = "pika_fmt"
+description = "The Pika formatter: the canonical layout of source files"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
-[[bin]]
-name = "pika"
-path = "src/main.rs"
-
 [dependencies]
-clap.workspace = true
 pika_diagnostics.workspace = true
-pika_driver.workspace = true
-pika_fmt.workspace = true
 pika_syntax.workspace = true
+rowan.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

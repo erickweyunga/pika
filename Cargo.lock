@@ -630,6 +630,7 @@ dependencies = [
  "insta",
  "pika_diagnostics",
  "pika_driver",
+ "pika_fmt",
  "pika_syntax",
  "proptest",
 ]
@@ -675,6 +676,17 @@ dependencies = [
  "proptest",
  "serde",
  "toml",
+]
+
+[[package]]
+name = "pika_fmt"
+version = "0.0.0"
+dependencies = [
+ "insta",
+ "pika_diagnostics",
+ "pika_syntax",
+ "proptest",
+ "rowan",
 ]
 
 [[package]]

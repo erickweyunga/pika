@@ -1,5 +1,6 @@
 //! The `pika` command-line tool.
 
+mod fmt;
 mod test;
 
 use std::io::IsTerminal;
@@ -36,6 +37,15 @@ enum Command {
         /// Arguments for the program, after `--`.
         #[arg(last = true)]
         args: Vec<String>,
+    },
+    /// Rewrite source files in the canonical layout.
+    Fmt {
+        /// `.pk` files, or directories whose `.pk` files to format.
+        #[arg(default_value = ".")]
+        paths: Vec<PathBuf>,
+        /// Change nothing: list the files that are not formatted, and fail if there are any.
+        #[arg(long)]
+        check: bool,
     },
     /// Run the tests of a program, each in a process of its own.
     Test {
@@ -81,6 +91,7 @@ fn main() -> ExitCode {
             interpret,
             args,
         } => run(&path, interpret, args),
+        Command::Fmt { paths, check } => fmt::fmt(&paths, check),
         Command::Test {
             path,
             filter,

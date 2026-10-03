@@ -12,6 +12,7 @@ publish = false
 pika_codegen = { path = "crates/pika_codegen" }
 pika_diagnostics = { path = "crates/pika_diagnostics" }
 pika_driver = { path = "crates/pika_driver" }
+pika_fmt = { path = "crates/pika_fmt" }
 pika_hir = { path = "crates/pika_hir" }
 pika_mir = { path = "crates/pika_mir" }
 pika_runtime = { path = "crates/pika_runtime" }

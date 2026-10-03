@@ -144,3 +144,39 @@ fn run_passes_arguments_and_input_to_the_program() {
         );
     }
 }
+
+#[test]
+fn fmt_rewrites_files_and_check_reports_them() {
+    let file = source_file("cli_fmt.pk", ":fn main do={\n:put ( 1+2 )\n}\n");
+    let path = file.to_str().unwrap();
+
+    let check = pika(&["fmt", "--check", path]);
+    assert_eq!(check.status.code(), Some(1));
+    assert_eq!(text(&check.stdout), format!("{path}\n"));
+    assert_eq!(
+        std::fs::read_to_string(&file).unwrap(),
+        ":fn main do={\n:put ( 1+2 )\n}\n",
+        "--check changes nothing"
+    );
+
+    let fmt = pika(&["fmt", path]);
+    assert!(fmt.status.success(), "stderr: {}", text(&fmt.stderr));
+    assert_eq!(
+        std::fs::read_to_string(&file).unwrap(),
+        ":fn main do={\n    :put (1 + 2)\n}\n"
+    );
+
+    let again = pika(&["fmt", "--check", path]);
+    assert!(again.status.success());
+    assert!(again.stdout.is_empty());
+}
+
+#[test]
+fn fmt_leaves_files_with_syntax_errors() {
+    let source = ":put $a + $b\n";
+    let file = source_file("cli_fmt_invalid.pk", source);
+    let output = pika(&["fmt", file.to_str().unwrap()]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(text(&output.stderr).contains("has syntax errors, so it was not formatted"));
+    assert_eq!(std::fs::read_to_string(&file).unwrap(), source);
+}

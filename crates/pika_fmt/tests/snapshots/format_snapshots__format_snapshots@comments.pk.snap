@@ -1,0 +1,14 @@
+---
+source: crates/pika_fmt/tests/format_snapshots.rs
+expression: formatted
+input_file: crates/pika_fmt/tests/format/comments.pk
+---
+## Documentation of the function.
+:fn f do={
+    # a comment indented too far
+    :put 1     # aligned
+    :put 22    # comments
+    # a tab-indented comment
+}
+
+# trailing comment at the end

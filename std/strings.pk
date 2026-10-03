@@ -442,7 +442,6 @@
     :return [:_float_to_string_exp $value $decimals]
 }
 
-
 # ----- Methods -----------------------------------------------------------------------------
 
 # The functions of this module as methods of strings, as in `[$text->trim]`.
