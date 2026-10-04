@@ -3,4 +3,4 @@ source: crates/pika_driver/tests/load_errors.rs
 expression: error
 input_file: crates/pika_driver/tests/load_errors/missing_manifest
 ---
-cannot read the package manifest tests/load_errors/missing_manifest/pika.toml: No such file or directory (os error 2)
+cannot read the package manifest tests/load_errors/missing_manifest/pika.toml: it does not exist

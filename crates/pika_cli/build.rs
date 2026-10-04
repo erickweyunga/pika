@@ -31,6 +31,8 @@ fn main() {
             "--locked",
         ])
         .args(["--crate-type", "staticlib", "--target", &target])
+        // The messages are read below, so without colors even where the build has them.
+        .args(["--color", "never"])
         .arg("--target-dir")
         .arg(&target_dir)
         .args(["--", "--print", "native-static-libs"])
@@ -48,7 +50,7 @@ fn main() {
     let native = messages
         .lines()
         .find_map(|line| line.split("native-static-libs:").nth(1))
-        .map(str::trim);
+        .map(|libraries| without_escapes(libraries).trim().to_owned());
     let native_file = out.join("native-static-libs.txt");
     match native {
         Some(native) => std::fs::write(&native_file, native).expect("OUT_DIR is writable"),
@@ -68,6 +70,25 @@ fn main() {
         &target_dir.join(&target).join("release").join(name),
         &out.join("pika_runtime.lib.bin"),
     );
+}
+
+/// `text` without terminal escape sequences, such as colors.
+fn without_escapes(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars();
+    while let Some(c) = chars.next() {
+        if c == '\u{1b}' {
+            // `ESC [`, parameters, and a final letter.
+            for c in chars.by_ref() {
+                if c.is_ascii_alphabetic() {
+                    break;
+                }
+            }
+        } else {
+            out.push(c);
+        }
+    }
+    out
 }
 
 fn copy(from: &Path, to: &Path) {

@@ -6,9 +6,13 @@ use std::path::Path;
 #[test]
 fn load_errors() {
     insta::glob!("load_errors/*", |dir| {
-        // Paths in messages are relative to the crate, where tests run.
+        // Paths in messages are relative to the crate, where tests run. Both paths are
+        // resolved, since they can be written differently (on Windows, with `\\?\`).
+        let canonical = |path: &Path| path.canonicalize().expect("the path exists");
+        let crate_dir = canonical(Path::new(env!("CARGO_MANIFEST_DIR")));
+        let dir = canonical(dir);
         let relative = dir
-            .strip_prefix(env!("CARGO_MANIFEST_DIR"))
+            .strip_prefix(&crate_dir)
             .expect("fixtures are in the crate");
         let error = pika_driver::load_package(relative)
             .expect_err("the package has a problem")

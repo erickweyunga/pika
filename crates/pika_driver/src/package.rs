@@ -175,7 +175,7 @@ impl Loader {
         let canonical = dir.canonicalize().map_err(|error| {
             LoadError(format!(
                 "cannot open the package directory {}: {error}",
-                dir.display()
+                display_name(dir)
             ))
         })?;
         if let Some(&index) = self.loaded.get(&canonical) {
@@ -184,7 +184,7 @@ impl Loader {
         if self.loading.contains(&canonical) {
             return Err(LoadError(format!(
                 "the dependencies of {} form a cycle",
-                dir.display()
+                display_name(dir)
             )));
         }
         let manifest = read_manifest(dir)?;
@@ -192,13 +192,13 @@ impl Loader {
         if name == pika_hir::STD_PACKAGE {
             return Err(LoadError(format!(
                 "the package in {} is named `{name}`, which is the name of the standard library",
-                dir.display()
+                display_name(dir)
             )));
         }
         if !pika_syntax::is_identifier(&name) {
             return Err(LoadError(format!(
                 "the package name `{name}` in {} is not an identifier: use letters, digits and `_`, as in `my_package`",
-                dir.join(MANIFEST).display()
+                display_name(&dir.join(MANIFEST))
             )));
         }
         if let Some(expected) = dependency
@@ -206,7 +206,7 @@ impl Loader {
         {
             return Err(LoadError(format!(
                 "the dependency `{expected}` is the package `{name}` in {}: name the dependency after the package",
-                dir.display()
+                display_name(dir)
             )));
         }
         let (root, binary) = root_file(dir, dependency.is_some())?;
@@ -222,8 +222,8 @@ impl Loader {
         if let Some(other) = self.sources.packages.iter().position(|p| p.name == name) {
             return Err(LoadError(format!(
                 "two different packages are named `{name}`: one in {}, the other in {}",
-                self.dirs[&other].display(),
-                dir.display()
+                display_name(&self.dirs[&other]),
+                display_name(dir)
             )));
         }
         let modules = self.load_modules(dir, &root)?;
@@ -257,8 +257,13 @@ impl Loader {
             } else {
                 module_path(&src, &file)?
             };
-            let text = std::fs::read_to_string(&file)
-                .map_err(|error| LoadError(format!("cannot read {}: {error}", file.display())))?;
+            let text = std::fs::read_to_string(&file).map_err(|error| {
+                LoadError(format!(
+                    "cannot read {}: {}",
+                    display_name(&file),
+                    io_message(&error)
+                ))
+            })?;
             let id = pika_syntax::add_file(&mut self.sources.map, display_name(&file), text);
             modules.push((module_path, id));
         }
@@ -270,12 +275,13 @@ fn read_manifest(dir: &Path) -> Result<Manifest, LoadError> {
     let path = dir.join(MANIFEST);
     let text = std::fs::read_to_string(&path).map_err(|error| {
         LoadError(format!(
-            "cannot read the package manifest {}: {error}",
-            path.display()
+            "cannot read the package manifest {}: {}",
+            display_name(&path),
+            io_message(&error)
         ))
     })?;
     toml::from_str(&text)
-        .map_err(|error| LoadError(format!("invalid manifest {}: {error}", path.display())))
+        .map_err(|error| LoadError(format!("invalid manifest {}: {error}", display_name(&path))))
 }
 
 /// The root module's file of the package in `dir`: `src/main.pk` for a binary, `src/lib.pk`
@@ -286,28 +292,39 @@ fn root_file(dir: &Path, is_dependency: bool) -> Result<(PathBuf, bool), LoadErr
     match (main.is_file(), lib.is_file()) {
         (true, true) => Err(LoadError(format!(
             "the package in {} has both src/main.pk and src/lib.pk; a package is either a program or a library",
-            dir.display()
+            display_name(dir)
         ))),
         (true, false) if is_dependency => Err(LoadError(format!(
             "the package in {} is a program (src/main.pk), not a library (src/lib.pk), so it cannot be a dependency",
-            dir.display()
+            display_name(dir)
         ))),
         (true, false) => Ok((main, true)),
         (false, true) => Ok((lib, false)),
         (false, false) => Err(LoadError(format!(
             "the package in {} has neither src/main.pk nor src/lib.pk",
-            dir.display()
+            display_name(dir)
         ))),
     }
 }
 
 /// Adds the `.pk` files under `dir` to `files`, recursively.
 fn find_sources(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), LoadError> {
-    let entries = std::fs::read_dir(dir)
-        .map_err(|error| LoadError(format!("cannot read {}: {error}", dir.display())))?;
+    let entries = std::fs::read_dir(dir).map_err(|error| {
+        LoadError(format!(
+            "cannot read {}: {}",
+            display_name(dir),
+            io_message(&error)
+        ))
+    })?;
     for entry in entries {
         let path = entry
-            .map_err(|error| LoadError(format!("cannot read {}: {error}", dir.display())))?
+            .map_err(|error| {
+                LoadError(format!(
+                    "cannot read {}: {}",
+                    display_name(dir),
+                    io_message(&error)
+                ))
+            })?
             .path();
         let hidden = path
             .file_name()
@@ -335,7 +352,7 @@ fn module_path(src: &Path, file: &Path) -> Result<Vec<String>, LoadError> {
         if !pika_syntax::is_identifier(&segment) {
             return Err(LoadError(format!(
                 "the module file {} has a name that is not an identifier: `{segment}`; use letters, digits and `_`",
-                file.display()
+                display_name(file)
             )));
         }
         path.push(segment);
@@ -372,5 +389,14 @@ fn display_name(file: &Path) -> String {
         name
     } else {
         name.replace(std::path::MAIN_SEPARATOR, "/")
+    }
+}
+
+/// What went wrong with a file, in the same words on every platform where it can be.
+fn io_message(error: &std::io::Error) -> String {
+    match error.kind() {
+        std::io::ErrorKind::NotFound => "it does not exist".to_owned(),
+        std::io::ErrorKind::PermissionDenied => "permission denied".to_owned(),
+        _ => error.to_string(),
     }
 }
