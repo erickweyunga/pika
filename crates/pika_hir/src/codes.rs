@@ -59,3 +59,6 @@ pub const INVALID_IMPL: &str = "E0227";
 
 /// A name that does not follow the naming conventions (spec section 3.5).
 pub const NAMING_CONVENTION: &str = "W0201";
+/// Text in a string that looks like a member of the variable interpolated just before it,
+/// as `->message` in `"$e->message"`.
+pub const MEMBER_AS_TEXT: &str = "W0202";

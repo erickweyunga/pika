@@ -1,0 +1,12 @@
+# A statement that starts with a bracketed command calls the value the command returns, so a
+# command written in brackets for its effect is reported with the statement without brackets.
+:fn helper -> i64 do={ :return 1 }
+:fn greeter -> fn(String) do={ :return [:fn name:String do={ :put "hi $name" }] }
+:fn main do={
+    :local lines:List<String> {}
+    :if (true) do={ [$lines->push "x"] }
+    [:helper]
+    # A function value that a command returns can be called this way.
+    [:greeter] "Ada"
+    :put $lines
+}

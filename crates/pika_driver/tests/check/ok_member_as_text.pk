@@ -1,0 +1,14 @@
+# Interpolation stops at a variable's name: text that looks like a member of the variable
+# just before it is warned about.
+:fn main do={
+    :const items {1; 2}
+    :const scores {"ann"=3}
+    :const key "ann"
+    :onerror e in={ :error "boom" } do={
+        :put "failed: $e->message"
+        :put "$items->0, $scores->$key"
+        # Not warned about: members interpolated with `$(...)`, text kept on purpose, and
+        # an arrow with no name after it.
+        :put "$($e->message) $($items->0) $($e)->message $key->"
+    }
+}

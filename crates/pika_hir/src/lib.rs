@@ -359,6 +359,9 @@ pub struct Body {
     pub pat_spans: ArenaMap<PatId, Span>,
     /// The head of each call written in the source, by the expression it lowers to.
     pub call_heads: ArenaMap<ExprId, CallHead>,
+    /// For a statement such as `[$list->push 1]`, which calls the value that a bracketed
+    /// command returns without arguments: the command, as written inside the brackets.
+    pub unbracketed: ArenaMap<ExprId, String>,
 }
 
 /// The head of a call as written: what names the function, and the `?` that marks a call

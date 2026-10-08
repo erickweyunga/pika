@@ -3451,9 +3451,23 @@ impl<'a> BodyCtx<'a> {
 
     fn lower_string(&mut self, string: &ast::StringLit) -> Expr {
         let mut parts = Vec::new();
-        for part in string.parts() {
+        // The variable interpolated by the previous part, if it was one.
+        let mut previous_var: Option<String> = None;
+        let all = string.parts();
+        for (index, part) in all.iter().cloned().enumerate() {
+            let var = match &part {
+                ast::StringPart::Var(token) => Some(token.text().to_owned()),
+                _ => None,
+            };
             match part {
                 ast::StringPart::Text(token) => {
+                    if let Some(var) = &previous_var {
+                        let next_var = match all.get(index + 1) {
+                            Some(ast::StringPart::Var(next)) => Some(next.text()),
+                            _ => None,
+                        };
+                        self.check_member_as_text(var, &token, next_var);
+                    }
                     let (text, _) = literal::unescape(token.text());
                     parts.push(StringPart::Text(text));
                 }
@@ -3474,8 +3488,55 @@ impl<'a> BodyCtx<'a> {
                     parts.push(StringPart::Expr(id));
                 }
             }
+            previous_var = var;
         }
         Expr::String(parts)
+    }
+
+    /// Warns about text in a string that looks like a member of the variable `var`
+    /// interpolated just before it, as `->message` in `"$e->message"`: interpolation stops at
+    /// the variable's name.
+    /// `next_var` is the variable interpolated right after `text`, if any, as `$key` in
+    /// `"$map->$key"`.
+    fn check_member_as_text(
+        &mut self,
+        var: &str,
+        text: &pika_syntax::SyntaxToken,
+        next_var: Option<&str>,
+    ) {
+        let Some(rest) = text.text().strip_prefix("->") else {
+            return;
+        };
+        let name_len = rest
+            .char_indices()
+            .find(|&(_, c)| !(c.is_ascii_alphanumeric() || c == '_'))
+            .map_or(rest.len(), |(i, _)| i);
+        let start = ast::span_of(text.text_range()).start;
+        let (member, end) = match next_var {
+            Some(next) if rest.is_empty() => (
+                next,
+                ast::span_of(text.text_range()).end
+                    + u32::try_from(next.len()).expect("a short name"),
+            ),
+            _ if name_len > 0 => (
+                &rest[..name_len],
+                start + 2 + u32::try_from(name_len).expect("a short name"),
+            ),
+            _ => return,
+        };
+        self.diagnostics.push(
+            Diagnostic::warning(
+                codes::MEMBER_AS_TEXT,
+                format!(
+                    "`->{member}` after `{var}` is text, not a member: interpolation stops at the variable's name"
+                ),
+                Span::new(start, end),
+            )
+            .with_label("this is text")
+            .with_help(format!(
+                "to interpolate the member, write `$({var}->{member})`; to keep the text, write `$({var})->{member}`"
+            )),
+        );
     }
 
     fn resolve_var(&mut self, name: &str, span: Span) -> Expr {
@@ -3666,8 +3727,8 @@ impl<'a> BodyCtx<'a> {
     }
 
     /// `[$f args]`: a call of a function value, with positional arguments.
-    fn lower_value_call(&mut self, call: &ast::Call, callee: &ast::Expr) -> ExprId {
-        let callee = self.lower_expr(callee);
+    fn lower_value_call(&mut self, call: &ast::Call, callee_ast: &ast::Expr) -> ExprId {
+        let callee = self.lower_expr(callee_ast);
         let mut args = Vec::new();
         for arg in self.lower_call_args(call) {
             if let Some(name) = &arg.name {
@@ -3682,7 +3743,16 @@ impl<'a> BodyCtx<'a> {
             }
             args.push(arg.value);
         }
-        self.alloc_expr(Expr::CallValue { callee, args }, call.span())
+        let command = match callee_ast {
+            ast::Expr::BracketExpr(bracket) if args.is_empty() => bracket.command(),
+            _ => None,
+        };
+        let id = self.alloc_expr(Expr::CallValue { callee, args }, call.span());
+        if let Some(command) = command {
+            let text = command.syntax().text().to_string();
+            self.body.unbracketed.insert(id, text.trim().to_owned());
+        }
+        id
     }
 
     /// Written type arguments, as in `:max<f64>`.

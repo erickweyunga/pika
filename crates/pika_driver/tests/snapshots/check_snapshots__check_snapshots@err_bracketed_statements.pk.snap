@@ -1,0 +1,30 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/err_bracketed_statements.pk
+---
+fn helper() -> i64
+fn greeter() -> fn(String)
+fn main() -> nothing
+    lines: List<String>
+closure closure(name: String) -> nothing
+
+--- diagnostics ---
+[E0322] Error: `[$lines->push "x"]` calls the value that `$lines->push` returns, which is `nothing`, not a function
+   ╭─[ err_bracketed_statements.pk:7:21 ]
+   │
+ 7 │     :if (true) do={ [$lines->push "x"] }
+   │                     ─────────┬────────  
+   │                              ╰────────── the brackets make a value, and the statement calls it
+   │ 
+   │ Help: to run the command for what it does, write it without brackets: `$lines->push "x"`
+───╯
+[E0322] Error: `[:helper]` calls the value that `:helper` returns, which is `i64`, not a function
+   ╭─[ err_bracketed_statements.pk:8:5 ]
+   │
+ 8 │     [:helper]
+   │     ────┬────  
+   │         ╰────── the brackets make a value, and the statement calls it
+   │ 
+   │ Help: to run the command for what it does, write it without brackets: `:helper`
+───╯

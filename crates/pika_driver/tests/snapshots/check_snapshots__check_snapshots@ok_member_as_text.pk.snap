@@ -1,0 +1,39 @@
+---
+source: crates/pika_driver/tests/check_snapshots.rs
+expression: "snapshot(&name, &analysis)"
+input_file: crates/pika_driver/tests/check/ok_member_as_text.pk
+---
+fn main() -> nothing
+    items: List<i64>
+    scores: Map<String, i64>
+    key: String
+    e: Error
+
+--- diagnostics ---
+[W0202] Warning: `->message` after `$e` is text, not a member: interpolation stops at the variable's name
+   ╭─[ ok_member_as_text.pk:8:25 ]
+   │
+ 8 │         :put "failed: $e->message"
+   │                         ────┬────  
+   │                             ╰────── this is text
+   │ 
+   │ Help: to interpolate the member, write `$($e->message)`; to keep the text, write `$($e)->message`
+───╯
+[W0202] Warning: `->0` after `$items` is text, not a member: interpolation stops at the variable's name
+   ╭─[ ok_member_as_text.pk:9:21 ]
+   │
+ 9 │         :put "$items->0, $scores->$key"
+   │                     ─┬─  
+   │                      ╰─── this is text
+   │ 
+   │ Help: to interpolate the member, write `$($items->0)`; to keep the text, write `$($items)->0`
+───╯
+[W0202] Warning: `->$key` after `$scores` is text, not a member: interpolation stops at the variable's name
+   ╭─[ ok_member_as_text.pk:9:33 ]
+   │
+ 9 │         :put "$items->0, $scores->$key"
+   │                                 ───┬──  
+   │                                    ╰──── this is text
+   │ 
+   │ Help: to interpolate the member, write `$($scores->$key)`; to keep the text, write `$($scores)->$key`
+───╯

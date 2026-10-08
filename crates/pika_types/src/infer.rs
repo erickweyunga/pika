@@ -2686,11 +2686,33 @@ impl<'c, 'm> InferCtx<'c, 'm> {
             }
             if resolved != Ty::Error {
                 let shown = self.show(resolved);
-                self.report(Diagnostic::error(
-                    codes::NOT_A_FUNCTION_VALUE,
-                    format!("a value of type {shown} cannot be called"),
-                    self.span(callee),
-                ));
+                let diagnostic = match self.body.unbracketed.get(expr) {
+                    // `[$list->push 1]` as a statement, written to call `push` for its effect.
+                    Some(command) => {
+                        let head = self
+                            .body
+                            .call_heads
+                            .get(callee)
+                            .map_or_else(|| "the command".to_owned(), |h| format!("`{}`", h.text));
+                        Diagnostic::error(
+                            codes::NOT_A_FUNCTION_VALUE,
+                            format!(
+                                "`[{command}]` calls the value that {head} returns, which is {shown}, not a function"
+                            ),
+                            self.span(expr),
+                        )
+                        .with_label("the brackets make a value, and the statement calls it")
+                        .with_help(format!(
+                            "to run the command for what it does, write it without brackets: `{command}`"
+                        ))
+                    }
+                    None => Diagnostic::error(
+                        codes::NOT_A_FUNCTION_VALUE,
+                        format!("a value of type {shown} cannot be called"),
+                        self.span(callee),
+                    ),
+                };
+                self.report(diagnostic);
             }
             return Ty::Error;
         };
