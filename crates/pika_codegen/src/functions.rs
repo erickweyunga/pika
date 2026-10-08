@@ -14,14 +14,14 @@
 //! last copy destroys the captured values and frees the object.
 
 use cranelift_codegen::ir::condcodes::IntCC;
-use cranelift_codegen::ir::{AbiParam, InstBuilder, MemFlagsData, Value, types};
+use cranelift_codegen::ir::{InstBuilder, MemFlagsData, Value, types};
 use cranelift_frontend::FunctionBuilder;
 use cranelift_module::{FuncId, Linkage, Module};
 use pika_mir::InstanceId;
 use pika_types::Ty;
 
 use crate::glue::Emitter;
-use crate::{CodegenError, ModuleCtx, error};
+use crate::{CodegenError, ModuleCtx, abi_param, error};
 
 /// Where the number of copies is.
 const COUNT: i32 = 0;
@@ -69,7 +69,7 @@ fn env_drop_signature(module: &dyn Module) -> cranelift_codegen::ir::Signature {
     let mut signature = module.make_signature();
     signature
         .params
-        .push(AbiParam::new(module.target_config().pointer_type()));
+        .push(abi_param(module.target_config().pointer_type()));
     signature
 }
 

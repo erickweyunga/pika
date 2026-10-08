@@ -9,14 +9,14 @@
 //! code that needs it is known ([`define_pending`]).
 
 use cranelift_codegen::ir::condcodes::{FloatCC, IntCC};
-use cranelift_codegen::ir::{AbiParam, Block, InstBuilder, MemFlagsData, Type, Value, types};
+use cranelift_codegen::ir::{Block, InstBuilder, MemFlagsData, Type, Value, types};
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
 use cranelift_module::{FuncId, Linkage, Module};
 use pika_hir::{FloatTy, IntTy};
 use pika_types::Ty;
 
 use crate::repr::{self, LayoutKind, Repr};
-use crate::{CodegenError, ModuleCtx, error};
+use crate::{CodegenError, ModuleCtx, abi_param, error};
 
 /// Ordering codes produced by comparisons, as `i8` values.
 pub(crate) const EQUAL: u64 = 0;
@@ -71,11 +71,11 @@ impl GlueKind {
             2
         };
         for _ in 0..params {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         match self {
-            Self::Compare | Self::KeyEq => signature.returns.push(AbiParam::new(types::I8)),
-            Self::Hash => signature.returns.push(AbiParam::new(types::I64)),
+            Self::Compare | Self::KeyEq => signature.returns.push(abi_param(types::I8)),
+            Self::Hash => signature.returns.push(abi_param(types::I64)),
             Self::Drop | Self::Clone | Self::Display => {}
         }
         signature
@@ -167,7 +167,7 @@ fn define_env_drop_function(
 ) -> Result<(), CodegenError> {
     let pointer = module.target_config().pointer_type();
     let mut signature = module.make_signature();
-    signature.params.push(AbiParam::new(pointer));
+    signature.params.push(abi_param(pointer));
     context.func.signature = signature;
     {
         let mut builder = FunctionBuilder::new(&mut context.func, builder_context);

@@ -42,6 +42,18 @@ use pika_types::Ty;
 use crate::glue::{Emitter, GlueKind};
 use crate::repr::{Layouts, Repr};
 
+/// A parameter or result of a signature. Integers narrower than 32 bits are zero-extended,
+/// as the C calling convention of some targets requires: on x86-64 Unix, code compiled from
+/// C or Rust may read all of a register that holds an 8-bit result, such as a `bool` that a
+/// generated comparison returns to the runtime.
+pub(crate) fn abi_param(ty: types::Type) -> AbiParam {
+    if ty.is_int() && ty.bits() < 32 {
+        AbiParam::new(ty).uext()
+    } else {
+        AbiParam::new(ty)
+    }
+}
+
 /// A failure inside the code generator. It always indicates a compiler bug.
 #[derive(Debug)]
 pub struct CodegenError(pub String);
@@ -269,16 +281,16 @@ fn define_c_main(
         .map_err(|e| error("defining the source files", e))?;
 
     let mut start = module.make_signature();
-    start.params.extend([AbiParam::new(pointer); 4]);
-    start.returns.push(AbiParam::new(types::I32));
+    start.params.extend([abi_param(pointer); 4]);
+    start.returns.push(abi_param(types::I32));
     let pika_main = module
         .declare_function("pika_main", Linkage::Import, &start)
         .map_err(|e| error("declaring `pika_main`", e))?;
     let mut signature = module.make_signature();
     signature
         .params
-        .extend([AbiParam::new(types::I32), AbiParam::new(pointer)]);
-    signature.returns.push(AbiParam::new(types::I32));
+        .extend([abi_param(types::I32), abi_param(pointer)]);
+    signature.returns.push(abi_param(types::I32));
     let main = module
         .declare_function("main", Linkage::Export, &signature)
         .map_err(|e| error("declaring `main`", e))?;
@@ -624,8 +636,8 @@ impl Runtime {
             let mut signature = module.make_signature();
             signature
                 .params
-                .extend(params.iter().map(|&t| AbiParam::new(t)));
-            signature.returns.extend(ret.map(AbiParam::new));
+                .extend(params.iter().map(|&t| abi_param(t)));
+            signature.returns.extend(ret.map(abi_param));
             module
                 .declare_function(name, Linkage::Import, &signature)
                 .map_err(|e| error("declaring a runtime function", e))

@@ -4,12 +4,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use cranelift_codegen::ir::{AbiParam, Signature, Type, types};
+use cranelift_codegen::ir::{Signature, Type, types};
 use cranelift_module::Module;
 use pika_hir::{AdtKind, FloatTy, IntTy};
 use pika_mir::{Body, LocalMode, Types, Value};
 use pika_ty::FnTy;
 use pika_types::Ty;
+
+use crate::abi_param;
 
 /// How values of a type are stored.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -356,28 +358,28 @@ impl Layouts {
         let mut signature = module.make_signature();
         // The body of a function value receives its object first.
         if body.env.is_some() {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         if self.returns_in_memory(body) {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         for &param in &body.params {
             let decl = &body.locals[param];
             match (decl.mode, self.repr(decl.ty)) {
                 (LocalMode::Ref { .. }, _) | (LocalMode::Value, Repr::Memory { .. }) => {
-                    signature.params.push(AbiParam::new(pointer));
+                    signature.params.push(abi_param(pointer));
                 }
-                (LocalMode::Value, Repr::Scalar(ty)) => signature.params.push(AbiParam::new(ty)),
+                (LocalMode::Value, Repr::Scalar(ty)) => signature.params.push(abi_param(ty)),
                 (LocalMode::Value, Repr::None) => {}
             }
         }
         // A function that raises receives where to put its error: an `Error?` that the
         // caller sets to `none`.
         if body.raises {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         if let Repr::Scalar(ty) = self.repr(body.locals[body.return_local].ty) {
-            signature.returns.push(AbiParam::new(ty));
+            signature.returns.push(abi_param(ty));
         }
         signature
     }
@@ -387,24 +389,24 @@ impl Layouts {
     pub(crate) fn value_signature(&self, module: &dyn Module, function: &FnTy) -> Signature {
         let pointer = module.target_config().pointer_type();
         let mut signature = module.make_signature();
-        signature.params.push(AbiParam::new(pointer));
+        signature.params.push(abi_param(pointer));
         if let Repr::Memory { .. } = self.repr(function.ret) {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         for &param in &function.params {
             // Parameters are borrowed: by address, unless they are `Copy`.
             match self.repr(param) {
-                _ if !self.types.is_copy(param) => signature.params.push(AbiParam::new(pointer)),
-                Repr::Memory { .. } => signature.params.push(AbiParam::new(pointer)),
-                Repr::Scalar(ty) => signature.params.push(AbiParam::new(ty)),
+                _ if !self.types.is_copy(param) => signature.params.push(abi_param(pointer)),
+                Repr::Memory { .. } => signature.params.push(abi_param(pointer)),
+                Repr::Scalar(ty) => signature.params.push(abi_param(ty)),
                 Repr::None => {}
             }
         }
         if function.raises {
-            signature.params.push(AbiParam::new(pointer));
+            signature.params.push(abi_param(pointer));
         }
         if let Repr::Scalar(ty) = self.repr(function.ret) {
-            signature.returns.push(AbiParam::new(ty));
+            signature.returns.push(abi_param(ty));
         }
         signature
     }
